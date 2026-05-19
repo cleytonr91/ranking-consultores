@@ -309,7 +309,13 @@ ${c.rev_und}
 HGSI
 </div>
 
-<div class="text-3xl font-black mt-1">
+<div class="text-3xl font-black mt-1
+${c.hgsi >= 970
+? 'text-green-400'
+: c.hgsi >= 960
+? 'text-yellow-400'
+: 'text-red-500'}
+">
 ${c.hgsi}
 </div>
 
@@ -321,7 +327,13 @@ ${c.hgsi}
 META
 </div>
 
-<div class="text-3xl font-black mt-1">
+<div class="text-3xl font-black mt-1
+${pesquisaPercent >= 100
+? 'text-green-400'
+: pesquisaPercent >= 85
+? 'text-yellow-400'
+: 'text-red-500'}
+">
 ${pesquisaPercent.toFixed(0)}%
 </div>
 
@@ -361,7 +373,7 @@ ${c.store}
 
 </div>
 
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 xl:w-[700px]">
+<div class="grid grid-cols-2 md:grid-cols-5 gap-4 xl:w-[900px]">
 
 <div class="bg-slate-900 rounded-2xl p-4 text-center">
 
@@ -405,8 +417,36 @@ R$ ${tkm.toFixed(0)}
 HGSI
 </div>
 
-<div class="text-3xl font-black text-yellow-400 mt-2">
+<div class="text-3xl font-black mt-2
+${c.hgsi >= 970
+? 'text-green-400'
+: c.hgsi >= 960
+? 'text-yellow-400'
+: 'text-red-500'}
+">
+
 ${c.hgsi}
+
+</div>
+
+</div>
+
+<div class="bg-slate-900 rounded-2xl p-4 text-center">
+
+<div class="text-slate-500 text-xs uppercase">
+Meta Pesq.
+</div>
+
+<div class="text-3xl font-black mt-2
+${pesquisaPercent >= 100
+? 'text-green-400'
+: pesquisaPercent >= 85
+? 'text-yellow-400'
+: 'text-red-500'}
+">
+
+${pesquisaPercent.toFixed(0)}%
+
 </div>
 
 </div>
