@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dashboard Gerencial GP Performance</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body {
+background: #050505;
+}
+
+.card {
+background: linear-gradient(145deg, #111111, #1b1b1b);
+border: 1px solid #222;
+box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+
+</style>
+
+</head>
+
+<body class="text-white font-sans p-6">
+
+<div class="max-w-7xl mx-auto">
+
+<!-- TOPO -->
+
+<div class="flex justify-between items-center mb-8">
+
+<div>
+<h1 class="text-5xl font-black italic tracking-tight">
+DASHBOARD <span class="text-blue-500">GERENCIAL</span>
+</h1>
+
+<p class="text-slate-500 uppercase tracking-widest mt-2">
+GP Performance
+</p>
+</div>
+
+<div class="text-right">
+<div id="clock" class="text-4xl font-black"></div>
+<div id="date" class="text-slate-500"></div>
+</div>
+
+</div>
+
+<!-- KPI CARDS -->
+
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+
+<div class="card rounded-2xl p-6">
+<div class="text-slate-500 uppercase text-sm">Faturamento Total</div>
+<div id="fat-total" class="text-4xl font-black text-green-400 mt-2">
+R$ 0
+</div>
+</div>
+
+<div class="card rounded-2xl p-6">
+<div class="text-slate-500 uppercase text-sm">Total Revisões</div>
+<div id="rev-total" class="text-4xl font-black text-blue-400 mt-2">
+0
+</div>
+</div>
+
+<div class="card rounded-2xl p-6">
+<div class="text-slate-500 uppercase text-sm">TKM Médio</div>
+<div id="tkm-medio" class="text-4xl font-black text-yellow-400 mt-2">
+R$ 0
+</div>
+</div>
+
+<div class="card rounded-2xl p-6">
+<div class="text-slate-500 uppercase text-sm">Média HGSI</div>
+<div id="hgsi-medio" class="text-4xl font-black text-purple-400 mt-2">
+0
+</div>
+</div>
+
+</div>
+
+<!-- GRÁFICOS -->
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+
+<div class="card rounded-2xl p-6">
+
+<h2 class="text-2xl font-black mb-4">
+TKM POR CONSULTOR
+</h2>
+
+<canvas id="tkmChart"></canvas>
+
+</div>
+
+<div class="card rounded-2xl p-6">
+
+<h2 class="text-2xl font-black mb-4">
+HGSI POR CONSULTOR
+</h2>
+
+<canvas id="hgsiChart"></canvas>
+
+</div>
+
+</div>
+
+<!-- RANKING -->
+
+<div class="card rounded-2xl p-6">
+
+<div class="flex justify-between items-center mb-6">
+
+<h2 class="text-3xl font-black">
+RANKING GERAL
+</h2>
+
+<div class="text-slate-500 uppercase text-sm">
+Atualização em tempo real
+</div>
+
+</div>
+
+<div class="overflow-x-auto">
+
+<table class="w-full">
+
+<thead>
+
+<tr class="border-b border-slate-800 text-slate-500 uppercase text-sm">
+
+<th class="text-left py-4">Posição</th>
+<th class="text-left">Consultor</th>
+<th class="text-left">Loja</th>
+<th class="text-center">REV</th>
+<th class="text-center">Total Pen.</th>
+<th class="text-center">TKM</th>
+<th class="text-center">HGSI</th>
+<th class="text-center">Pesquisas</th>
+
+</tr>
+
+</thead>
+
+<tbody id="ranking-body">
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { db } from './firebase-config.js';
+
+import {
+collection,
+onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const rankingBody = document.getElementById('ranking-body');
+
+const fatTotal = document.getElementById('fat-total');
+const revTotal = document.getElementById('rev-total');
+const tkmMedio = document.getElementById('tkm-medio');
+const hgsiMedio = document.getElementById('hgsi-medio');
+
+function updateClock() {
+
+const now = new Date();
+
+document.getElementById('clock').innerText =
+now.toLocaleTimeString('pt-BR');
+
+document.getElementById('date').innerText =
+now.toLocaleDateString('pt-BR');
+
+}
+
+setInterval(updateClock, 1000);
+
+updateClock();
+
+const tkmChart = new Chart(
+document.getElementById('tkmChart'),
+{
+type: 'bar',
+data: {
+labels: [],
+datasets: [{
+label: 'TKM',
+data: []
+}]
+}
+}
+);
+
+const hgsiChart = new Chart(
+document.getElementById('hgsiChart'),
+{
+type: 'bar',
+data: {
+labels: [],
+datasets: [{
+label: 'HGSI',
+data: []
+}]
+}
+}
+);
+
+onSnapshot(collection(db, "consultores"), (snapshot) => {
+
+let data = [];
+
+snapshot.forEach((doc) => {
+
+data.push({
+id: doc.id,
+...doc.data()
+});
+
+});
+
+data.sort((a, b) => {
+
+const tkmA = a.rev_und > 0
+? (a.serv_adic + a.emb_oficina) / a.rev_und
+: 0;
+
+const tkmB = b.rev_und > 0
+? (b.serv_adic + b.emb_oficina) / b.rev_und
+: 0;
+
+return tkmB - tkmA;
+
+});
+
+rankingBody.innerHTML = '';
+
+let faturamento = 0;
+let revisoes = 0;
+let hgsiTotal = 0;
+let tkmTotal = 0;
+
+let labels = [];
+let tkmData = [];
+let hgsiData = [];
+
+data.forEach((c, i) => {
+
+const totalPen = c.serv_adic + c.emb_oficina;
+
+const tkm = c.rev_und > 0
+? totalPen / c.rev_und
+: 0;
+
+const pesquisasPercent =
+c.meta_pesquisas > 0
+? ((c.pesquisas / c.meta_pesquisas) * 100).toFixed(0)
+: 0;
+
+faturamento += totalPen;
+revisoes += c.rev_und;
+hgsiTotal += c.hgsi;
+tkmTotal += tkm;
+
+labels.push(c.name);
+tkmData.push(tkm.toFixed(0));
+hgsiData.push(c.hgsi);
+
+rankingBody.innerHTML += `
+
+<tr class="border-b border-slate-900 hover:bg-slate-900/50 transition-all">
+
+<td class="py-4 font-black text-2xl">
+#${i + 1}
+</td>
+
+<td class="font-bold uppercase">
+${c.name}
+</td>
+
+<td class="text-slate-500">
+${c.store}
+</td>
+
+<td class="text-center">
+${c.rev_und}
+</td>
+
+<td class="text-center text-blue-400 font-black">
+R$ ${totalPen.toFixed(0)}
+</td>
+
+<td class="text-center text-green-400 font-black">
+R$ ${tkm.toFixed(0)}
+</td>
+
+<td class="text-center text-yellow-400 font-black">
+${c.hgsi}
+</td>
+
+<td class="text-center">
+${pesquisasPercent}%
+</td>
+
+</tr>
+
+`;
+
+});
+
+const mediaTkm = data.length > 0
+? tkmTotal / data.length
+: 0;
+
+const mediaHgsi = data.length > 0
+? hgsiTotal / data.length
+: 0;
+
+fatTotal.innerText =
+`R$ ${faturamento.toLocaleString('pt-BR')}`;
+
+revTotal.innerText =
+revisoes;
+
+tkmMedio.innerText =
+`R$ ${mediaTkm.toFixed(0)}`;
+
+hgsiMedio.innerText =
+mediaHgsi.toFixed(0);
+
+tkmChart.data.labels = labels;
+tkmChart.data.datasets[0].data = tkmData;
+tkmChart.update();
+
+hgsiChart.data.labels = labels;
+hgsiChart.data.datasets[0].data = hgsiData;
+hgsiChart.update();
+
+});
+
+</script>
+
+</body>
+
+</html>
