@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin GP Performance</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-900 text-white p-8 font-sans">
+
+<div class="max-w-4xl mx-auto">
+
+<h1 class="text-4xl font-black mb-8 uppercase italic text-blue-500">
+Painel Administrativo GP
+</h1>
+
+<form id="consultant-form" class="grid grid-cols-2 gap-6 bg-slate-800 p-8 rounded-2xl">
+
+<input type="hidden" id="edit-id">
+
+<div class="col-span-2">
+<label>Nome do Consultor</label>
+<input type="text" id="name" class="w-full bg-slate-700 p-3 rounded-lg">
+</div>
+
+<div>
+<label>Loja</label>
+<input type="text" id="store" class="w-full bg-slate-700 p-3 rounded-lg">
+</div>
+
+<div>
+<label>Revisões</label>
+<input type="number" id="rev_und" class="w-full bg-slate-700 p-3 rounded-lg">
+</div>
+
+<div>
+<label>Serviços Adicionais</label>
+<input type="number" id="serv_adic" class="w-full bg-slate-700 p-3 rounded-lg">
+</div>
+
+<div>
+<label>Embelezamento</label>
+<input type="number" id="emb_oficina" class="w-full bg-slate-700 p-3 rounded-lg">
+</div>
+
+<div>
+<label>HGSI</label>
+<input type="number" id="hgsi" class="w-full bg-slate-700 p-3 rounded-lg">
+</div>
+
+<div>
+<label>Pesquisas</label>
+<input type="number" id="pesquisas" class="w-full bg-slate-700 p-3 rounded-lg">
+</div>
+
+<div>
+<label>Meta Pesquisas</label>
+<input type="number" id="meta_pesquisas" class="w-full bg-slate-700 p-3 rounded-lg">
+</div>
+
+<div class="col-span-2">
+<label>M.O Revisão</label>
+<input type="number" id="mo_rev" class="w-full bg-slate-700 p-3 rounded-lg">
+</div>
+
+<button type="submit" class="col-span-2 bg-blue-600 p-4 rounded-xl font-black uppercase">
+Salvar Consultor
+</button>
+
+</form>
+
+<div class="mt-10">
+<h2 class="text-2xl font-black mb-4">Consultores</h2>
+<div id="list-consultants" class="flex flex-col gap-3"></div>
+</div>
+
+</div>
+
+<script type="module">
+
+import { db } from './firebase-config.js';
+
+import {
+collection,
+addDoc,
+getDocs,
+deleteDoc,
+doc,
+updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const form = document.getElementById('consultant-form');
+
+async function renderList() {
+
+const querySnapshot = await getDocs(collection(db, "consultores"));
+
+const list = document.getElementById('list-consultants');
+
+list.innerHTML = '';
+
+querySnapshot.forEach((documento) => {
+
+const c = documento.data();
+
+list.innerHTML += `
+<div class="bg-slate-800 p-4 rounded-xl flex justify-between">
+
+<div>
+<div class="font-black text-xl">${c.name}</div>
+<div class="text-slate-400">${c.store}</div>
+</div>
+
+<button
+onclick="removeConsultor('${documento.id}')"
+class="bg-red-600 px-4 py-2 rounded-lg">
+Excluir
+</button>
+
+</div>
+`;
+
+});
+
+}
+
+form.addEventListener('submit', async (e) => {
+
+e.preventDefault();
+
+await addDoc(collection(db, "consultores"), {
+
+name: document.getElementById('name').value,
+store: document.getElementById('store').value,
+rev_und: Number(document.getElementById('rev_und').value),
+serv_adic: Number(document.getElementById('serv_adic').value),
+emb_oficina: Number(document.getElementById('emb_oficina').value),
+hgsi: Number(document.getElementById('hgsi').value),
+pesquisas: Number(document.getElementById('pesquisas').value),
+meta_pesquisas: Number(document.getElementById('meta_pesquisas').value),
+mo_rev: Number(document.getElementById('mo_rev').value)
+
+});
+
+form.reset();
+
+renderList();
+
+});
+
+window.removeConsultor = async (id) => {
+
+await deleteDoc(doc(db, "consultores", id));
+
+renderList();
+
+}
+
+renderList();
+
+</script>
+
+</body>
+</html>
