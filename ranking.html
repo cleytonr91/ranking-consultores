@@ -12,32 +12,86 @@
 
 </head>
 
-<body class="bg-slate-950 text-white p-6">
+<body class="bg-[#050816] text-white min-h-screen p-4 md:p-8">
 
 <div class="max-w-7xl mx-auto">
 
-<div class="flex justify-between items-center mb-8">
+<!-- TOPO -->
+
+<div class="flex flex-col xl:flex-row justify-between items-center gap-6 mb-10">
 
 <div>
 
-<h1 class="text-5xl font-black italic">
-GP PERFORMANCE
+<h1 class="text-5xl md:text-7xl font-black italic tracking-tight">
+GP <span class="text-blue-500">PERFORMANCE</span>
 </h1>
 
-<p class="text-slate-500 uppercase tracking-widest mt-2">
+<p class="text-slate-500 uppercase tracking-[6px] mt-3">
 Ranking Consultores
 </p>
 
 </div>
 
 <select id="filtroCompetencia"
-class="bg-slate-900 rounded-xl p-4">
+class="bg-slate-900 border border-slate-700 rounded-2xl px-6 py-4 text-xl">
 
 </select>
 
 </div>
 
-<div id="ranking" class="space-y-4">
+<!-- TOP 3 -->
+
+<div id="top3"
+class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-10">
+
+</div>
+
+<!-- RANKING -->
+
+<div class="bg-slate-900 rounded-3xl p-4 md:p-8">
+
+<div class="flex justify-between items-center mb-8">
+
+<h2 class="text-3xl md:text-4xl font-black">
+RANKING GERAL
+</h2>
+
+<div class="text-slate-500 uppercase tracking-widest text-sm">
+Atualização em tempo real
+</div>
+
+</div>
+
+<div class="overflow-x-auto">
+
+<table class="w-full min-w-[1000px]">
+
+<thead>
+
+<tr class="border-b border-slate-800 text-slate-500 uppercase text-sm">
+
+<th class="text-left py-4">Pos</th>
+<th class="text-left">Consultor</th>
+<th class="text-left">Loja</th>
+<th class="text-center">REV</th>
+<th class="text-center">Serviços</th>
+<th class="text-center">Embelez.</th>
+<th class="text-center">Total</th>
+<th class="text-center">TKM</th>
+<th class="text-center">HGSI</th>
+<th class="text-center">Pesquisas</th>
+
+</tr>
+
+</thead>
+
+<tbody id="ranking-body">
+
+</tbody>
+
+</table>
+
+</div>
 
 </div>
 
@@ -52,8 +106,11 @@ collection,
 onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const ranking =
-document.getElementById('ranking');
+const rankingBody =
+document.getElementById('ranking-body');
+
+const top3 =
+document.getElementById('top3');
 
 const filtro =
 document.getElementById('filtroCompetencia');
@@ -75,9 +132,9 @@ const competencias =
 todosDados.map(c=>c.competencia)
 )];
 
-filtro.innerHTML = '';
-
 competencias.sort().reverse();
+
+filtro.innerHTML = '';
 
 competencias.forEach((comp)=>{
 
@@ -108,18 +165,21 @@ c=>c.competencia === competencia
 data.sort((a,b)=>{
 
 const tkmA =
-(a.serv_adic + a.emb_oficina)
-/ a.rev_und;
+a.rev_und > 0
+? (a.serv_adic + a.emb_oficina) / a.rev_und
+: 0;
 
 const tkmB =
-(b.serv_adic + b.emb_oficina)
-/ b.rev_und;
+b.rev_und > 0
+? (b.serv_adic + b.emb_oficina) / b.rev_und
+: 0;
 
 return tkmB - tkmA;
 
 });
 
-ranking.innerHTML = '';
+rankingBody.innerHTML = '';
+top3.innerHTML = '';
 
 data.forEach((c,i)=>{
 
@@ -131,85 +191,156 @@ c.rev_und > 0
 ? total / c.rev_und
 : 0;
 
-ranking.innerHTML += `
+const pesquisasPercent =
+c.meta_pesquisas > 0
+? ((c.pesquisas / c.meta_pesquisas) * 100).toFixed(0)
+: 0;
 
-<div class="bg-slate-900 rounded-2xl p-6">
+const hgsiColor =
+c.hgsi >= 970
+? 'text-green-400'
+: c.hgsi >= 960
+? 'text-yellow-400'
+: 'text-red-500';
 
-<div class="flex justify-between items-center">
+if(i < 3){
+
+const medalha =
+i === 0
+? '🥇'
+: i === 1
+? '🥈'
+: '🥉';
+
+const destaque =
+i === 0
+? 'border-yellow-400 scale-105'
+: 'border-slate-700';
+
+top3.innerHTML += `
+
+<div class="bg-slate-900 border-2 ${destaque}
+rounded-3xl p-8 flex flex-col justify-between">
 
 <div>
 
-<div class="text-3xl font-black">
-#${i + 1} ${c.name}
+<div class="text-6xl mb-4">
+${medalha}
 </div>
 
-<div class="text-slate-500 uppercase mt-2">
+<div class="text-4xl font-black uppercase break-words leading-tight">
+${c.name}
+</div>
+
+<div class="text-slate-500 uppercase tracking-widest mt-3 break-words">
 ${c.store}
 </div>
 
 </div>
 
-<div class="grid grid-cols-4 gap-4">
+<div class="grid grid-cols-2 gap-4 mt-8">
 
-<div class="bg-slate-950 rounded-xl p-4 text-center">
-
-<div class="text-slate-500 text-xs uppercase">
-REV
-</div>
-
-<div class="text-2xl font-black mt-2">
-${c.rev_und}
-</div>
-
-</div>
-
-<div class="bg-slate-950 rounded-xl p-4 text-center">
-
-<div class="text-slate-500 text-xs uppercase">
-TOTAL
-</div>
-
-<div class="text-2xl font-black text-blue-400 mt-2">
-R$ ${total.toFixed(0)}
-</div>
-
-</div>
-
-<div class="bg-slate-950 rounded-xl p-4 text-center">
+<div class="bg-slate-950 rounded-2xl p-4 text-center">
 
 <div class="text-slate-500 text-xs uppercase">
 TKM
 </div>
 
-<div class="text-2xl font-black text-green-400 mt-2">
+<div class="text-3xl font-black text-green-400 mt-2">
 R$ ${tkm.toFixed(0)}
 </div>
 
 </div>
 
-<div class="bg-slate-950 rounded-xl p-4 text-center">
+<div class="bg-slate-950 rounded-2xl p-4 text-center">
 
 <div class="text-slate-500 text-xs uppercase">
 HGSI
 </div>
 
-<div class="text-2xl font-black mt-2
-${c.hgsi >= 970
-? 'text-green-400'
-: c.hgsi >= 960
-? 'text-yellow-400'
-: 'text-red-500'}
-">
+<div class="text-3xl font-black mt-2 ${hgsiColor}">
 ${c.hgsi}
 </div>
 
 </div>
 
+<div class="bg-slate-950 rounded-2xl p-4 text-center">
+
+<div class="text-slate-500 text-xs uppercase">
+REV
+</div>
+
+<div class="text-3xl font-black mt-2">
+${c.rev_und}
+</div>
+
+</div>
+
+<div class="bg-slate-950 rounded-2xl p-4 text-center">
+
+<div class="text-slate-500 text-xs uppercase">
+Pesquisas
+</div>
+
+<div class="text-3xl font-black text-blue-400 mt-2">
+${pesquisasPercent}%
 </div>
 
 </div>
 
 </div>
+
+</div>
+
+`;
+
+}
+
+rankingBody.innerHTML += `
+
+<tr class="border-b border-slate-800 hover:bg-slate-800/40 transition-all">
+
+<td class="py-5 text-2xl font-black">
+#${i + 1}
+</td>
+
+<td class="font-bold uppercase break-words">
+${c.name}
+</td>
+
+<td class="text-slate-500 uppercase break-words">
+${c.store}
+</td>
+
+<td class="text-center">
+${c.rev_und}
+</td>
+
+<td class="text-center text-cyan-400 font-black">
+R$ ${c.serv_adic.toFixed(0)}
+</td>
+
+<td class="text-center text-pink-400 font-black">
+R$ ${c.emb_oficina.toFixed(0)}
+</td>
+
+<td class="text-center text-blue-400 font-black">
+R$ ${total.toFixed(0)}
+</td>
+
+<td class="text-center text-green-400 font-black">
+R$ ${tkm.toFixed(0)}
+</td>
+
+<td class="text-center font-black ${hgsiColor}">
+${c.hgsi}
+</td>
+
+<td class="text-center text-yellow-400 font-black">
+${pesquisasPercent}%
+</td>
+
+</tr>
 
 `;
 
