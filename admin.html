@@ -37,7 +37,7 @@ Gestão de Consultores
 <div class="bg-slate-900 rounded-3xl p-8 mb-10 border border-slate-800">
 
 <h2 class="text-3xl font-black mb-8">
-Cadastrar / Atualizar Consultor
+Cadastrar Resultado Mensal
 </h2>
 
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
@@ -77,7 +77,7 @@ class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none
 id="salvarBtn"
 class="bg-blue-600 hover:bg-blue-700 transition-all px-10 py-4 rounded-2xl text-2xl font-black">
 
-SALVAR
+SALVAR RESULTADO
 
 </button>
 
@@ -100,7 +100,7 @@ CANCELAR EDIÇÃO
 <div class="flex justify-between items-center mb-8">
 
 <h2 class="text-3xl font-black">
-Consultores Cadastrados
+Histórico de Resultados
 </h2>
 
 </div>
@@ -151,7 +151,10 @@ addDoc,
 onSnapshot,
 deleteDoc,
 doc,
-updateDoc
+updateDoc,
+query,
+where,
+getDocs
 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -202,10 +205,10 @@ async function salvar(){
 const dados = {
 
 name:
-campos.name.value,
+campos.name.value.trim(),
 
 store:
-campos.store.value,
+campos.store.value.trim(),
 
 competencia:
 campos.competencia.value,
@@ -230,6 +233,18 @@ Number(campos.meta_pesquisas.value)
 
 };
 
+if(
+!dados.name ||
+!dados.store ||
+!dados.competencia
+){
+
+alert('Preencha os campos obrigatórios.');
+
+return;
+
+}
+
 if(editandoId){
 
 await updateDoc(
@@ -237,18 +252,42 @@ doc(db,"consultores",editandoId),
 dados
 );
 
+alert('Resultado atualizado com sucesso.');
+
 editandoId = null;
 
-salvarBtn.innerText = 'SALVAR';
+salvarBtn.innerText =
+'SALVAR RESULTADO';
 
 cancelarBtn.classList.add('hidden');
 
 }else{
 
+const consulta = query(
+collection(db,"consultores"),
+where("name","==",dados.name),
+where("competencia","==",dados.competencia)
+);
+
+const existente =
+await getDocs(consulta);
+
+if(!existente.empty){
+
+alert(
+'Já existe resultado deste consultor nesta competência.'
+);
+
+return;
+
+}
+
 await addDoc(
 collection(db,"consultores"),
 dados
 );
+
+alert('Resultado salvo com sucesso.');
 
 }
 
@@ -270,7 +309,8 @@ cancelarBtn.addEventListener('click',()=>{
 
 editandoId = null;
 
-salvarBtn.innerText = 'SALVAR';
+salvarBtn.innerText =
+'SALVAR RESULTADO';
 
 cancelarBtn.classList.add('hidden');
 
@@ -419,7 +459,7 @@ campos.meta_pesquisas.value =
 consultor.meta_pesquisas;
 
 salvarBtn.innerText =
-'ATUALIZAR';
+'ATUALIZAR RESULTADO';
 
 cancelarBtn.classList.remove('hidden');
 
@@ -433,7 +473,7 @@ behavior:'smooth'
 window.excluirConsultor = async(id)=>{
 
 const confirmar =
-confirm('Deseja realmente excluir este consultor?');
+confirm('Deseja realmente excluir este resultado?');
 
 if(!confirmar) return;
 
