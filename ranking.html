@@ -6,145 +6,129 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<title>GP Performance</title>
+<title>Admin GP Performance</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 
-<style>
-
-body{
-background:
-radial-gradient(circle at top left,#07133a,#020617 55%);
-}
-
-.glow-gold{
-box-shadow:0 0 40px rgba(255,196,0,.35);
-}
-
-.glow-silver{
-box-shadow:0 0 35px rgba(255,255,255,.18);
-}
-
-.glow-bronze{
-box-shadow:0 0 35px rgba(255,132,0,.18);
-}
-
-</style>
-
 </head>
 
-<body class="text-white min-h-screen p-5 md:p-8">
+<body class="bg-[#020617] text-white min-h-screen p-6">
 
-<div class="max-w-[1800px] mx-auto">
+<div class="max-w-7xl mx-auto">
 
-<!-- TOPO -->
-
-<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-10">
+<div class="flex justify-between items-center mb-10">
 
 <div>
 
-<div class="flex items-center gap-4">
-
-<div class="w-5 h-5 bg-green-400 rounded-full"></div>
-
-<h1 class="text-5xl md:text-7xl font-black italic tracking-tight">
-GP <span class="text-blue-500">PERFORMANCE</span>
+<h1 class="text-5xl font-black italic">
+ADMIN <span class="text-blue-500">GP PERFORMANCE</span>
 </h1>
 
-</div>
-
-<img
-src="logo-linhares.png"
-class="mt-5 w-[320px] max-w-full"
-/>
-
-</div>
-
-<div class="flex flex-col md:flex-row gap-5">
-
-<select
-id="filtroCompetencia"
-class="bg-[#0f172a] border border-slate-700 rounded-2xl px-6 py-5 text-2xl outline-none min-w-[320px]"
->
-
-</select>
-
-<div class="bg-[#111827] border border-slate-700 rounded-3xl px-10 py-6 text-center min-w-[300px]">
-
-<div id="clock"
-class="text-6xl font-black">
-
-00:00:00
-
-</div>
-
-<div id="date"
-class="text-slate-400 text-2xl mt-2">
-
-00/00/0000
+<p class="text-slate-500 uppercase tracking-[5px] mt-2">
+Gestão de Consultores
+</p>
 
 </div>
 
 </div>
 
-</div>
+<!-- FORM -->
 
-</div>
+<div class="bg-slate-900 rounded-3xl p-8 mb-10 border border-slate-800">
 
-<!-- TOP 3 -->
-
-<div
-id="top3"
-class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-10"
->
-
-</div>
-
-<!-- RANKING -->
-
-<div class="bg-[#081226]/80 border border-slate-800 rounded-[30px] p-5 md:p-8 backdrop-blur">
-
-<div class="flex justify-between items-center mb-6">
-
-<h2 class="text-3xl md:text-5xl font-black">
-RANKING GERAL
+<h2 class="text-3xl font-black mb-8">
+Cadastrar / Atualizar Consultor
 </h2>
 
-<div class="flex items-center gap-3 text-slate-400 uppercase tracking-widest text-sm">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
 
-ATUALIZAÇÃO EM TEMPO REAL
+<input id="name" placeholder="Nome Consultor"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
 
-<div class="w-3 h-3 bg-green-400 rounded-full"></div>
+<input id="store" placeholder="Loja"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
+
+<input id="competencia" type="month"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
+
+<input id="rev_und" type="number" placeholder="REV"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
+
+<input id="serv_adic" type="number" placeholder="Serviços Adicionais"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
+
+<input id="emb_oficina" type="number" placeholder="Embelezamento"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
+
+<input id="hgsi" type="number" placeholder="HGSI"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
+
+<input id="pesquisas" type="number" placeholder="Pesquisas Realizadas"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
+
+<input id="meta_pesquisas" type="number" placeholder="Meta Pesquisas"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
 
 </div>
+
+<div class="flex gap-4 mt-8">
+
+<button
+id="salvarBtn"
+class="bg-blue-600 hover:bg-blue-700 transition-all px-10 py-4 rounded-2xl text-2xl font-black">
+
+SALVAR
+
+</button>
+
+<button
+id="cancelarBtn"
+class="bg-slate-700 hover:bg-slate-600 transition-all px-10 py-4 rounded-2xl text-2xl font-black hidden">
+
+CANCELAR EDIÇÃO
+
+</button>
+
+</div>
+
+</div>
+
+<!-- LISTA -->
+
+<div class="bg-slate-900 rounded-3xl p-8 border border-slate-800">
+
+<div class="flex justify-between items-center mb-8">
+
+<h2 class="text-3xl font-black">
+Consultores Cadastrados
+</h2>
 
 </div>
 
 <div class="overflow-x-auto">
 
-<table class="w-full min-w-[1300px]">
+<table class="w-full min-w-[1400px]">
 
 <thead>
 
 <tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
 
-<th class="text-left py-4">Pos</th>
-<th class="text-left">Nome</th>
-<th class="text-left">Sobrenome</th>
+<th class="text-left py-4">Consultor</th>
 <th class="text-left">Loja</th>
+<th class="text-left">Competência</th>
 <th class="text-center">REV</th>
 <th class="text-center">Serviços</th>
-<th class="text-center">Embelez.</th>
-<th class="text-center">Total</th>
-<th class="text-center">TKM</th>
+<th class="text-center">Embelezamento</th>
 <th class="text-center">HGSI</th>
 <th class="text-center">Pesquisas</th>
+<th class="text-center">Meta</th>
+<th class="text-center">Ações</th>
 
 </tr>
 
 </thead>
 
-<tbody id="ranking-body">
+<tbody id="listaConsultores">
 
 </tbody>
 
@@ -161,301 +145,307 @@ ATUALIZAÇÃO EM TEMPO REAL
 import { db } from './firebase-config.js';
 
 import {
+
 collection,
-onSnapshot
+addDoc,
+onSnapshot,
+deleteDoc,
+doc,
+updateDoc
+
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const top3 =
-document.getElementById('top3');
+const lista =
+document.getElementById('listaConsultores');
 
-const rankingBody =
-document.getElementById('ranking-body');
+const salvarBtn =
+document.getElementById('salvarBtn');
 
-const filtro =
-document.getElementById('filtroCompetencia');
+const cancelarBtn =
+document.getElementById('cancelarBtn');
 
-let todosDados = [];
+let editandoId = null;
 
-function atualizarRelogio(){
+const campos = {
 
-const agora = new Date();
+name:
+document.getElementById('name'),
 
-document.getElementById('clock').innerText =
-agora.toLocaleTimeString('pt-BR');
+store:
+document.getElementById('store'),
 
-document.getElementById('date').innerText =
-agora.toLocaleDateString('pt-BR');
+competencia:
+document.getElementById('competencia'),
+
+rev_und:
+document.getElementById('rev_und'),
+
+serv_adic:
+document.getElementById('serv_adic'),
+
+emb_oficina:
+document.getElementById('emb_oficina'),
+
+hgsi:
+document.getElementById('hgsi'),
+
+pesquisas:
+document.getElementById('pesquisas'),
+
+meta_pesquisas:
+document.getElementById('meta_pesquisas')
+
+};
+
+async function salvar(){
+
+const dados = {
+
+name:
+campos.name.value,
+
+store:
+campos.store.value,
+
+competencia:
+campos.competencia.value,
+
+rev_und:
+Number(campos.rev_und.value),
+
+serv_adic:
+Number(campos.serv_adic.value),
+
+emb_oficina:
+Number(campos.emb_oficina.value),
+
+hgsi:
+Number(campos.hgsi.value),
+
+pesquisas:
+Number(campos.pesquisas.value),
+
+meta_pesquisas:
+Number(campos.meta_pesquisas.value)
+
+};
+
+if(editandoId){
+
+await updateDoc(
+doc(db,"consultores",editandoId),
+dados
+);
+
+editandoId = null;
+
+salvarBtn.innerText = 'SALVAR';
+
+cancelarBtn.classList.add('hidden');
+
+}else{
+
+await addDoc(
+collection(db,"consultores"),
+dados
+);
 
 }
 
-setInterval(atualizarRelogio,1000);
+limparCampos();
 
-atualizarRelogio();
+}
+
+function limparCampos(){
+
+Object.values(campos).forEach(c=>{
+
+c.value = '';
+
+});
+
+}
+
+cancelarBtn.addEventListener('click',()=>{
+
+editandoId = null;
+
+salvarBtn.innerText = 'SALVAR';
+
+cancelarBtn.classList.add('hidden');
+
+limparCampos();
+
+});
+
+salvarBtn.addEventListener('click',salvar);
 
 onSnapshot(collection(db,"consultores"),(snapshot)=>{
 
-todosDados = [];
+lista.innerHTML = '';
 
-snapshot.forEach((doc)=>{
+const dados = [];
 
-todosDados.push(doc.data());
+snapshot.forEach((docu)=>{
 
-});
+dados.push({
 
-const competencias =
-[...new Set(
-todosDados.map(c=>c.competencia)
-)];
-
-competencias.sort().reverse();
-
-filtro.innerHTML = '';
-
-competencias.forEach((comp)=>{
-
-filtro.innerHTML += `
-<option value="${comp}">
-Competência: ${comp.replace('-','/')}
-</option>
-`;
+id:docu.id,
+...docu.data()
 
 });
 
-render();
+});
+
+dados.sort((a,b)=>{
+
+if(a.competencia > b.competencia) return -1;
+if(a.competencia < b.competencia) return 1;
+
+return a.name.localeCompare(b.name);
 
 });
 
-filtro.addEventListener('change',render);
+dados.forEach((c)=>{
 
-function render(){
+lista.innerHTML += `
 
-const competencia =
-filtro.value.replace('Competência: ','').replace('/','-');
+<tr class="border-b border-slate-800 hover:bg-slate-800/30 transition-all">
 
-const data =
-todosDados.filter(
-c=>c.competencia === competencia
-);
-
-data.sort((a,b)=>{
-
-const tkmA =
-a.rev_und > 0
-? (a.serv_adic + a.emb_oficina) / a.rev_und
-: 0;
-
-const tkmB =
-b.rev_und > 0
-? (b.serv_adic + b.emb_oficina) / b.rev_und
-: 0;
-
-return tkmB - tkmA;
-
-});
-
-top3.innerHTML = '';
-rankingBody.innerHTML = '';
-
-data.forEach((c,i)=>{
-
-const nomeCompleto =
-c.name.trim().split(' ');
-
-const nome =
-nomeCompleto[0] || '';
-
-const sobrenome =
-nomeCompleto.slice(1).join(' ') || '';
-
-const total =
-c.serv_adic + c.emb_oficina;
-
-const tkm =
-c.rev_und > 0
-? total / c.rev_und
-: 0;
-
-const pesquisasPercent =
-c.meta_pesquisas > 0
-? ((c.pesquisas / c.meta_pesquisas) * 100).toFixed(0)
-: 0;
-
-const hgsiColor =
-c.hgsi >= 970
-? 'text-green-400'
-: c.hgsi >= 960
-? 'text-yellow-400'
-: 'text-red-500';
-
-if(i < 3){
-
-const medalha =
-i === 0
-? '🥇'
-: i === 1
-? '🥈'
-: '🥉';
-
-const bg =
-i === 0
-? 'bg-gradient-to-br from-yellow-900/90 to-yellow-700/40 border-yellow-400 glow-gold'
-: i === 1
-? 'bg-gradient-to-br from-slate-400/40 to-slate-600/30 border-slate-300 glow-silver'
-: 'bg-gradient-to-br from-orange-900/80 to-orange-700/30 border-orange-400 glow-bronze';
-
-top3.innerHTML += `
-
-<div class="${bg} border rounded-[35px] p-8 flex flex-col justify-between min-h-[600px]">
-
-<div>
-
-<div class="flex justify-between items-start">
-
-<div>
-
-<div class="text-7xl">
-${medalha}
-</div>
-
-<div class="text-4xl mt-3 uppercase tracking-wide">
-${i+1}º LUGAR
-</div>
-
-</div>
-
-<div class="text-right">
-
-<div class="text-slate-300 uppercase text-3xl">
-TKM
-</div>
-
-<div class="text-7xl font-black mt-2">
-R$ ${tkm.toFixed(0)}
-</div>
-
-</div>
-
-</div>
-
-<div class="mt-12">
-
-<div class="text-6xl font-black uppercase leading-[1.0] break-words">
-${nome}
-</div>
-
-<div class="text-6xl font-black uppercase leading-[1.0] break-words">
-${sobrenome}
-</div>
-
-<div class="text-3xl uppercase text-slate-200 mt-5 break-words">
-${c.store}
-</div>
-
-</div>
-
-</div>
-
-<div class="grid grid-cols-3 gap-4 mt-10">
-
-<div class="bg-white/5 border border-white/10 rounded-3xl p-5 text-center">
-
-<div class="text-slate-400 uppercase text-xl">
-REV
-</div>
-
-<div class="text-5xl font-black mt-3">
-${c.rev_und}
-</div>
-
-</div>
-
-<div class="bg-white/5 border border-white/10 rounded-3xl p-5 text-center">
-
-<div class="text-slate-400 uppercase text-xl">
-HGSI
-</div>
-
-<div class="text-5xl font-black mt-3 ${hgsiColor}">
-${c.hgsi}
-</div>
-
-</div>
-
-<div class="bg-white/5 border border-white/10 rounded-3xl p-5 text-center">
-
-<div class="text-slate-400 uppercase text-xl">
-META
-</div>
-
-<div class="text-5xl font-black mt-3 text-red-400">
-${pesquisasPercent}%
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-`;
-
-}
-
-rankingBody.innerHTML += `
-
-<tr class="border-b border-slate-800 hover:bg-slate-800/20 transition-all">
-
-<td class="py-5 text-3xl font-black">
-${i+1}º
+<td class="py-5 font-black text-xl uppercase">
+${c.name}
 </td>
 
-<td class="text-2xl font-black uppercase">
-${nome}
-</td>
-
-<td class="text-2xl font-black uppercase">
-${sobrenome}
-</td>
-
-<td class="text-slate-400 uppercase text-xl">
+<td class="uppercase text-slate-400">
 ${c.store}
 </td>
 
-<td class="text-center text-2xl">
+<td class="uppercase text-blue-400 font-black">
+${c.competencia}
+</td>
+
+<td class="text-center">
 ${c.rev_und}
 </td>
 
-<td class="text-center text-cyan-400 font-black text-2xl">
+<td class="text-center text-cyan-400 font-black">
 R$ ${c.serv_adic.toLocaleString('pt-BR')}
 </td>
 
-<td class="text-center text-pink-400 font-black text-2xl">
+<td class="text-center text-pink-400 font-black">
 R$ ${c.emb_oficina.toLocaleString('pt-BR')}
 </td>
 
-<td class="text-center text-blue-400 font-black text-2xl">
-R$ ${total.toLocaleString('pt-BR')}
-</td>
+<td class="text-center font-black
+${c.hgsi >= 970
+? 'text-green-400'
+: c.hgsi >= 960
+? 'text-yellow-400'
+: 'text-red-500'}
+">
 
-<td class="text-center text-green-400 font-black text-2xl">
-R$ ${tkm.toFixed(0)}
-</td>
-
-<td class="text-center font-black text-2xl ${hgsiColor}">
 ${c.hgsi}
+
 </td>
 
-<td class="text-center text-yellow-400 font-black text-2xl">
-${pesquisasPercent}%
+<td class="text-center">
+${c.pesquisas}
+</td>
+
+<td class="text-center">
+${c.meta_pesquisas}
+</td>
+
+<td class="text-center">
+
+<div class="flex justify-center gap-3">
+
+<button
+class="bg-yellow-500 hover:bg-yellow-600 transition-all px-5 py-2 rounded-xl font-black"
+onclick="editarConsultor('${c.id}')">
+
+Editar
+
+</button>
+
+<button
+class="bg-red-600 hover:bg-red-700 transition-all px-5 py-2 rounded-xl font-black"
+onclick="excluirConsultor('${c.id}')">
+
+Excluir
+
+</button>
+
+</div>
+
 </td>
 
 </tr>
 
 `;
 
+window.editarConsultor = (id)=>{
+
+const consultor =
+dados.find(c=>c.id === id);
+
+editandoId = id;
+
+campos.name.value =
+consultor.name;
+
+campos.store.value =
+consultor.store;
+
+campos.competencia.value =
+consultor.competencia;
+
+campos.rev_und.value =
+consultor.rev_und;
+
+campos.serv_adic.value =
+consultor.serv_adic;
+
+campos.emb_oficina.value =
+consultor.emb_oficina;
+
+campos.hgsi.value =
+consultor.hgsi;
+
+campos.pesquisas.value =
+consultor.pesquisas;
+
+campos.meta_pesquisas.value =
+consultor.meta_pesquisas;
+
+salvarBtn.innerText =
+'ATUALIZAR';
+
+cancelarBtn.classList.remove('hidden');
+
+window.scrollTo({
+top:0,
+behavior:'smooth'
 });
 
-}
+};
+
+window.excluirConsultor = async(id)=>{
+
+const confirmar =
+confirm('Deseja realmente excluir este consultor?');
+
+if(!confirmar) return;
+
+await deleteDoc(
+doc(db,"consultores",id)
+);
+
+};
+
+});
+
+});
 
 </script>
 
