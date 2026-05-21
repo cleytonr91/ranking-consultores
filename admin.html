@@ -105,24 +105,24 @@ Consultores Cadastrados
 
 </div>
 
-<div class="overflow-x-auto">
+<div class="w-full">
 
-<table class="w-full min-w-[1400px]">
+<table class="w-full table-fixed">
 
 <thead>
 
 <tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
 
-<th class="text-left py-4">Consultor</th>
-<th class="text-left">Loja</th>
-<th class="text-left">Competência</th>
-<th class="text-center">REV</th>
-<th class="text-center">Serviços</th>
-<th class="text-center">Embelezamento</th>
-<th class="text-center">HGSI</th>
-<th class="text-center">Pesquisas</th>
-<th class="text-center">Meta</th>
-<th class="text-center">Ações</th>
+<th class="text-left py-4 w-[16%]">Consultor</th>
+<th class="text-left w-[14%]">Loja</th>
+<th class="text-left w-[10%]">Competência</th>
+<th class="text-center w-[6%]">REV</th>
+<th class="text-center w-[11%]">Serviços</th>
+<th class="text-center w-[11%]">Embelezamento</th>
+<th class="text-center w-[6%]">HGSI</th>
+<th class="text-center w-[7%]">Pesquisas</th>
+<th class="text-center w-[6%]">Meta</th>
+<th class="text-center w-[13%]">Ações</th>
 
 </tr>
 
@@ -312,11 +312,11 @@ lista.innerHTML += `
 
 <tr class="border-b border-slate-800 hover:bg-slate-800/30 transition-all">
 
-<td class="py-5 font-black text-xl uppercase">
+<td class="py-5 font-black text-lg uppercase break-words leading-tight pr-2">
 ${c.name}
 </td>
 
-<td class="uppercase text-slate-400">
+<td class="uppercase text-slate-400 break-words text-sm leading-tight pr-2">
 ${c.store}
 </td>
 
@@ -358,10 +358,10 @@ ${c.meta_pesquisas}
 
 <td class="text-center">
 
-<div class="flex justify-center gap-3">
+<div class="flex flex-col xl:flex-row justify-center gap-2">
 
 <button
-class="bg-yellow-500 hover:bg-yellow-600 transition-all px-5 py-2 rounded-xl font-black"
+class="bg-yellow-500 hover:bg-yellow-600 transition-all px-3 py-2 rounded-xl font-black text-sm"
 onclick="editarConsultor('${c.id}')">
 
 Editar
@@ -369,7 +369,7 @@ Editar
 </button>
 
 <button
-class="bg-red-600 hover:bg-red-700 transition-all px-5 py-2 rounded-xl font-black"
+class="bg-red-600 hover:bg-red-700 transition-all px-3 py-2 rounded-xl font-black text-sm"
 onclick="excluirConsultor('${c.id}')">
 
 Excluir
