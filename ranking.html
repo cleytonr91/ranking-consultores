@@ -6,142 +6,38 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>GP Performance Ranking</title>
+<title>Ranking GP Performance</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 
-<style>
-
-body{
-background:
-radial-gradient(circle at top, #111827 0%, #020617 50%);
-overflow-x: hidden;
-}
-
-.glass{
-background: rgba(255,255,255,0.05);
-backdrop-filter: blur(12px);
-border: 1px solid rgba(255,255,255,0.08);
-}
-
-.top1{
-background:
-linear-gradient(135deg,#3b2f00,#8b6b00);
-border:1px solid gold;
-box-shadow:0 0 40px rgba(255,215,0,0.25);
-}
-
-.top2{
-background:
-linear-gradient(135deg,#2d2d2d,#6b7280);
-border:1px solid silver;
-}
-
-.top3{
-background:
-linear-gradient(135deg,#3d2200,#8b4513);
-border:1px solid #cd7f32;
-}
-
-.animate-card{
-transition: all .4s ease;
-}
-
-.animate-card:hover{
-transform: translateY(-4px);
-}
-
-.pulse-live{
-animation:pulse 2s infinite;
-}
-
-@keyframes pulse{
-0%{opacity:1}
-50%{opacity:.4}
-100%{opacity:1}
-}
-
-</style>
-
 </head>
 
-<body class="text-white font-sans p-4 md:p-8">
+<body class="bg-slate-950 text-white p-6">
 
 <div class="max-w-7xl mx-auto">
-
-<!-- HEADER -->
-
-<div class="flex flex-col xl:flex-row justify-between items-center gap-6 mb-10">
-
-<div>
-
-<div class="flex items-center gap-4">
-
-<div class="w-4 h-4 rounded-full bg-green-400 pulse-live"></div>
-
-<h1 class="text-4xl md:text-6xl font-black italic tracking-tight">
-GP PERFORMANCE
-</h1>
-
-</div>
-
-<p class="text-slate-400 uppercase tracking-[6px] mt-2">
-Ranking em tempo real
-</p>
-
-</div>
-
-<div class="glass rounded-2xl px-6 py-4 text-center">
-
-<div id="clock" class="text-3xl md:text-5xl font-black"></div>
-
-<div id="date" class="text-slate-400 mt-1"></div>
-
-</div>
-
-</div>
-
-<!-- TOP 3 -->
-
-<div id="top3" class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-10">
-
-</div>
-
-<!-- RANKING -->
-
-<div class="glass rounded-3xl p-4 md:p-8">
 
 <div class="flex justify-between items-center mb-8">
 
 <div>
 
-<h2 class="text-2xl md:text-4xl font-black">
-RANKING GERAL
-</h2>
+<h1 class="text-5xl font-black italic">
+GP PERFORMANCE
+</h1>
 
-<p class="text-slate-500 uppercase tracking-widest mt-1">
-Performance consultores
+<p class="text-slate-500 uppercase tracking-widest mt-2">
+Ranking Consultores
 </p>
 
 </div>
 
-<div class="hidden md:block text-right">
+<select id="filtroCompetencia"
+class="bg-slate-900 rounded-xl p-4">
 
-<div class="text-slate-500 text-sm uppercase">
-Atualização
-</div>
-
-<div class="text-green-400 font-black">
-Tempo real
-</div>
+</select>
 
 </div>
 
-</div>
-
-<div class="space-y-4" id="ranking-list">
-
-</div>
+<div id="ranking" class="space-y-4">
 
 </div>
 
@@ -156,59 +52,74 @@ collection,
 onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const rankingList =
-document.getElementById('ranking-list');
+const ranking =
+document.getElementById('ranking');
 
-const top3 =
-document.getElementById('top3');
+const filtro =
+document.getElementById('filtroCompetencia');
 
-function updateClock(){
-
-const now = new Date();
-
-document.getElementById('clock').innerText =
-now.toLocaleTimeString('pt-BR');
-
-document.getElementById('date').innerText =
-now.toLocaleDateString('pt-BR');
-
-}
-
-setInterval(updateClock,1000);
-
-updateClock();
+let todosDados = [];
 
 onSnapshot(collection(db,"consultores"),(snapshot)=>{
 
-let data = [];
+todosDados = [];
 
 snapshot.forEach((doc)=>{
 
-data.push({
-id:doc.id,
-...doc.data()
-});
+todosDados.push(doc.data());
 
 });
+
+const competencias =
+[...new Set(
+todosDados.map(c=>c.competencia)
+)];
+
+filtro.innerHTML = '';
+
+competencias.sort().reverse();
+
+competencias.forEach((comp)=>{
+
+filtro.innerHTML += `
+<option value="${comp}">
+${comp}
+</option>
+`;
+
+});
+
+render();
+
+});
+
+filtro.addEventListener('change',render);
+
+function render(){
+
+const competencia =
+filtro.value;
+
+const data =
+todosDados.filter(
+c=>c.competencia === competencia
+);
 
 data.sort((a,b)=>{
 
 const tkmA =
-a.rev_und > 0
-? (a.serv_adic + a.emb_oficina) / a.rev_und
-: 0;
+(a.serv_adic + a.emb_oficina)
+/ a.rev_und;
 
 const tkmB =
-b.rev_und > 0
-? (b.serv_adic + b.emb_oficina) / b.rev_und
-: 0;
+(b.serv_adic + b.emb_oficina)
+/ b.rev_und;
 
 return tkmB - tkmA;
 
 });
 
-rankingList.innerHTML = '';
-top3.innerHTML = '';
+ranking.innerHTML = '';
 
 data.forEach((c,i)=>{
 
@@ -220,233 +131,76 @@ c.rev_und > 0
 ? total / c.rev_und
 : 0;
 
-const pesquisaPercent =
-c.meta_pesquisas > 0
-? ((c.pesquisas / c.meta_pesquisas) * 100)
-: 0;
+ranking.innerHTML += `
 
-let medalha = '';
-let topClass = '';
+<div class="bg-slate-900 rounded-2xl p-6">
 
-if(i === 0){
-medalha = '🥇';
-topClass = 'top1';
-}
-
-if(i === 1){
-medalha = '🥈';
-topClass = 'top2';
-}
-
-if(i === 2){
-medalha = '🥉';
-topClass = 'top3';
-}
-
-if(i < 3){
-
-top3.innerHTML += `
-
-<div class="${topClass} rounded-3xl p-8 animate-card">
-
-<div class="flex justify-between items-start mb-6">
+<div class="flex justify-between items-center">
 
 <div>
 
-<div class="text-6xl">
-${medalha}
+<div class="text-3xl font-black">
+#${i + 1} ${c.name}
 </div>
 
-<div class="text-slate-300 uppercase tracking-widest mt-2">
-${i + 1}º Lugar
-</div>
-
-</div>
-
-<div class="text-right">
-
-<div class="text-slate-300 text-sm">
-TKM
-</div>
-
-<div class="text-5xl font-black">
-R$ ${tkm.toFixed(0)}
-</div>
-
-</div>
-
-</div>
-
-<div class="mb-6">
-
-<div class="text-3xl md:text-4xl font-black uppercase">
-${c.name}
-</div>
-
-<div class="text-slate-300 uppercase tracking-wider mt-1">
+<div class="text-slate-500 uppercase mt-2">
 ${c.store}
 </div>
 
 </div>
 
-<div class="grid grid-cols-3 gap-4">
+<div class="grid grid-cols-4 gap-4">
 
-<div class="glass rounded-2xl p-4 text-center">
+<div class="bg-slate-950 rounded-xl p-4 text-center">
 
-<div class="text-slate-400 text-xs uppercase">
+<div class="text-slate-500 text-xs uppercase">
 REV
 </div>
 
-<div class="text-3xl font-black mt-1">
+<div class="text-2xl font-black mt-2">
 ${c.rev_und}
 </div>
 
 </div>
 
-<div class="glass rounded-2xl p-4 text-center">
-
-<div class="text-slate-400 text-xs uppercase">
-HGSI
-</div>
-
-<div class="text-3xl font-black mt-1
-${c.hgsi >= 970
-? 'text-green-400'
-: c.hgsi >= 960
-? 'text-yellow-400'
-: 'text-red-500'}
-">
-${c.hgsi}
-</div>
-
-</div>
-
-<div class="glass rounded-2xl p-4 text-center">
-
-<div class="text-slate-400 text-xs uppercase">
-META
-</div>
-
-<div class="text-3xl font-black mt-1
-${pesquisaPercent >= 100
-? 'text-green-400'
-: pesquisaPercent >= 85
-? 'text-yellow-400'
-: 'text-red-500'}
-">
-${pesquisaPercent.toFixed(0)}%
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-`;
-
-}
-
-rankingList.innerHTML += `
-
-<div class="glass rounded-2xl p-4 md:p-6 animate-card">
-
-<div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
-
-<div class="flex items-center gap-5">
-
-<div class="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center text-2xl font-black">
-#${i + 1}
-</div>
-
-<div>
-
-<div class="text-2xl font-black uppercase">
-${c.name}
-</div>
-
-<div class="text-slate-400 uppercase tracking-wider">
-${c.store}
-</div>
-
-</div>
-
-</div>
-
-<div class="grid grid-cols-2 md:grid-cols-5 gap-4 xl:w-[900px]">
-
-<div class="bg-slate-900 rounded-2xl p-4 text-center">
+<div class="bg-slate-950 rounded-xl p-4 text-center">
 
 <div class="text-slate-500 text-xs uppercase">
-Revisões
+TOTAL
 </div>
 
-<div class="text-3xl font-black mt-2">
-${c.rev_und}
-</div>
-
-</div>
-
-<div class="bg-slate-900 rounded-2xl p-4 text-center">
-
-<div class="text-slate-500 text-xs uppercase">
-Faturamento
-</div>
-
-<div class="text-3xl font-black text-blue-400 mt-2">
+<div class="text-2xl font-black text-blue-400 mt-2">
 R$ ${total.toFixed(0)}
 </div>
 
 </div>
 
-<div class="bg-slate-900 rounded-2xl p-4 text-center">
+<div class="bg-slate-950 rounded-xl p-4 text-center">
 
 <div class="text-slate-500 text-xs uppercase">
 TKM
 </div>
 
-<div class="text-3xl font-black text-green-400 mt-2">
+<div class="text-2xl font-black text-green-400 mt-2">
 R$ ${tkm.toFixed(0)}
 </div>
 
 </div>
 
-<div class="bg-slate-900 rounded-2xl p-4 text-center">
+<div class="bg-slate-950 rounded-xl p-4 text-center">
 
 <div class="text-slate-500 text-xs uppercase">
 HGSI
 </div>
 
-<div class="text-3xl font-black mt-2
+<div class="text-2xl font-black mt-2
 ${c.hgsi >= 970
 ? 'text-green-400'
 : c.hgsi >= 960
 ? 'text-yellow-400'
 : 'text-red-500'}
 ">
-
 ${c.hgsi}
-
-</div>
-
-</div>
-
-<div class="bg-slate-900 rounded-2xl p-4 text-center">
-
-<div class="text-slate-500 text-xs uppercase">
-Meta Pesq.
-</div>
-
-<div class="text-3xl font-black mt-2
-${pesquisaPercent >= 100
-? 'text-green-400'
-: pesquisaPercent >= 85
-? 'text-yellow-400'
-: 'text-red-500'}
-">
-
-${pesquisaPercent.toFixed(0)}%
-
 </div>
 
 </div>
@@ -461,7 +215,7 @@ ${pesquisaPercent.toFixed(0)}%
 
 });
 
-});
+}
 
 </script>
 
