@@ -36,9 +36,27 @@ Gestão de Consultores
 
 <div class="bg-slate-900 rounded-3xl p-8 mb-10 border border-slate-800">
 
-<h2 class="text-3xl font-black mb-8">
+<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-8">
+
+<h2 class="text-3xl font-black">
 Cadastrar Resultado Mensal
 </h2>
+
+<div class="flex items-center gap-4">
+
+<label class="text-slate-400 uppercase text-sm">
+Competência:
+</label>
+
+<input
+id="competenciaFiltro"
+type="month"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-3 text-lg outline-none"
+/>
+
+</div>
+
+</div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
 
@@ -97,11 +115,25 @@ CANCELAR EDIÇÃO
 
 <div class="bg-slate-900 rounded-3xl p-8 border border-slate-800">
 
-<div class="flex justify-between items-center mb-8">
+<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-5 mb-8">
 
 <h2 class="text-3xl font-black">
-Histórico de Resultados
+HISTÓRICO DE RESULTADOS
 </h2>
+
+<div class="flex items-center gap-4">
+
+<label class="text-slate-400 uppercase text-sm">
+Filtrar Mês:
+</label>
+
+<input
+id="mesFiltro"
+type="month"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-3 text-lg outline-none"
+/>
+
+</div>
 
 </div>
 
@@ -113,16 +145,17 @@ Histórico de Resultados
 
 <tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
 
-<th class="text-left py-4 w-[16%]">Consultor</th>
-<th class="text-left w-[14%]">Loja</th>
+<th class="text-left py-4 w-[15%]">Consultor</th>
+<th class="text-left w-[12%]">Loja</th>
 <th class="text-left w-[10%]">Competência</th>
 <th class="text-center w-[6%]">REV</th>
-<th class="text-center w-[11%]">Serviços</th>
-<th class="text-center w-[11%]">Embelezamento</th>
+<th class="text-center w-[10%]">Serviços</th>
+<th class="text-center w-[10%]">Embelez.</th>
 <th class="text-center w-[6%]">HGSI</th>
-<th class="text-center w-[7%]">Pesquisas</th>
+<th class="text-center w-[6%]">Pesq.</th>
 <th class="text-center w-[6%]">Meta</th>
-<th class="text-center w-[13%]">Ações</th>
+<th class="text-center w-[7%]">Status</th>
+<th class="text-center w-[12%]">Ações</th>
 
 </tr>
 
@@ -167,7 +200,12 @@ document.getElementById('salvarBtn');
 const cancelarBtn =
 document.getElementById('cancelarBtn');
 
+const mesFiltro =
+document.getElementById('mesFiltro');
+
 let editandoId = null;
+
+let todosDados = [];
 
 const campos = {
 
@@ -229,7 +267,9 @@ pesquisas:
 Number(campos.pesquisas.value),
 
 meta_pesquisas:
-Number(campos.meta_pesquisas.value)
+Number(campos.meta_pesquisas.value),
+
+ferias:false
 
 };
 
@@ -252,7 +292,7 @@ doc(db,"consultores",editandoId),
 dados
 );
 
-alert('Resultado atualizado com sucesso.');
+alert('Resultado atualizado.');
 
 editandoId = null;
 
@@ -275,7 +315,7 @@ await getDocs(consulta);
 if(!existente.empty){
 
 alert(
-'Já existe resultado deste consultor nesta competência.'
+'Este consultor já possui resultado nesta competência.'
 );
 
 return;
@@ -287,7 +327,7 @@ collection(db,"consultores"),
 dados
 );
 
-alert('Resultado salvo com sucesso.');
+alert('Resultado salvo.');
 
 }
 
@@ -320,15 +360,15 @@ limparCampos();
 
 salvarBtn.addEventListener('click',salvar);
 
+mesFiltro.addEventListener('change',renderizarTabela);
+
 onSnapshot(collection(db,"consultores"),(snapshot)=>{
 
-lista.innerHTML = '';
-
-const dados = [];
+todosDados = [];
 
 snapshot.forEach((docu)=>{
 
-dados.push({
+todosDados.push({
 
 id:docu.id,
 ...docu.data()
@@ -337,20 +377,45 @@ id:docu.id,
 
 });
 
-dados.sort((a,b)=>{
+const hoje = new Date();
 
-if(a.competencia > b.competencia) return -1;
-if(a.competencia < b.competencia) return 1;
+const mesAtual =
+`${hoje.getFullYear()}-${String(
+hoje.getMonth()+1
+).padStart(2,'0')}`;
+
+if(!mesFiltro.value){
+
+mesFiltro.value = mesAtual;
+
+}
+
+renderizarTabela();
+
+});
+
+function renderizarTabela(){
+
+lista.innerHTML = '';
+
+const dadosFiltrados =
+todosDados.filter(
+c=>c.competencia === mesFiltro.value
+);
+
+dadosFiltrados.sort((a,b)=>{
 
 return a.name.localeCompare(b.name);
 
 });
 
-dados.forEach((c)=>{
+dadosFiltrados.forEach((c)=>{
 
 lista.innerHTML += `
 
-<tr class="border-b border-slate-800 hover:bg-slate-800/30 transition-all">
+<tr class="border-b border-slate-800 hover:bg-slate-800/30 transition-all
+${c.ferias ? 'opacity-40' : ''}
+">
 
 <td class="py-5 font-black text-lg uppercase break-words leading-tight pr-2">
 ${c.name}
@@ -398,13 +463,33 @@ ${c.meta_pesquisas}
 
 <td class="text-center">
 
-<div class="flex flex-col xl:flex-row justify-center gap-2">
+${c.ferias
+? '<span class="text-yellow-400 font-black">FÉRIAS</span>'
+: '<span class="text-green-400 font-black">ATIVO</span>'
+}
+
+</td>
+
+<td class="text-center">
+
+<div class="flex flex-col gap-2">
 
 <button
 class="bg-yellow-500 hover:bg-yellow-600 transition-all px-3 py-2 rounded-xl font-black text-sm"
 onclick="editarConsultor('${c.id}')">
 
 Editar
+
+</button>
+
+<button
+class="${c.ferias
+? 'bg-green-600 hover:bg-green-700'
+: 'bg-orange-500 hover:bg-orange-600'}
+transition-all px-3 py-2 rounded-xl font-black text-sm"
+onclick="toggleFerias('${c.id}',${c.ferias})">
+
+${c.ferias ? 'Retornar' : 'Férias'}
 
 </button>
 
@@ -427,7 +512,7 @@ Excluir
 window.editarConsultor = (id)=>{
 
 const consultor =
-dados.find(c=>c.id === id);
+todosDados.find(c=>c.id === id);
 
 editandoId = id;
 
@@ -470,6 +555,17 @@ behavior:'smooth'
 
 };
 
+window.toggleFerias = async(id,status)=>{
+
+await updateDoc(
+doc(db,"consultores",id),
+{
+ferias:!status
+}
+);
+
+};
+
 window.excluirConsultor = async(id)=>{
 
 const confirmar =
@@ -485,7 +581,7 @@ doc(db,"consultores",id)
 
 });
 
-});
+}
 
 </script>
 
