@@ -3,53 +3,65 @@
 
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
 <title>Dashboard Gerencial</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
 
-<body class="bg-slate-950 text-white p-6">
+<body class="bg-[#020617] text-white min-h-screen p-6">
 
-<div class="max-w-7xl mx-auto">
+<div class="max-w-[1800px] mx-auto">
 
-<div class="flex flex-col xl:flex-row justify-between items-center gap-6 mb-8">
+<!-- TOPO -->
+
+<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-10">
 
 <div>
 
-<h1 class="text-5xl font-black italic">
+<h1 class="text-5xl md:text-7xl font-black italic">
 DASHBOARD <span class="text-blue-500">GERENCIAL</span>
 </h1>
 
-<p class="text-slate-500 uppercase tracking-widest mt-2">
-GP Performance
+<p class="text-slate-400 uppercase tracking-[6px] mt-3">
+BI EXECUTIVO GP PERFORMANCE
 </p>
 
 </div>
 
-<select id="filtroCompetencia"
-class="bg-slate-900 rounded-xl p-4">
+<div class="flex items-center gap-4">
 
-</select>
+<label class="text-slate-400 uppercase text-sm">
+Competência:
+</label>
+
+<input
+id="mesFiltro"
+type="month"
+class="bg-slate-800 border-2 border-blue-500 rounded-2xl p-4 text-xl text-white font-bold outline-none shadow-lg shadow-blue-500/20"
+/>
 
 </div>
 
-<!-- KPI -->
+</div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+<!-- CARDS -->
 
-<div class="bg-slate-900 rounded-2xl p-6">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-5 mb-10">
 
-<div class="text-slate-500 uppercase text-sm">
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+
+<div class="text-slate-400 uppercase text-sm">
 Faturamento Total
 </div>
 
-<div id="fat-total"
-class="text-4xl font-black text-green-400 mt-2">
+<div id="fatTotal"
+class="text-4xl font-black mt-3 text-cyan-400">
 
 R$ 0
 
@@ -57,29 +69,14 @@ R$ 0
 
 </div>
 
-<div class="bg-slate-900 rounded-2xl p-6">
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
 
-<div class="text-slate-500 uppercase text-sm">
-Total Revisões
-</div>
-
-<div id="rev-total"
-class="text-4xl font-black text-blue-400 mt-2">
-
-0
-
-</div>
-
-</div>
-
-<div class="bg-slate-900 rounded-2xl p-6">
-
-<div class="text-slate-500 uppercase text-sm">
+<div class="text-slate-400 uppercase text-sm">
 TKM Médio
 </div>
 
-<div id="tkm-medio"
-class="text-4xl font-black text-yellow-400 mt-2">
+<div id="tkmMedio"
+class="text-4xl font-black mt-3 text-green-400">
 
 R$ 0
 
@@ -87,16 +84,46 @@ R$ 0
 
 </div>
 
-<div class="bg-slate-900 rounded-2xl p-6">
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
 
-<div class="text-slate-500 uppercase text-sm">
+<div class="text-slate-400 uppercase text-sm">
 HGSI Médio
 </div>
 
-<div id="hgsi-medio"
-class="text-4xl font-black text-purple-400 mt-2">
+<div id="hgsiMedio"
+class="text-4xl font-black mt-3">
 
 0
+
+</div>
+
+</div>
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+
+<div class="text-slate-400 uppercase text-sm">
+Pesquisas
+</div>
+
+<div id="pesquisasTotal"
+class="text-4xl font-black mt-3 text-yellow-400">
+
+0
+
+</div>
+
+</div>
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+
+<div class="text-slate-400 uppercase text-sm">
+Crescimento
+</div>
+
+<div id="crescimento"
+class="text-4xl font-black mt-3">
+
+0%
 
 </div>
 
@@ -106,25 +133,25 @@ class="text-4xl font-black text-purple-400 mt-2">
 
 <!-- GRAFICOS -->
 
-<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-10">
 
-<div class="bg-slate-900 rounded-2xl p-6">
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-8">
 
-<h2 class="text-2xl font-black mb-4">
-TKM POR CONSULTOR
+<h2 class="text-2xl font-black mb-6">
+Evolução Mensal
 </h2>
 
-<canvas id="tkmChart"></canvas>
+<canvas id="graficoEvolucao"></canvas>
 
 </div>
 
-<div class="bg-slate-900 rounded-2xl p-6">
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-8">
 
-<h2 class="text-2xl font-black mb-4">
-HGSI POR CONSULTOR
+<h2 class="text-2xl font-black mb-6">
+Serviços x Embelezamento
 </h2>
 
-<canvas id="hgsiChart"></canvas>
+<canvas id="graficoCategorias"></canvas>
 
 </div>
 
@@ -132,42 +159,52 @@ HGSI POR CONSULTOR
 
 <!-- LOJAS -->
 
-<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 mb-10">
 
-<div class="bg-slate-900 rounded-2xl p-6">
-
-<h2 class="text-2xl font-black mb-6">
-SERVIÇOS POR LOJA
+<h2 class="text-3xl font-black mb-8">
+Performance por Loja
 </h2>
 
-<canvas id="lojasChart"></canvas>
+<div class="overflow-x-auto">
+
+<table class="w-full">
+
+<thead>
+
+<tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
+
+<th class="text-left py-4">Loja</th>
+<th class="text-center">Quant. Revisões</th>
+<th class="text-center">Serviços</th>
+<th class="text-center">Embelezamento</th>
+<th class="text-center">Faturamento</th>
+<th class="text-center">TKM Serviços</th>
+<th class="text-center">TKM Embel.</th>
+<th class="text-center">HGSI Médio</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tabelaLojas">
+
+</tbody>
+
+</table>
 
 </div>
 
-<div class="bg-slate-900 rounded-2xl p-6">
+</div>
 
-<h2 class="text-2xl font-black mb-6">
-PARTICIPAÇÃO LOJAS
+<!-- GRAFICO LOJAS -->
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-8">
+
+<h2 class="text-3xl font-black mb-8">
+Comparativo Entre Lojas
 </h2>
 
-<canvas id="participacaoChart"></canvas>
-
-</div>
-
-</div>
-
-<!-- PERFORMANCE -->
-
-<div class="bg-slate-900 rounded-2xl p-6 mb-8">
-
-<h2 class="text-3xl font-black mb-6">
-PERFORMANCE POR LOJA
-</h2>
-
-<div id="lojas-performance"
-class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-
-</div>
+<canvas id="graficoLojas"></canvas>
 
 </div>
 
@@ -178,102 +215,32 @@ class="grid grid-cols-1 xl:grid-cols-2 gap-6">
 import { db } from './firebase-config.js';
 
 import {
+
 collection,
 onSnapshot
+
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const filtro =
-document.getElementById('filtroCompetencia');
+const mesFiltro =
+document.getElementById('mesFiltro');
+
+const tabela =
+document.getElementById('tabelaLojas');
 
 let todosDados = [];
 
-const fatTotal =
-document.getElementById('fat-total');
+let chartEvolucao;
+let chartCategorias;
+let chartLojas;
 
-const revTotal =
-document.getElementById('rev-total');
+const hoje = new Date();
 
-const tkmMedio =
-document.getElementById('tkm-medio');
+mesFiltro.value =
+`${hoje.getFullYear()}-${String(
+hoje.getMonth()+1
+).padStart(2,'0')}`;
 
-const hgsiMedio =
-document.getElementById('hgsi-medio');
-
-const lojasPerformance =
-document.getElementById('lojas-performance');
-
-const tkmChart = new Chart(
-document.getElementById('tkmChart'),
-{
-type:'bar',
-data:{
-labels:[],
-datasets:[{
-label:'TKM',
-data:[],
-backgroundColor:'#22c55e'
-}]
-}
-}
-);
-
-const hgsiChart = new Chart(
-document.getElementById('hgsiChart'),
-{
-type:'bar',
-data:{
-labels:[],
-datasets:[{
-label:'HGSI',
-data:[],
-backgroundColor:'#eab308'
-}]
-}
-}
-);
-
-const lojasChart = new Chart(
-document.getElementById('lojasChart'),
-{
-type:'bar',
-data:{
-labels:[],
-datasets:[
-{
-label:'Serviços',
-data:[],
-backgroundColor:'#3b82f6'
-},
-{
-label:'Embelezamento',
-data:[],
-backgroundColor:'#8b5cf6'
-}
-]
-}
-}
-);
-
-const participacaoChart = new Chart(
-document.getElementById('participacaoChart'),
-{
-type:'doughnut',
-data:{
-labels:[],
-datasets:[{
-data:[],
-backgroundColor:[
-'#3b82f6',
-'#22c55e',
-'#eab308',
-'#ef4444',
-'#8b5cf6',
-'#06b6d4'
-]
-}]
-}
-}
-);
+mesFiltro.addEventListener('change',renderizar);
 
 onSnapshot(collection(db,"consultores"),(snapshot)=>{
 
@@ -285,286 +252,306 @@ todosDados.push(doc.data());
 
 });
 
-const competencias =
-[...new Set(
-todosDados.map(c=>c.competencia)
-)];
-
-filtro.innerHTML = '';
-
-competencias.sort().reverse();
-
-competencias.forEach((comp)=>{
-
-filtro.innerHTML += `
-<option value="${comp}">
-${comp}
-</option>
-`;
+renderizar();
 
 });
 
-render();
-
-});
-
-filtro.addEventListener('change',render);
-
-function render(){
+function renderizar(){
 
 const competencia =
-filtro.value;
+mesFiltro.value;
 
-const data =
-todosDados.filter(
-c=>c.competencia === competencia
+const ativos =
+todosDados.filter(c=>
+
+c.competencia === competencia &&
+!c.ferias
+
 );
 
-let faturamento = 0;
-let revisoes = 0;
-let hgsiTotal = 0;
-let tkmTotal = 0;
+const totalFat =
+ativos.reduce((acc,c)=>
 
-let labels = [];
-let tkmData = [];
-let hgsiData = [];
+acc + c.serv_adic + c.emb_oficina
+
+,0);
+
+const totalRev =
+ativos.reduce((acc,c)=>
+
+acc + c.rev_und
+
+,0);
+
+const totalServ =
+ativos.reduce((acc,c)=>
+
+acc + c.serv_adic
+
+,0);
+
+const totalEmb =
+ativos.reduce((acc,c)=>
+
+acc + c.emb_oficina
+
+,0);
+
+const totalPesq =
+ativos.reduce((acc,c)=>
+
+acc + c.pesquisas
+
+,0);
+
+const mediaHgsi =
+ativos.length > 0
+? ativos.reduce((acc,c)=>acc + c.hgsi,0) / ativos.length
+: 0;
+
+const tkm =
+totalRev > 0
+? totalFat / totalRev
+: 0;
+
+document.getElementById('fatTotal').innerText =
+`R$ ${totalFat.toLocaleString('pt-BR')}`;
+
+document.getElementById('tkmMedio').innerText =
+`R$ ${tkm.toFixed(0)}`;
+
+const hgsiCard =
+document.getElementById('hgsiMedio');
+
+hgsiCard.innerText =
+mediaHgsi.toFixed(0);
+
+if(mediaHgsi >= 970){
+
+hgsiCard.className =
+'text-4xl font-black mt-3 text-green-400';
+
+}else if(mediaHgsi >= 960){
+
+hgsiCard.className =
+'text-4xl font-black mt-3 text-yellow-400';
+
+}else{
+
+hgsiCard.className =
+'text-4xl font-black mt-3 text-red-500';
+
+}
+
+document.getElementById('pesquisasTotal').innerText =
+totalPesq;
+
+const meses =
+[...new Set(
+todosDados.map(c=>c.competencia)
+)].sort();
+
+const evolucao =
+meses.map(m=>{
+
+const dadosMes =
+todosDados.filter(c=>
+
+c.competencia === m &&
+!c.ferias
+
+);
+
+return dadosMes.reduce((acc,c)=>
+
+acc + c.serv_adic + c.emb_oficina
+
+,0);
+
+});
+
+const atual =
+evolucao[evolucao.length -1] || 0;
+
+const anterior =
+evolucao[evolucao.length -2] || 0;
+
+const crescimento =
+anterior > 0
+? ((atual - anterior) / anterior) * 100
+: 0;
+
+const crescimentoEl =
+document.getElementById('crescimento');
+
+crescimentoEl.innerText =
+`${crescimento.toFixed(1)}%`;
+
+if(crescimento >= 0){
+
+crescimentoEl.className =
+'text-4xl font-black mt-3 text-green-400';
+
+}else{
+
+crescimentoEl.className =
+'text-4xl font-black mt-3 text-red-500';
+
+}
 
 const lojas = {};
 
-data.forEach((c)=>{
-
-const total =
-c.serv_adic + c.emb_oficina;
-
-const tkm =
-c.rev_und > 0
-? total / c.rev_und
-: 0;
-
-faturamento += total;
-revisoes += c.rev_und;
-hgsiTotal += c.hgsi;
-tkmTotal += tkm;
-
-labels.push(c.name);
-tkmData.push(tkm.toFixed(0));
-hgsiData.push(c.hgsi);
+ativos.forEach(c=>{
 
 if(!lojas[c.store]){
 
 lojas[c.store] = {
-servicos:0,
-embelezamento:0,
-revisoes:0,
-hgsi:0,
-consultores:0
+
+rev:0,
+serv:0,
+emb:0,
+hgsi:[],
+pesq:0
+
 };
 
 }
 
-lojas[c.store].servicos += c.serv_adic;
-lojas[c.store].embelezamento += c.emb_oficina;
-lojas[c.store].revisoes += c.rev_und;
-lojas[c.store].hgsi += c.hgsi;
-lojas[c.store].consultores++;
+lojas[c.store].rev += c.rev_und;
+lojas[c.store].serv += c.serv_adic;
+lojas[c.store].emb += c.emb_oficina;
+lojas[c.store].hgsi.push(c.hgsi);
+lojas[c.store].pesq += c.pesquisas;
 
 });
 
-const mediaTkm =
-data.length > 0
-? tkmTotal / data.length
-: 0;
+tabela.innerHTML = '';
 
-const mediaHgsi =
-data.length > 0
-? hgsiTotal / data.length
-: 0;
+Object.entries(lojas).forEach(([loja,d])=>{
 
-fatTotal.innerText =
-`R$ ${faturamento.toLocaleString('pt-BR')}`;
+const total =
+d.serv + d.emb;
 
-revTotal.innerText =
-revisoes;
-
-tkmMedio.innerText =
-`R$ ${mediaTkm.toFixed(0)}`;
-
-hgsiMedio.innerText =
-mediaHgsi.toFixed(0);
-
-tkmChart.data.labels = labels;
-tkmChart.data.datasets[0].data = tkmData;
-tkmChart.update();
-
-hgsiChart.data.labels = labels;
-hgsiChart.data.datasets[0].data = hgsiData;
-hgsiChart.update();
-
-const lojasLabels = [];
-const servicosData = [];
-const embData = [];
-const participacao = [];
-
-lojasPerformance.innerHTML = '';
-
-Object.entries(lojas).forEach(([loja,dados])=>{
-
-const totalLoja =
-dados.servicos + dados.embelezamento;
-
-const tkmServicos =
-dados.revisoes > 0
-? dados.servicos / dados.revisoes
+const tkmServ =
+d.rev > 0
+? d.serv / d.rev
 : 0;
 
 const tkmEmb =
-dados.revisoes > 0
-? dados.embelezamento / dados.revisoes
-: 0;
-
-const tkmGeral =
-dados.revisoes > 0
-? totalLoja / dados.revisoes
+d.rev > 0
+? d.emb / d.rev
 : 0;
 
 const hgsi =
-dados.consultores > 0
-? dados.hgsi / dados.consultores
-: 0;
+d.hgsi.reduce((a,b)=>a+b,0)
+/ d.hgsi.length;
 
-lojasLabels.push(loja);
-servicosData.push(dados.servicos);
-embData.push(dados.embelezamento);
-participacao.push(totalLoja);
+tabela.innerHTML += `
 
-lojasPerformance.innerHTML += `
+<tr class="border-b border-slate-800">
 
-<div class="bg-slate-950 rounded-2xl p-6">
-
-<div class="flex justify-between items-center mb-6">
-
-<div>
-
-<div class="text-3xl font-black uppercase">
+<td class="py-5 font-black uppercase">
 ${loja}
-</div>
+</td>
 
-<div class="text-slate-500 uppercase tracking-widest mt-1">
-Performance Geral
-</div>
+<td class="text-center">
+${d.rev}
+</td>
 
-</div>
+<td class="text-center text-cyan-400 font-black">
+R$ ${d.serv.toLocaleString('pt-BR')}
+</td>
 
-<div>
+<td class="text-center text-pink-400 font-black">
+R$ ${d.emb.toLocaleString('pt-BR')}
+</td>
 
-<div class="text-slate-500 text-sm">
-TKM Geral
-</div>
+<td class="text-center text-blue-400 font-black">
+R$ ${total.toLocaleString('pt-BR')}
+</td>
 
-<div class="text-4xl font-black text-green-400">
-R$ ${tkmGeral.toFixed(0)}
-</div>
+<td class="text-center text-green-400 font-black">
+R$ ${tkmServ.toFixed(0)}
+</td>
 
-</div>
-
-</div>
-
-<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-
-<div class="bg-slate-900 rounded-xl p-4">
-
-<div class="text-slate-500 text-xs uppercase">
-Serviços
-</div>
-
-<div class="text-3xl font-black text-blue-400 mt-2">
-R$ ${dados.servicos.toFixed(0)}
-</div>
-
-</div>
-
-<div class="bg-slate-900 rounded-xl p-4">
-
-<div class="text-slate-500 text-xs uppercase">
-Embelezamento
-</div>
-
-<div class="text-3xl font-black text-purple-400 mt-2">
-R$ ${dados.embelezamento.toFixed(0)}
-</div>
-
-</div>
-
-<div class="bg-slate-900 rounded-xl p-4">
-
-<div class="text-slate-500 text-xs uppercase">
-Revisões
-</div>
-
-<div class="text-3xl font-black mt-2">
-${dados.revisoes}
-</div>
-
-</div>
-
-<div class="bg-slate-900 rounded-xl p-4">
-
-<div class="text-slate-500 text-xs uppercase">
-TKM Serviços
-</div>
-
-<div class="text-3xl font-black text-cyan-400 mt-2">
-R$ ${tkmServicos.toFixed(0)}
-</div>
-
-</div>
-
-<div class="bg-slate-900 rounded-xl p-4">
-
-<div class="text-slate-500 text-xs uppercase">
-TKM Emb.
-</div>
-
-<div class="text-3xl font-black text-pink-400 mt-2">
+<td class="text-center text-yellow-400 font-black">
 R$ ${tkmEmb.toFixed(0)}
-</div>
+</td>
 
-</div>
-
-<div class="bg-slate-900 rounded-xl p-4">
-
-<div class="text-slate-500 text-xs uppercase">
-HGSI Médio
-</div>
-
-<div class="text-3xl font-black mt-2
+<td class="text-center font-black
 ${hgsi >= 970
 ? 'text-green-400'
 : hgsi >= 960
 ? 'text-yellow-400'
 : 'text-red-500'}
 ">
+
 ${hgsi.toFixed(0)}
-</div>
 
-</div>
+</td>
 
-</div>
-
-</div>
+</tr>
 
 `;
 
 });
 
-lojasChart.data.labels = lojasLabels;
-lojasChart.data.datasets[0].data = servicosData;
-lojasChart.data.datasets[1].data = embData;
-lojasChart.update();
+if(chartEvolucao) chartEvolucao.destroy();
 
-participacaoChart.data.labels = lojasLabels;
-participacaoChart.data.datasets[0].data = participacao;
-participacaoChart.update();
+chartEvolucao =
+new Chart(
+document.getElementById('graficoEvolucao'),
+{
+type:'line',
+data:{
+labels:meses,
+datasets:[{
+label:'Faturamento',
+data:evolucao,
+borderWidth:3,
+tension:0.3
+}]
+}
+}
+);
+
+if(chartCategorias) chartCategorias.destroy();
+
+chartCategorias =
+new Chart(
+document.getElementById('graficoCategorias'),
+{
+type:'bar',
+data:{
+labels:['Serviços','Embelezamento'],
+datasets:[{
+label:'Valores',
+data:[totalServ,totalEmb],
+borderWidth:1
+}]
+}
+}
+);
+
+if(chartLojas) chartLojas.destroy();
+
+chartLojas =
+new Chart(
+document.getElementById('graficoLojas'),
+{
+type:'bar',
+data:{
+labels:Object.keys(lojas),
+datasets:[{
+label:'Faturamento',
+data:Object.values(lojas).map(
+l=>l.serv + l.emb
+),
+borderWidth:1
+}]
+}
+}
+);
 
 }
 
