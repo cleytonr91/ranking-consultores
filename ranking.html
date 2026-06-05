@@ -1,649 +1,111 @@
-<!DOCTYPE html> <html lang="pt-br"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0"/> <title>RANKING CONSULTORES</title> <script src="https://cdn.tailwindcss.com"></script> <style> body{ background: radial-gradient(circle at top left,#07133a,#020617 55%); } .glow-gold{ box-shadow:0 0 40px rgba(255,196,0,.35); } .glow-silver{ box-shadow:0 0 35px rgba(255,255,255,.18); } .glow-bronze{ box-shadow:0 0 35px rgba(255,132,0,.18); } </style> </head> <body class="text-white min-h-screen p-5 md:p-8"> <div class="max-w-[1800px] mx-auto"> <!-- TOPO --> <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-10"> <div> <div class="flex items-center gap-4"> <div class="w-5 h-5 bg-green-400 rounded-full"></div> <h1 class="text-5xl md:text-7xl font-black italic tracking-tight"> RANKING <span class="text-blue-500">CONSULTORES</span> </h1> </div> <img src="logo-linhares.png" class="mt-5 w-[320px] max-w-full" /> </div> <div class="flex flex-col md:flex-row gap-5"> <select id="filtroCompetencia" class="bg-[#0f172a] border border-slate-700 rounded-2xl px-6 py-5 text-2xl outline-none min-w-[320px]" > </select> <div class="bg-[#111827] border border-slate-700 rounded-3xl px-10 py-6 text-center min-w-[300px]"> <div id="clock" class="text-6xl font-black"> 00:00:00 </div> <div id="date" class="text-slate-400 text-2xl mt-2"> 00/00/0000 </div> </div> </div> </div> <!-- TOP 3 --> <div id="top3" class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-10" > </div> <!-- RANKING --> <div class="bg-[#081226]/80 border border-slate-800 rounded-[30px] p-5 md:p-8 backdrop-blur"> <div class="flex justify-between items-center mb-6"> <h2 class="text-3xl md:text-5xl font-black"> RANKING GERAL </h2> <div class="flex items-center gap-3 text-slate-400 uppercase tracking-widest text-sm"> ATUALIZAÇÃO EM TEMPO REAL <div class="w-3 h-3 bg-green-400 rounded-full"></div> </div> </div> <div class="overflow-x-auto"> <table class="w-full min-w-[1300px]"> <thead> <tr class="border-b border-slate-800 text-slate-400 uppercase text-sm"> <th class="text-left py-4">Pos</th> <th class="text-left">Nome</th> <th class="text-left">Sobrenome</th> <th class="text-left">Loja</th> <th class="text-center">REV</th> <th class="text-center">Serviços</th> <th class="text-center">Embelez.</th> <th class="text-center">Total</th> <th class="text-center">TKM</th> <th class="text-center">HGSI</th> <th class="text-center">Pesquisas</th> </tr> </thead> <tbody id="ranking-body"> </tbody> </table> </div> </div> <!-- GANHADORES DA CAMPANHA --> <div class="mt-12 bg-[#081226]/80 border border-slate-800 rounded-[30px] p-8 backdrop-blur"> <h2 class="text-4xl md:text-5xl font-black text-center mb-10"> 🏆 GANHADORES DA CAMPANHA </h2> <div class="grid grid-cols-1 md:grid-cols-2 gap-8"> <!-- SEMANA 1 --> <div class="bg-gradient-to-br from-yellow-900/90 to-yellow-700/40 border border-yellow-400 rounded-[30px] p-6"> <div class="text-center mb-6"> <div class="text-3xl font-black"> SEMANA 1 </div> <div class="text-slate-300"> 01 a 06 </div> </div> <div class="grid grid-cols-3 gap-3 text-center"> <div> <div class="text-5xl">🥇</div> <div class="font-black mt-2">A DEFINIR</div> <div class="text-slate-300 text-sm">LOJA</div> </div> <div> <div class="text-5xl">🥈</div> <div class="font-black mt-2">A DEFINIR</div> <div class="text-slate-300 text-sm">LOJA</div> </div> <div> <div class="text-5xl">🥉</div> <div class="font-black mt-2">A DEFINIR</div> <div class="text-slate-300 text-sm">LOJA</div> </div> </div> </div> <!-- SEMANA 2 --> <div class="bg-slate-800 border border-slate-700 rounded-[30px] p-6"> <div class="text-center mb-6"> <div class="text-3xl font-black"> SEMANA 2 </div> <div class="text-slate-300"> 08 a 13 </div> </div> <div class="grid grid-cols-3 gap-3 text-center"> <div> <div class="text-5xl">🥇</div> <div class="font-black mt-2">A DEFINIR</div> <div class="text-slate-300 text-sm">LOJA</div> </div> <div> <div class="text-5xl">🥈</div> <div class="font-black mt-2">A DEFINIR</div> <div class="text-slate-300 text-sm">LOJA</div> </div> <div> <div class="text-5xl">🥉</div> <div class="font-black mt-2">A DEFINIR</div> <div class="text-slate-300 text-sm">LOJA</div> </div> </div> </div> <!-- SEMANA 3 --> <div class="bg-slate-800 border border-slate-700 rounded-[30px] p-6"> <div class="text-center mb-6"> <div class="text-3xl font-black"> SEMANA 3 </div> <div class="text-slate-300"> 15 a 20 </div> </div> <div class="grid grid-cols-3 gap-3 text-center"> <div> <div class="text-5xl">🥇</div> <div class="font-black mt-2">A DEFINIR</div> <div class="text-slate-300 text-sm">LOJA</div> </div> <div> <div class="text-5xl">🥈</div> <div class="font-black mt-2">A DEFINIR</div> <div class="text-slate-300 text-sm">LOJA</div> </div> <div> <div class="text-5xl">🥉</div> <div class="font-black mt-2">A DEFINIR</div> <div class="text-slate-300 text-sm">LOJA</div> </div> </div> </div> <!-- SEMANA 4 --> <div class="bg-slate-800 border border-slate-700 rounded-[30px] p-6"> <div class="text-center mb-6"> <div class="text-3xl font-black"> SEMANA 4 </div> <div class="text-slate-300"> 22 a 30 </div> </div> <div class="grid grid-cols-3 gap-3 text-center"> <div> <div class="text-5xl">🥇</div> <div class="font-black mt-2">A DEFINIR</div> <div class="text-slate-300 text-sm">LOJA</div> </div> <div> <div class="text-5xl">🥈</div> <div class="font-black mt-2">A DEFINIR</div> <div class="text-slate-300 text-sm">LOJA</div> </div> <div> <div class="text-5xl">🥉</div> <div class="font-black mt-2">A DEFINIR</div> <div class="text-slate-300 text-sm">LOJA</div> </div> </div> </div> </div> </div> <script type="module"> import { db } from './firebase-config.js'; import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"; const top3 = document.getElementById('top3'); const rankingBody = document.getElementById('ranking-body'); const filtro = document.getElementById('filtroCompetencia'); let todosDados = []; function atualizarRelogio(){ const agora = new Date(); document.getElementById('clock').innerText = agora.toLocaleTimeString('pt-BR'); document.getElementById('date').innerText = agora.toLocaleDateString('pt-BR'); } setInterval(atualizarRelogio,1000); atualizarRelogio(); onSnapshot(collection(db,"consultores"),(snapshot)=>{ todosDados = []; snapshot.forEach((doc)=>{ todosDados.push(doc.data()); }); const competencias = [...new Set( todosDados.map(c=>c.competencia) )]; competencias.sort().reverse(); filtro.innerHTML = ''; competencias.forEach((comp)=>{ filtro.innerHTML += <option value="${comp}"> Competência: ${comp.replace('-','/')} </option> ; }); render(); }); filtro.addEventListener('change',render); function render(){ const competencia = filtro.value.replace('Competência: ','').replace('/','-'); const data = todosDados.filter( c=>c.competencia === competencia ); data.sort((a,b)=>{ const tkmA = a.rev_und > 0 ? (a.serv_adic + a.emb_oficina) / a.rev_und : 0; const tkmB = b.rev_und > 0 ? (b.serv_adic + b.emb_oficina) / b.rev_und : 0; return tkmB - tkmA; }); top3.innerHTML = ''; rankingBody.innerHTML = ''; data.forEach((c,i)=>{ const nomeCompleto = c.name.trim().split(' '); const nome = nomeCompleto[0] || ''; const sobrenome = nomeCompleto.slice(1).join(' ') || ''; const total = c.serv_adic + c.emb_oficina; const tkm = c.rev_und > 0 ? total / c.rev_und : 0; const pesquisasPercent = c.meta_pesquisas > 0 ? ((c.pesquisas / c.meta_pesquisas) * 100).toFixed(0) : 0; const hgsiColor = c.hgsi >= 970 ? 'text-green-400' : c.hgsi >= 960 ? 'text-yellow-400' : 'text-red-500'; if(i < 3){ const medalha = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'; const bg = i === 0 ? 'bg-gradient-to-br from-yellow-900/90 to-yellow-700/40 border-yellow-400 glow-gold' : i === 1 ? 'bg-gradient-to-br from-slate-400/40 to-slate-600/30 border-slate-300 glow-silver' : 'bg-gradient-to-br from-orange-900/80 to-orange-700/30 border-orange-400 glow-bronze'; top3.innerHTML += <div class="${bg} border rounded-[35px] p-8 flex flex-col justify-between min-h-[600px]"> <div> <div class="flex justify-between items-start"> <div> <div class="text-7xl"> ${medalha} </div> <div class="text-4xl mt-3 uppercase tracking-wide"> ${i+1}º LUGAR </div> </div> <div class="text-right"> <div class="text-slate-300 uppercase text-3xl"> TKM </div> <div class="text-7xl font-black mt-2"> R$ ${tkm.toFixed(0)} </div> </div> </div> <div class="mt-12"> <div class="text-6xl font-black uppercase leading-[1.0] break-words"> ${nome} </div> <div class="text-6xl font-black uppercase leading-[1.0] break-words"> ${sobrenome} </div> <div class="text-3xl uppercase text-slate-200 mt-5 break-words"> ${c.store} </div> </div> </div> <div class="grid grid-cols-3 gap-4 mt-10"> <div class="bg-white/5 border border-white/10 rounded-3xl p-5 text-center"> <div class="text-slate-400 uppercase text-xl"> REV </div> <div class="text-5xl font-black mt-3"> ${c.rev_und} </div> </div> <div class="bg-white/5 border border-white/10 rounded-3xl p-5 text-center"> <div class="text-slate-400 uppercase text-xl"> HGSI </div> <div class="text-5xl font-black mt-3 ${hgsiColor}"> ${c.hgsi} </div> </div> <div class="bg-white/5 border border-white/10 rounded-3xl p-5 text-center"> <div class="text-slate-400 uppercase text-xl"> META </div> <div class="text-5xl font-black mt-3 text-red-400"> ${pesquisasPercent}% </div> </div> </div> </div> ; } rankingBody.innerHTML += <tr class="border-b border-slate-800 hover:bg-slate-800/20 transition-all"> <td class="py-5 text-3xl font-black"> ${i+1}º </td> <td class="text-2xl font-black uppercase"> ${nome} </td> <td class="text-2xl font-black uppercase"> ${sobrenome} </td> <td class="text-slate-400 uppercase text-xl"> ${c.store} </td> <td class="text-center text-2xl"> ${c.rev_und} </td> <td class="text-center text-cyan-400 font-black text-2xl"> R$ ${c.serv_adic.toLocaleString('pt-BR')} </td> <td class="text-center text-pink-400 font-black text-2xl"> R$ ${c.emb_oficina.toLocaleString('pt-BR')} </td> <td class="text-center text-blue-400 font-black text-2xl"> R$ ${total.toLocaleString('pt-BR')} </td> <td class="text-center text-green-400 font-black text-2xl"> R$ ${tkm.toFixed(0)} </td> <td class="text-center font-black text-2xl ${hgsiColor}"> ${c.hgsi} </td> <td class="text-center text-yellow-400 font-black text-2xl"> ${pesquisasPercent}% </td> </tr> ; }); } </script> </body> </html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
-
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
 <title>RANKING CONSULTORES</title>
-
 <script src="https://cdn.tailwindcss.com"></script>
-
 <style>
-
 body{
-background:
-radial-gradient(circle at top left,#07133a,#020617 55%);
+background: radial-gradient(circle at top left,#07133a,#020617 55%);
 }
-
-.glow-gold{
-box-shadow:0 0 40px rgba(255,196,0,.35);
-}
-
-.glow-silver{
-box-shadow:0 0 35px rgba(255,255,255,.18);
-}
-
-.glow-bronze{
-box-shadow:0 0 35px rgba(255,132,0,.18);
-}
-
+.glow-gold{box-shadow:0 0 40px rgba(255,196,0,.35);}
+.glow-silver{box-shadow:0 0 35px rgba(255,255,255,.18);}
+.glow-bronze{box-shadow:0 0 35px rgba(255,132,0,.18);}
 </style>
-
 </head>
-
 <body class="text-white min-h-screen p-5 md:p-8">
-
 <div class="max-w-[1800px] mx-auto">
-
-<!-- TOPO -->
-
 <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-10">
-
 <div>
-
 <div class="flex items-center gap-4">
-
 <div class="w-5 h-5 bg-green-400 rounded-full"></div>
-
 <h1 class="text-5xl md:text-7xl font-black italic tracking-tight">
 RANKING <span class="text-blue-500">CONSULTORES</span>
 </h1>
-
 </div>
-
-<img
-src="logo-linhares.png"
-class="mt-5 w-[320px] max-w-full"
-/>
-
 </div>
-
 <div class="flex flex-col md:flex-row gap-5">
-
-<select
-id="filtroCompetencia"
-class="bg-[#0f172a] border border-slate-700 rounded-2xl px-6 py-5 text-2xl outline-none min-w-[320px]"
->
-
-</select>
-
+<select id="filtroCompetencia" class="bg-[#0f172a] border border-slate-700 rounded-2xl px-6 py-5 text-2xl outline-none min-w-[320px]"></select>
 <div class="bg-[#111827] border border-slate-700 rounded-3xl px-10 py-6 text-center min-w-[300px]">
-
-<div id="clock"
-class="text-6xl font-black">
-
-00:00:00
-
+<div id="clock" class="text-6xl font-black">00:00:00</div>
+<div id="date" class="text-slate-400 text-2xl mt-2">00/00/0000</div>
 </div>
-
-<div id="date"
-class="text-slate-400 text-2xl mt-2">
-
-00/00/0000
-
 </div>
-
 </div>
-
-</div>
-
-</div>
-
-<!-- TOP 3 -->
-
-<div
-id="top3"
-class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-10"
->
-
-</div>
-
-<!-- RANKING -->
-
+<div id="top3" class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-10"></div>
 <div class="bg-[#081226]/80 border border-slate-800 rounded-[30px] p-5 md:p-8 backdrop-blur">
-
 <div class="flex justify-between items-center mb-6">
-
-<h2 class="text-3xl md:text-5xl font-black">
-RANKING GERAL
-</h2>
-
+<h2 class="text-3xl md:text-5xl font-black">RANKING GERAL</h2>
 <div class="flex items-center gap-3 text-slate-400 uppercase tracking-widest text-sm">
-
-ATUALIZAÇÃO EM TEMPO REAL
-
-<div class="w-3 h-3 bg-green-400 rounded-full"></div>
-
+ATUALIZAÇÃO EM TEMPO REAL <div class="w-3 h-3 bg-green-400 rounded-full"></div>
 </div>
-
 </div>
-
 <div class="overflow-x-auto">
-
 <table class="w-full min-w-[1300px]">
-
 <thead>
-
 <tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
-
-<th class="text-left py-4">Pos</th>
-<th class="text-left">Nome</th>
-<th class="text-left">Sobrenome</th>
-<th class="text-left">Loja</th>
-<th class="text-center">REV</th>
-<th class="text-center">Serviços</th>
-<th class="text-center">Embelez.</th>
-<th class="text-center">Total</th>
-<th class="text-center">TKM</th>
-<th class="text-center">HGSI</th>
-<th class="text-center">Pesquisas</th>
-
+<th class="text-left py-4">Pos</th><th class="text-left">Nome</th><th class="text-left">Sobrenome</th><th class="text-left">Loja</th><th class="text-center">REV</th><th class="text-center">Serviços</th><th class="text-center">Embelez.</th><th class="text-center">Total</th><th class="text-center">TKM</th><th class="text-center">HGSI</th><th class="text-center">Pesquisas</th>
 </tr>
-
 </thead>
-
-<tbody id="ranking-body">
-
-</tbody>
-
+<tbody id="ranking-body"></tbody>
 </table>
-
 </div>
-
 </div>
-
-<!-- GANHADORES DA CAMPANHA -->
-
-<div class="mt-12 bg-[#081226]/80 border border-slate-800 rounded-[30px] p-8 backdrop-blur">
-
-<h2 class="text-4xl md:text-5xl font-black text-center mb-10">
-🏆 GANHADORES DA CAMPANHA
-</h2>
-
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-<!-- SEMANA 1 -->
-
-<div class="bg-gradient-to-br from-yellow-900/90 to-yellow-700/40 border border-yellow-400 rounded-[30px] p-6">
-
-<div class="text-center mb-6">
-
-<div class="text-3xl font-black">
-SEMANA 1
 </div>
-
-<div class="text-slate-300">
-01 a 06
-</div>
-
-</div>
-
-<div class="grid grid-cols-3 gap-3 text-center">
-
-<div>
-<div class="text-5xl">🥇</div>
-<div class="font-black mt-2">A DEFINIR</div>
-<div class="text-slate-300 text-sm">LOJA</div>
-</div>
-
-<div>
-<div class="text-5xl">🥈</div>
-<div class="font-black mt-2">A DEFINIR</div>
-<div class="text-slate-300 text-sm">LOJA</div>
-</div>
-
-<div>
-<div class="text-5xl">🥉</div>
-<div class="font-black mt-2">A DEFINIR</div>
-<div class="text-slate-300 text-sm">LOJA</div>
-</div>
-
-</div>
-
-</div>
-
-<!-- SEMANA 2 -->
-
-<div class="bg-slate-800 border border-slate-700 rounded-[30px] p-6">
-
-<div class="text-center mb-6">
-
-<div class="text-3xl font-black">
-SEMANA 2
-</div>
-
-<div class="text-slate-300">
-08 a 13
-</div>
-
-</div>
-
-<div class="grid grid-cols-3 gap-3 text-center">
-
-<div>
-<div class="text-5xl">🥇</div>
-<div class="font-black mt-2">A DEFINIR</div>
-<div class="text-slate-300 text-sm">LOJA</div>
-</div>
-
-<div>
-<div class="text-5xl">🥈</div>
-<div class="font-black mt-2">A DEFINIR</div>
-<div class="text-slate-300 text-sm">LOJA</div>
-</div>
-
-<div>
-<div class="text-5xl">🥉</div>
-<div class="font-black mt-2">A DEFINIR</div>
-<div class="text-slate-300 text-sm">LOJA</div>
-</div>
-
-</div>
-
-</div>
-
-<!-- SEMANA 3 -->
-
-<div class="bg-slate-800 border border-slate-700 rounded-[30px] p-6">
-
-<div class="text-center mb-6">
-
-<div class="text-3xl font-black">
-SEMANA 3
-</div>
-
-<div class="text-slate-300">
-15 a 20
-</div>
-
-</div>
-
-<div class="grid grid-cols-3 gap-3 text-center">
-
-<div>
-<div class="text-5xl">🥇</div>
-<div class="font-black mt-2">A DEFINIR</div>
-<div class="text-slate-300 text-sm">LOJA</div>
-</div>
-
-<div>
-<div class="text-5xl">🥈</div>
-<div class="font-black mt-2">A DEFINIR</div>
-<div class="text-slate-300 text-sm">LOJA</div>
-</div>
-
-<div>
-<div class="text-5xl">🥉</div>
-<div class="font-black mt-2">A DEFINIR</div>
-<div class="text-slate-300 text-sm">LOJA</div>
-</div>
-
-</div>
-
-</div>
-
-<!-- SEMANA 4 -->
-
-<div class="bg-slate-800 border border-slate-700 rounded-[30px] p-6">
-
-<div class="text-center mb-6">
-
-<div class="text-3xl font-black">
-SEMANA 4
-</div>
-
-<div class="text-slate-300">
-22 a 30
-</div>
-
-</div>
-
-<div class="grid grid-cols-3 gap-3 text-center">
-
-<div>
-<div class="text-5xl">🥇</div>
-<div class="font-black mt-2">A DEFINIR</div>
-<div class="text-slate-300 text-sm">LOJA</div>
-</div>
-
-<div>
-<div class="text-5xl">🥈</div>
-<div class="font-black mt-2">A DEFINIR</div>
-<div class="text-slate-300 text-sm">LOJA</div>
-</div>
-
-<div>
-<div class="text-5xl">🥉</div>
-<div class="font-black mt-2">A DEFINIR</div>
-<div class="text-slate-300 text-sm">LOJA</div>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 <script type="module">
-
 import { db } from './firebase-config.js';
-
-import {
-collection,
-onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const top3 =
-document.getElementById('top3');
-
-const rankingBody =
-document.getElementById('ranking-body');
-
-const filtro =
-document.getElementById('filtroCompetencia');
-
+import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const top3 = document.getElementById('top3');
+const rankingBody = document.getElementById('ranking-body');
+const filtro = document.getElementById('filtroCompetencia');
 let todosDados = [];
-
 function atualizarRelogio(){
-
 const agora = new Date();
-
-document.getElementById('clock').innerText =
-agora.toLocaleTimeString('pt-BR');
-
-document.getElementById('date').innerText =
-agora.toLocaleDateString('pt-BR');
-
+document.getElementById('clock').innerText = agora.toLocaleTimeString('pt-BR');
+document.getElementById('date').innerText = agora.toLocaleDateString('pt-BR');
 }
-
-setInterval(atualizarRelogio,1000);
-
+setInterval(atualizarRelogio, 1000);
 atualizarRelogio();
-
-onSnapshot(collection(db,"consultores"),(snapshot)=>{
-
+onSnapshot(collection(db, "consultores"), (snapshot) => {
 todosDados = [];
-
-snapshot.forEach((doc)=>{
-
-todosDados.push(doc.data());
-
-});
-
-const competencias =
-[...new Set(
-todosDados.map(c=>c.competencia)
-)];
-
-competencias.sort().reverse();
-
+snapshot.forEach((doc) => { todosDados.push(doc.data()); });
+const competencias = [...new Set(todosDados.map(c => c.competencia))].sort().reverse();
 filtro.innerHTML = '';
-
-competencias.forEach((comp)=>{
-
-filtro.innerHTML += `
-<option value="${comp}">
-Competência: ${comp.replace('-','/')}
-</option>
-`;
-
+competencias.forEach((comp) => {
+filtro.innerHTML += `<option value="${comp}">Competência: ${comp.replace('-', '/')}</option>`;
 });
-
 render();
-
 });
-
-filtro.addEventListener('change',render);
-
+filtro.addEventListener('change', render);
 function render(){
-
-const competencia =
-filtro.value.replace('Competência: ','').replace('/','-');
-
-const data =
-todosDados.filter(
-c=>c.competencia === competencia
-);
-
-data.sort((a,b)=>{
-
-const tkmA =
-a.rev_und > 0
-? (a.serv_adic + a.emb_oficina) / a.rev_und
-: 0;
-
-const tkmB =
-b.rev_und > 0
-? (b.serv_adic + b.emb_oficina) / b.rev_und
-: 0;
-
+const competencia = filtro.value;
+if (!competencia) return;
+const data = todosDados.filter(c => c.competencia === competencia);
+data.sort((a, b) => {
+const tkmA = a.rev_und > 0 ? (a.serv_adic + a.emb_oficina) / a.rev_und : 0;
+const tkmB = b.rev_und > 0 ? (b.serv_adic + b.emb_oficina) / b.rev_und : 0;
 return tkmB - tkmA;
-
 });
-
 top3.innerHTML = '';
 rankingBody.innerHTML = '';
-
-data.forEach((c,i)=>{
-
-const nomeCompleto =
-c.name.trim().split(' ');
-
-const nome =
-nomeCompleto[0] || '';
-
-const sobrenome =
-nomeCompleto.slice(1).join(' ') || '';
-
-const total =
-c.serv_adic + c.emb_oficina;
-
-const tkm =
-c.rev_und > 0
-? total / c.rev_und
-: 0;
-
-const pesquisasPercent =
-c.meta_pesquisas > 0
-? (c.pesquisas / c.meta_pesquisas) * 100
-: 0;
-
-const metaColor =
-pesquisasPercent >= 100
-? 'text-green-400'
-: pesquisasPercent >= 90
-? 'text-yellow-400'
-: 'text-red-500';
-
-const hgsiColor =
-c.hgsi >= 970
-? 'text-green-400'
-: c.hgsi >= 960
-? 'text-yellow-400'
-: 'text-red-500';
-
-const metaColor =
-pesquisasPercent >= 100
-? 'text-green-400'
-: pesquisasPercent >= 90
-? 'text-yellow-400'
-: 'text-red-500';
+data.forEach((c, i) => {
+const nomeCompleto = (c.name || '').trim().split(' ');
+const nome = nomeCompleto[0] || '';
+const sobrenome = nomeCompleto.slice(1).join(' ') || '';
+const total = (c.serv_adic || 0) + (c.emb_oficina || 0);
+const tkm = c.rev_und > 0 ? total / c.rev_und : 0;
+const pesquisasPercent = c.meta_pesquisas > 0 ? ((c.pesquisas || 0) / c.meta_pesquisas) * 100 : 0;
+const metaColor = pesquisasPercent >= 100 ? 'text-green-400' : pesquisasPercent >= 90 ? 'text-yellow-400' : 'text-red-500';
+const hgsiColor = (c.hgsi || 0) >= 970 ? 'text-green-400' : (c.hgsi || 0) >= 960 ? 'text-yellow-400' : 'text-red-500';
 if(i < 3){
-
-const medalha =
-i === 0
-? '🥇'
-: i === 1
-? '🥈'
-: '🥉';
-
-const bg =
-i === 0
-? 'bg-gradient-to-br from-yellow-900/90 to-yellow-700/40 border-yellow-400 glow-gold'
-: i === 1
-? 'bg-gradient-to-br from-slate-400/40 to-slate-600/30 border-slate-300 glow-silver'
-: 'bg-gradient-to-br from-orange-900/80 to-orange-700/30 border-orange-400 glow-bronze';
-
-top3.innerHTML += `
-
-<div class="${bg} border rounded-[35px] p-8 flex flex-col justify-between min-h-[600px]">
-
-<div>
-
-<div class="flex justify-between items-start">
-
-<div>
-
-<div class="text-7xl">
-${medalha}
-</div>
-
-<div class="text-4xl mt-3 uppercase tracking-wide">
-${i+1}º LUGAR
-</div>
-
-</div>
-
-<div class="text-right">
-
-<div class="text-slate-300 uppercase text-3xl">
-TKM
-</div>
-
-<div class="text-7xl font-black mt-2">
-R$ ${tkm.toFixed(0)}
-</div>
-
-</div>
-
-</div>
-
-<div class="mt-12">
-
-<div class="text-6xl font-black uppercase leading-[1.0] break-words">
-${nome}
-</div>
-
-<div class="text-6xl font-black uppercase leading-[1.0] break-words">
-${sobrenome}
-</div>
-
-<div class="text-3xl uppercase text-slate-200 mt-5 break-words">
-${c.store}
-</div>
-
-</div>
-
-</div>
-
-<div class="grid grid-cols-3 gap-4 mt-10">
-
-<div class="bg-white/5 border border-white/10 rounded-3xl p-5 text-center">
-
-<div class="text-slate-400 uppercase text-xl">
-REV
-</div>
-
-<div class="text-5xl font-black mt-3">
-${c.rev_und}
-</div>
-
-</div>
-
-<div class="bg-white/5 border border-white/10 rounded-3xl p-5 text-center">
-
-<div class="text-slate-400 uppercase text-xl">
-HGSI
-</div>
-
-<div class="text-5xl font-black mt-3 ${hgsiColor}">
-${c.hgsi}
-</div>
-
-</div>
-
-<div class="bg-white/5 border border-white/10 rounded-3xl p-5 text-center">
-
-<div class="text-slate-400 uppercase text-xl">
-META
-</div>
-
-<div class="text-5xl font-black mt-3 ${metaColor}">
-${pesquisasPercent}%
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-`;
-
+const medalha = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉';
+const bg = i === 0 ? 'bg-gradient-to-br from-yellow-900/90 to-yellow-700/40 border-yellow-400 glow-gold' : i === 1 ? 'bg-gradient-to-br from-slate-400/40 to-slate-600/30 border-slate-300 glow-silver' : 'bg-gradient-to-br from-orange-900/80 to-orange-700/30 border-orange-400 glow-bronze';
+top3.innerHTML += `<div class="${bg} border rounded-[35px] p-8 flex flex-col justify-between min-h-[600px]"><div><div class="flex justify-between items-start"><div><div class="text-7xl">${medalha}</div><div class="text-4xl mt-3 uppercase tracking-wide">${i+1}º LUGAR</div></div><div class="text-right"><div class="text-slate-300 uppercase text-3xl">TKM</div><div class="text-7xl font-black mt-2">R$ ${tkm.toFixed(0)}</div></div></div><div class="mt-12"><div class="text-6xl font-black uppercase leading-[1.0] break-words">${nome}</div><div class="text-6xl font-black uppercase leading-[1.0] break-words">${sobrenome}</div><div class="text-3xl uppercase text-slate-200 mt-5 break-words">${c.store || ''}</div></div></div><div class="grid grid-cols-3 gap-4 mt-10"><div class="bg-white/5 border border-white/10 rounded-3xl p-5 text-center"><div class="text-slate-400 uppercase text-xl">REV</div><div class="text-5xl font-black mt-3">${c.rev_und || 0}</div></div><div class="bg-white/5 border border-white/10 rounded-3xl p-5 text-center"><div class="text-slate-400 uppercase text-xl">HGSI</div><div class="text-5xl font-black mt-3 ${hgsiColor}">${c.hgsi || 0}</div></div><div class="bg-white/5 border border-white/10 rounded-3xl p-5 text-center"><div class="text-slate-400 uppercase text-xl">META</div><div class="text-5xl font-black mt-3 ${metaColor}">${pesquisasPercent.toFixed(0)}%</div></div></div></div>`;
 }
-
-rankingBody.innerHTML += `
-
-<tr class="border-b border-slate-800 hover:bg-slate-800/20 transition-all">
-
-<td class="py-5 text-3xl font-black">
-${i+1}º
-</td>
-
-<td class="text-2xl font-black uppercase">
-${nome}
-</td>
-
-<td class="text-2xl font-black uppercase">
-${sobrenome}
-</td>
-
-<td class="text-slate-400 uppercase text-xl">
-${c.store}
-</td>
-
-<td class="text-center text-2xl">
-${c.rev_und}
-</td>
-
-<td class="text-center text-cyan-400 font-black text-2xl">
-R$ ${c.serv_adic.toLocaleString('pt-BR')}
-</td>
-
-<td class="text-center text-pink-400 font-black text-2xl">
-R$ ${c.emb_oficina.toLocaleString('pt-BR')}
-</td>
-
-<td class="text-center text-blue-400 font-black text-2xl">
-R$ ${total.toLocaleString('pt-BR')}
-</td>
-
-<td class="text-center text-green-400 font-black text-2xl">
-R$ ${tkm.toFixed(0)}
-</td>
-
-<td class="text-center font-black text-2xl ${hgsiColor}">
-${c.hgsi}
-</td>
-
-<td class="text-center font-black text-2xl ${metaColor}">
-${pesquisasPercent}%
-</td>
-
-</tr>
-
-`;
-
+rankingBody.innerHTML += `<tr class="border-b border-slate-800 hover:bg-slate-800/20 transition-all"><td class="py-5 text-3xl font-black">${i+1}º</td><td class="text-2xl font-black uppercase">${nome}</td><td class="text-2xl font-black uppercase">${sobrenome}</td><td class="text-slate-400 uppercase text-xl">${c.store || ''}</td><td class="text-center text-2xl">${c.rev_und || 0}</td><td class="text-center text-cyan-400 font-black text-2xl">R$ ${(c.serv_adic || 0).toLocaleString('pt-BR')}</td><td class="text-center text-pink-400 font-black text-2xl">R$ ${(c.emb_oficina || 0).toLocaleString('pt-BR')}</td><td class="text-center text-blue-400 font-black text-2xl">R$ ${total.toLocaleString('pt-BR')}</td><td class="text-center text-green-400 font-black text-2xl">R$ ${tkm.toFixed(0)}</td><td class="text-center font-black text-2xl ${hgsiColor}">${c.hgsi || 0}</td><td class="text-center font-black text-2xl ${metaColor}">${pesquisasPercent.toFixed(0)}%</td></tr>`;
 });
-
 }
-
 </script>
-
 </body>
-
 </html>
