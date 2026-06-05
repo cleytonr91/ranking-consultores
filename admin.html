@@ -223,7 +223,9 @@ doc,
 updateDoc,
 query,
 where,
-getDocs
+getDocs,
+setDoc,
+getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const lista =
 document.getElementById('listaConsultores');
@@ -233,6 +235,11 @@ const cancelarBtn =
 document.getElementById('cancelarBtn');
 const mesFiltro =
 document.getElementById('mesFiltro');
+const salvarCampanhaBtn =
+document.getElementById('salvarCampanha');
+
+const competenciaCampanha =
+document.getElementById('competenciaCampanha');
 let editandoId = null;
 let todosDados = [];
 const campos = {
@@ -330,7 +337,72 @@ cancelarBtn.classList.add('hidden');
 limparCampos();
 });
 salvarBtn.addEventListener('click',salvar);
+salvarCampanhaBtn.addEventListener(
+'click',
+salvarCampanha
+);
 mesFiltro.addEventListener('change',renderizarTabela);
+salvarBtn.addEventListener('click',salvar);
+
+mesFiltro.addEventListener('change',renderizarTabela);
+
+/* ===========================
+   CAMPANHA SEMANAL
+=========================== */
+
+async function salvarCampanha(){
+
+const competencia =
+competenciaCampanha.value;
+
+if(!competencia){
+
+alert('Selecione a competência da campanha.');
+
+return;
+
+}
+
+const campanha = {
+
+competencia,
+
+semana1:{
+primeiro:document.getElementById('sem1_1').value,
+segundo:document.getElementById('sem1_2').value,
+terceiro:document.getElementById('sem1_3').value
+},
+
+semana2:{
+primeiro:document.getElementById('sem2_1').value,
+segundo:document.getElementById('sem2_2').value,
+terceiro:document.getElementById('sem2_3').value
+},
+
+semana3:{
+primeiro:document.getElementById('sem3_1').value,
+segundo:document.getElementById('sem3_2').value,
+terceiro:document.getElementById('sem3_3').value
+},
+
+semana4:{
+primeiro:document.getElementById('sem4_1').value,
+segundo:document.getElementById('sem4_2').value,
+terceiro:document.getElementById('sem4_3').value
+}
+
+};
+
+await setDoc(
+doc(db,'campanhas',competencia),
+campanha
+);
+
+alert('Campanha salva com sucesso.');
+
+}
+
+onSnapshot(collection(db,"consultores"),(snapshot)=>{
 onSnapshot(collection(db,"consultores"),(snapshot)=>{
 todosDados = [];
 snapshot.forEach((docu)=>{
