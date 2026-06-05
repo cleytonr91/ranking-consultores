@@ -240,6 +240,7 @@ document.getElementById('salvarCampanha');
 
 const competenciaCampanha =
 document.getElementById('competenciaCampanha');
+
 let editandoId = null;
 let todosDados = [];
 const campos = {
@@ -337,10 +338,9 @@ cancelarBtn.classList.add('hidden');
 limparCampos();
 });
 salvarBtn.addEventListener('click',salvar);
-salvarCampanhaBtn.addEventListener(
-'click',
-salvarCampanha
-);
+salvarCampanhaBtn.addEventListener('click', () => {
+    salvarCampanha();
+});
 mesFiltro.addEventListener('change',renderizarTabela);
 salvarBtn.addEventListener('click',salvar);
 
@@ -393,16 +393,28 @@ terceiro:document.getElementById('sem4_3').value
 
 };
 
-await setDoc(
-doc(db,'campanhas',competencia),
-campanha
-);
+try {
 
-alert('Campanha salva com sucesso.');
+    await setDoc(
+        doc(db,'campanhas',competencia),
+        campanha
+    );
+
+    alert('Campanha salva com sucesso.');
+
+} catch(error){
+
+    console.error(error);
+
+    alert(
+        'Erro ao salvar campanha: ' +
+        error.message
+    );
 
 }
 
-onSnapshot(collection(db,"consultores"),(snapshot)=>{
+}
+
 onSnapshot(collection(db,"consultores"),(snapshot)=>{
 todosDados = [];
 snapshot.forEach((docu)=>{
