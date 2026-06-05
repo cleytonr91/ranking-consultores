@@ -459,6 +459,12 @@ c.hgsi >= 970
 ? 'text-yellow-400'
 : 'text-red-500';
 
+const metaColor =
+pesquisasPercent >= 100
+? 'text-green-400'
+: pesquisasPercent >= 90
+? 'text-yellow-400'
+: 'text-red-500';
 if(i < 3){
 
 const medalha =
@@ -559,7 +565,7 @@ ${c.hgsi}
 META
 </div>
 
-<div class="text-5xl font-black mt-3 text-red-400">
+<div class="text-5xl font-black mt-3 ${metaColor}">
 ${pesquisasPercent}%
 </div>
 
@@ -617,7 +623,7 @@ R$ ${tkm.toFixed(0)}
 ${c.hgsi}
 </td>
 
-<td class="text-center text-yellow-400 font-black text-2xl">
+<td class="text-center font-black text-2xl ${metaColor}">
 ${pesquisasPercent}%
 </td>
 
