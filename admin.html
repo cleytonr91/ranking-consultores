@@ -1,590 +1,110 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
-
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
 <title>Admin GP Performance</title>
-
 <script src="https://cdn.tailwindcss.com"></script>
-
 </head>
-
 <body class="bg-[#020617] text-white min-h-screen p-6">
-
 <div class="max-w-7xl mx-auto">
-
 <div class="flex justify-between items-center mb-10">
-
 <div>
-
-<h1 class="text-5xl font-black italic">
-ADMIN <span class="text-blue-500">GP PERFORMANCE</span>
-</h1>
-
-<p class="text-slate-500 uppercase tracking-[5px] mt-2">
-Gestão de Consultores
-</p>
-
+<h1 class="text-5xl font-black italic">ADMIN <span class="text-blue-500">GP PERFORMANCE</span></h1>
+<p class="text-slate-500 uppercase tracking-[5px] mt-2">Gestão de Consultores e Ganhadores</p>
+</div>
 </div>
 
-</div>
-
-<!-- FORM -->
-
+<!-- Ganhadores Semanais -->
 <div class="bg-slate-900 rounded-3xl p-8 mb-10 border border-slate-800">
-
-<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-8">
-
-<h2 class="text-3xl font-black">
-Cadastrar Resultado Mensal
-</h2>
-
-<div class="flex items-center gap-4">
-
-<label class="text-slate-400 uppercase text-sm">
-Competência:
-</label>
-
-<input
-id="competenciaFiltro"
-type="month"
-class="bg-slate-950 border border-slate-700 rounded-2xl p-3 text-lg outline-none"
-/>
-
+<h2 class="text-3xl font-black mb-6">Cadastrar Ganhadores Semanais</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+<input id="ganhador_competencia" type="month" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
+<select id="ganhador_semana" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
+<option value="S1">Semana 1</option><option value="S2">Semana 2</option><option value="S3">Semana 3</option><option value="S4">Semana 4</option>
+</select>
+<input id="ganhador_1" placeholder="1º Colocado" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
+<input id="ganhador_2" placeholder="2º Colocado" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
+<input id="ganhador_3" placeholder="3º Colocado" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
+<input id="ganhador_loja" placeholder="Loja" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
+</div>
+<button id="salvarGanhadorBtn" class="bg-emerald-600 hover:bg-emerald-700 mt-6 px-10 py-4 rounded-2xl font-black">SALVAR GANHADORES</button>
 </div>
 
-</div>
-
+<!-- Form Consultores -->
+<div class="bg-slate-900 rounded-3xl p-8 mb-10 border border-slate-800">
+<h2 class="text-3xl font-black mb-8">Cadastrar Resultado Mensal</h2>
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-
-<input id="name" placeholder="Nome Consultor"
-class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
-
-<input id="store" placeholder="Loja"
-class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
-
-<input id="competencia" type="month"
-class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
-
-<input id="rev_und" type="number" placeholder="REV"
-class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
-
-<input id="serv_adic" type="number" placeholder="Serviços Adicionais"
-class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
-
-<input id="emb_oficina" type="number" placeholder="Embelezamento"
-class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
-
-<input id="hgsi" type="number" placeholder="HGSI"
-class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
-
-<input id="pesquisas" type="number" placeholder="Pesquisas Realizadas"
-class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
-
-<input id="meta_pesquisas" type="number" placeholder="Meta Pesquisas"
-class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
-
+<input id="name" placeholder="Nome Consultor" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
+<input id="store" placeholder="Loja" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
+<select id="marca" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
+<option value="Hyundai">Hyundai</option><option value="Renault">Renault</option>
+</select>
+<input id="competencia" type="month" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
+<input id="rev_und" type="number" placeholder="REV" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
+<input id="serv_adic" type="number" placeholder="Serviços Adicionais" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
+<input id="emb_oficina" type="number" placeholder="Embelezamento" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
+<input id="hgsi_nps" type="number" placeholder="HGSI / NPS" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
+<input id="pesquisas" type="number" placeholder="Pesquisas" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
+<input id="meta_pesquisas" type="number" placeholder="Meta" class="bg-slate-950 border border-slate-700 rounded-2xl p-4 outline-none">
 </div>
-
 <div class="flex gap-4 mt-8">
-
-<button
-id="salvarBtn"
-class="bg-blue-600 hover:bg-blue-700 transition-all px-10 py-4 rounded-2xl text-2xl font-black">
-
-SALVAR RESULTADO
-
-</button>
-
-<button
-id="cancelarBtn"
-class="bg-slate-700 hover:bg-slate-600 transition-all px-10 py-4 rounded-2xl text-2xl font-black hidden">
-
-CANCELAR EDIÇÃO
-
-</button>
-
+<button id="salvarBtn" class="bg-blue-600 hover:bg-blue-700 px-10 py-4 rounded-2xl font-black">SALVAR RESULTADO</button>
+</div>
 </div>
 
-</div>
-
-<!-- LISTA -->
-
+<!-- Lista -->
 <div class="bg-slate-900 rounded-3xl p-8 border border-slate-800">
-
-<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-5 mb-8">
-
-<h2 class="text-3xl font-black">
-HISTÓRICO DE RESULTADOS
-</h2>
-
-<div class="flex items-center gap-4">
-
-<label class="text-slate-400 uppercase text-sm">
-Filtrar Mês:
-</label>
-
-<input
-id="mesFiltro"
-type="month"
-class="bg-slate-800 border-2 border-blue-500 rounded-2xl p-3 text-lg text-white font-bold outline-none shadow-lg shadow-blue-500/20""
-/>
-
-</div>
-
-</div>
-
-<div class="w-full">
-
 <table class="w-full table-fixed">
-
-<thead>
-
-<tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
-
-<th class="text-left py-4 w-[15%]">Consultor</th>
-<th class="text-left w-[12%]">Loja</th>
-<th class="text-left w-[10%]">Competência</th>
-<th class="text-center w-[6%]">Quant. Revisões</th>
-<th class="text-center w-[10%]">Serviços</th>
-<th class="text-center w-[10%]">Embelez.</th>
-<th class="text-center w-[6%]">HGSI</th>
-<th class="text-center w-[6%]">Pesq.</th>
-<th class="text-center w-[6%]">Meta</th>
-<th class="text-center w-[7%]">Status</th>
-<th class="text-center w-[12%]">Ações</th>
-
-</tr>
-
-</thead>
-
-<tbody id="listaConsultores">
-
-</tbody>
-
+<thead><tr class="border-b border-slate-800 text-slate-400 uppercase text-sm"><th class="text-left py-4">Consultor</th><th class="text-left">Marca</th><th class="text-center">Indicador</th><th class="text-center">Ações</th></tr></thead>
+<tbody id="listaConsultores"></tbody>
 </table>
-
 </div>
-
-</div>
-
 </div>
 
 <script type="module">
-
 import { db } from './firebase-config.js';
+import { collection, addDoc, setDoc, doc, onSnapshot, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import {
+const marcaSelect = document.getElementById('marca');
+const hgsiInput = document.getElementById('hgsi_nps');
 
-collection,
-addDoc,
-onSnapshot,
-deleteDoc,
-doc,
-updateDoc,
-query,
-where,
-getDocs
-
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const lista =
-document.getElementById('listaConsultores');
-
-const salvarBtn =
-document.getElementById('salvarBtn');
-
-const cancelarBtn =
-document.getElementById('cancelarBtn');
-
-const mesFiltro =
-document.getElementById('mesFiltro');
-
-let editandoId = null;
-
-let todosDados = [];
-
-const campos = {
-
-name:
-document.getElementById('name'),
-
-store:
-document.getElementById('store'),
-
-competencia:
-document.getElementById('competencia'),
-
-rev_und:
-document.getElementById('rev_und'),
-
-serv_adic:
-document.getElementById('serv_adic'),
-
-emb_oficina:
-document.getElementById('emb_oficina'),
-
-hgsi:
-document.getElementById('hgsi'),
-
-pesquisas:
-document.getElementById('pesquisas'),
-
-meta_pesquisas:
-document.getElementById('meta_pesquisas')
-
-};
-
-async function salvar(){
-
-const dados = {
-
-name:
-campos.name.value.trim(),
-
-store:
-campos.store.value.trim(),
-
-competencia:
-campos.competencia.value,
-
-rev_und:
-Number(campos.rev_und.value),
-
-serv_adic:
-Number(campos.serv_adic.value),
-
-emb_oficina:
-Number(campos.emb_oficina.value),
-
-hgsi:
-Number(campos.hgsi.value),
-
-pesquisas:
-Number(campos.pesquisas.value),
-
-meta_pesquisas:
-Number(campos.meta_pesquisas.value),
-
-ferias:false
-
-};
-
-if(
-!dados.name ||
-!dados.store ||
-!dados.competencia
-){
-
-alert('Preencha os campos obrigatórios.');
-
-return;
-
-}
-
-if(editandoId){
-
-await updateDoc(
-doc(db,"consultores",editandoId),
-dados
-);
-
-alert('Resultado atualizado.');
-
-editandoId = null;
-
-salvarBtn.innerText =
-'SALVAR RESULTADO';
-
-cancelarBtn.classList.add('hidden');
-
-}else{
-
-const consulta = query(
-collection(db,"consultores"),
-where("name","==",dados.name),
-where("competencia","==",dados.competencia)
-);
-
-const existente =
-await getDocs(consulta);
-
-if(!existente.empty){
-
-alert(
-'Este consultor já possui resultado nesta competência.'
-);
-
-return;
-
-}
-
-await addDoc(
-collection(db,"consultores"),
-dados
-);
-
-alert('Resultado salvo.');
-
-}
-
-limparCampos();
-
-}
-
-function limparCampos(){
-
-Object.values(campos).forEach(c=>{
-
-c.value = '';
-
+marcaSelect.addEventListener('change', (e) => {
+  hgsiInput.placeholder = e.target.value === 'Hyundai' ? 'HGSI' : 'NPS';
 });
 
-}
+document.getElementById('salvarBtn').addEventListener('click', async () => {
+  const dados = {
+    name: document.getElementById('name').value,
+    store: document.getElementById('store').value,
+    marca: marcaSelect.value,
+    competencia: document.getElementById('competencia').value,
+    valor_indicador: Number(hgsiInput.value),
+    rev_und: Number(document.getElementById('rev_und').value),
+    serv_adic: Number(document.getElementById('serv_adic').value),
+    emb_oficina: Number(document.getElementById('emb_oficina').value),
+    pesquisas: Number(document.getElementById('pesquisas').value),
+    meta_pesquisas: Number(document.getElementById('meta_pesquisas').value)
+  };
 
-cancelarBtn.addEventListener('click',()=>{
-
-editandoId = null;
-
-salvarBtn.innerText =
-'SALVAR RESULTADO';
-
-cancelarBtn.classList.add('hidden');
-
-limparCampos();
-
+  const q = query(collection(db, "consultores"), where("name", "==", dados.name), where("competencia", "==", dados.competencia), where("marca", "==", dados.marca));
+  const snap = await getDocs(q);
+  if (!snap.empty) return alert("Duplicidade detectada!");
+  await addDoc(collection(db, "consultores"), dados);
+  alert("Salvo com sucesso");
 });
 
-salvarBtn.addEventListener('click',salvar);
-
-mesFiltro.addEventListener('change',renderizarTabela);
-
-onSnapshot(collection(db,"consultores"),(snapshot)=>{
-
-todosDados = [];
-
-snapshot.forEach((docu)=>{
-
-todosDados.push({
-
-id:docu.id,
-...docu.data()
-
+document.getElementById('salvarGanhadorBtn').addEventListener('click', async () => {
+  const comp = document.getElementById('ganhador_competencia').value;
+  const sem = document.getElementById('ganhador_semana').value;
+  await setDoc(doc(db, "ganhadores_semanais", `${comp}_${sem}`), {
+    p1: document.getElementById('ganhador_1').value,
+    p2: document.getElementById('ganhador_2').value,
+    p3: document.getElementById('ganhador_3').value,
+    loja: document.getElementById('ganhador_loja').value
+  });
+  alert("Ganhadores salvos");
 });
-
-});
-
-const hoje = new Date();
-
-const mesAtual =
-`${hoje.getFullYear()}-${String(
-hoje.getMonth()+1
-).padStart(2,'0')}`;
-
-if(!mesFiltro.value){
-
-mesFiltro.value = mesAtual;
-
-}
-
-renderizarTabela();
-
-});
-
-function renderizarTabela(){
-
-lista.innerHTML = '';
-
-const dadosFiltrados =
-todosDados.filter(
-c=>c.competencia === mesFiltro.value
-);
-
-dadosFiltrados.sort((a,b)=>{
-
-return a.name.localeCompare(b.name);
-
-});
-
-dadosFiltrados.forEach((c)=>{
-
-lista.innerHTML += `
-
-<tr class="border-b border-slate-800 hover:bg-slate-800/30 transition-all
-${c.ferias ? 'opacity-40' : ''}
-">
-
-<td class="py-5 font-black text-lg uppercase break-words leading-tight pr-2">
-${c.name}
-</td>
-
-<td class="uppercase text-slate-400 break-words text-sm leading-tight pr-2">
-${c.store}
-</td>
-
-<td class="uppercase text-blue-400 font-black">
-${c.competencia}
-</td>
-
-<td class="text-center">
-${c.rev_und}
-</td>
-
-<td class="text-center text-cyan-400 font-black">
-R$ ${c.serv_adic.toLocaleString('pt-BR')}
-</td>
-
-<td class="text-center text-pink-400 font-black">
-R$ ${c.emb_oficina.toLocaleString('pt-BR')}
-</td>
-
-<td class="text-center font-black
-${c.hgsi >= 970
-? 'text-green-400'
-: c.hgsi >= 960
-? 'text-yellow-400'
-: 'text-red-500'}
-">
-
-${c.hgsi}
-
-</td>
-
-<td class="text-center">
-${c.pesquisas}
-</td>
-
-<td class="text-center">
-${c.meta_pesquisas}
-</td>
-
-<td class="text-center">
-
-${c.ferias
-? '<span class="text-yellow-400 font-black">FÉRIAS</span>'
-: '<span class="text-green-400 font-black">ATIVO</span>'
-}
-
-</td>
-
-<td class="text-center">
-
-<div class="flex flex-col gap-2">
-
-<button
-class="bg-yellow-500 hover:bg-yellow-600 transition-all px-3 py-2 rounded-xl font-black text-sm"
-onclick="editarConsultor('${c.id}')">
-
-Editar
-
-</button>
-
-<button
-class="${c.ferias
-? 'bg-green-600 hover:bg-green-700'
-: 'bg-orange-500 hover:bg-orange-600'}
-transition-all px-3 py-2 rounded-xl font-black text-sm"
-onclick="toggleFerias('${c.id}',${c.ferias})">
-
-${c.ferias ? 'Retornar' : 'Férias'}
-
-</button>
-
-<button
-class="bg-red-600 hover:bg-red-700 transition-all px-3 py-2 rounded-xl font-black text-sm"
-onclick="excluirConsultor('${c.id}')">
-
-Excluir
-
-</button>
-
-</div>
-
-</td>
-
-</tr>
-
-`;
-
-window.editarConsultor = (id)=>{
-
-const consultor =
-todosDados.find(c=>c.id === id);
-
-editandoId = id;
-
-campos.name.value =
-consultor.name;
-
-campos.store.value =
-consultor.store;
-
-campos.competencia.value =
-consultor.competencia;
-
-campos.rev_und.value =
-consultor.rev_und;
-
-campos.serv_adic.value =
-consultor.serv_adic;
-
-campos.emb_oficina.value =
-consultor.emb_oficina;
-
-campos.hgsi.value =
-consultor.hgsi;
-
-campos.pesquisas.value =
-consultor.pesquisas;
-
-campos.meta_pesquisas.value =
-consultor.meta_pesquisas;
-
-salvarBtn.innerText =
-'ATUALIZAR RESULTADO';
-
-cancelarBtn.classList.remove('hidden');
-
-window.scrollTo({
-top:0,
-behavior:'smooth'
-});
-
-};
-
-window.toggleFerias = async(id,status)=>{
-
-await updateDoc(
-doc(db,"consultores",id),
-{
-ferias:!status
-}
-);
-
-};
-
-window.excluirConsultor = async(id)=>{
-
-const confirmar =
-confirm('Deseja realmente excluir este resultado?');
-
-if(!confirmar) return;
-
-await deleteDoc(
-doc(db,"consultores",id)
-);
-
-};
-
-});
-
-}
-
 </script>
-
 </body>
-
 </html>
