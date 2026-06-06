@@ -81,7 +81,7 @@ Filtrar Mês:
 <input
 id="mesFiltro"
 type="month"
-class="bg-slate-800 border-2 border-blue-500 rounded-2xl p-3 text-lg text-white font-bold outline-none shadow-lg shadow-blue-500/20""
+class="bg-slate-800 border-2 border-blue-500 rounded-2xl p-3 text-lg text-white font-bold outline-none shadow-lg shadow-blue-500/20"
 />
 </div>
 </div>
@@ -224,8 +224,7 @@ updateDoc,
 query,
 where,
 getDocs,
-setDoc,
-getDoc
+setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const lista =
 document.getElementById('listaConsultores');
@@ -235,6 +234,8 @@ const cancelarBtn =
 document.getElementById('cancelarBtn');
 const mesFiltro =
 document.getElementById('mesFiltro');
+const competenciaFiltro =
+document.getElementById('competenciaFiltro');
 const salvarCampanhaBtn =
 document.getElementById('salvarCampanha');
 
@@ -342,9 +343,9 @@ salvarCampanhaBtn.addEventListener('click', () => {
     salvarCampanha();
 });
 mesFiltro.addEventListener('change',renderizarTabela);
-salvarBtn.addEventListener('click',salvar);
-
-mesFiltro.addEventListener('change',renderizarTabela);
+competenciaFiltro.addEventListener('change',()=>{
+campos.competencia.value = competenciaFiltro.value;
+});
 
 /* ===========================
    CAMPANHA SEMANAL
@@ -430,6 +431,12 @@ hoje.getMonth()+1
 ).padStart(2,'0')}`;
 if(!mesFiltro.value){
 mesFiltro.value = mesAtual;
+}
+if(!competenciaFiltro.value){
+competenciaFiltro.value = mesFiltro.value;
+}
+if(!campos.competencia.value){
+campos.competencia.value = mesFiltro.value;
 }
 renderizarTabela();
 });

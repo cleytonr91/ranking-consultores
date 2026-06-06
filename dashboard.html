@@ -371,11 +371,18 @@ acc + c.serv_adic + c.emb_oficina
 
 });
 
+const indiceCompetencia =
+meses.indexOf(competencia);
+
 const atual =
-evolucao[evolucao.length -1] || 0;
+indiceCompetencia >= 0
+? evolucao[indiceCompetencia]
+: 0;
 
 const anterior =
-evolucao[evolucao.length -2] || 0;
+indiceCompetencia > 0
+? evolucao[indiceCompetencia - 1]
+: 0;
 
 const crescimento =
 anterior > 0

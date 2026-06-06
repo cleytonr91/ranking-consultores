@@ -34,6 +34,18 @@ RANKING <span class="text-blue-500">CONSULTORES</span>
 </div>
 </div>
 <div id="top3" class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-10"></div>
+<div id="campanhaSection" class="hidden bg-[#0b1224]/90 border border-yellow-500/30 rounded-[30px] p-5 md:p-8 mb-10 backdrop-blur">
+<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-3 mb-8">
+<div>
+<h2 class="text-3xl md:text-5xl font-black">CAMPANHA SEMANAL</h2>
+<div id="campanhaCompetencia" class="text-yellow-300 uppercase tracking-[4px] mt-2 text-sm font-black"></div>
+</div>
+<div class="text-slate-400 uppercase tracking-widest text-sm">
+VENCEDORES POR SEMANA
+</div>
+</div>
+<div id="campanhaSemanas" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5"></div>
+</div>
 <div class="bg-[#081226]/80 border border-slate-800 rounded-[30px] p-5 md:p-8 backdrop-blur">
 <div class="flex justify-between items-center mb-6">
 <h2 class="text-3xl md:text-5xl font-black">RANKING GERAL</h2>
@@ -55,33 +67,55 @@ ATUALIZAÇÃO EM TEMPO REAL <div class="w-3 h-3 bg-green-400 rounded-full"></div
 </div>
 <script type="module">
 import { db } from './firebase-config.js';
-import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const top3 = document.getElementById('top3');
 const rankingBody = document.getElementById('ranking-body');
 const filtro = document.getElementById('filtroCompetencia');
+const campanhaSection = document.getElementById('campanhaSection');
+const campanhaCompetencia = document.getElementById('campanhaCompetencia');
+const campanhaSemanas = document.getElementById('campanhaSemanas');
 let todosDados = [];
+let campanhaAtual = null;
+let unsubscribeCampanha = null;
+let competenciaCampanhaAtual = '';
 function atualizarRelogio(){
 const agora = new Date();
 document.getElementById('clock').innerText = agora.toLocaleTimeString('pt-BR');
 document.getElementById('date').innerText = agora.toLocaleDateString('pt-BR');
+}
+function escapeHtml(valor){
+return String(valor || '')
+.replaceAll('&','&amp;')
+.replaceAll('<','&lt;')
+.replaceAll('>','&gt;')
+.replaceAll('"','&quot;')
+.replaceAll("'","&#039;");
 }
 setInterval(atualizarRelogio, 1000);
 atualizarRelogio();
 onSnapshot(collection(db, "consultores"), (snapshot) => {
 todosDados = [];
 snapshot.forEach((doc) => { todosDados.push(doc.data()); });
-const competencias = [...new Set(todosDados.map(c => c.competencia))].sort().reverse();
+const competenciaSelecionada = filtro.value;
+const competencias = [...new Set(todosDados.filter(c => !c.ferias).map(c => c.competencia))].sort().reverse();
 filtro.innerHTML = '';
 competencias.forEach((comp) => {
 filtro.innerHTML += `<option value="${comp}">Competência: ${comp.replace('-', '/')}</option>`;
 });
+if(competencias.includes(competenciaSelecionada)){
+filtro.value = competenciaSelecionada;
+}
 render();
 });
 filtro.addEventListener('change', render);
 function render(){
 const competencia = filtro.value;
-if (!competencia) return;
-const data = todosDados.filter(c => c.competencia === competencia);
+if (!competencia) {
+renderCampanha();
+return;
+}
+acompanharCampanha(competencia);
+const data = todosDados.filter(c => c.competencia === competencia && !c.ferias);
 data.sort((a, b) => {
 const tkmA = a.rev_und > 0 ? (a.serv_adic + a.emb_oficina) / a.rev_und : 0;
 const tkmB = b.rev_und > 0 ? (b.serv_adic + b.emb_oficina) / b.rev_und : 0;
@@ -105,6 +139,71 @@ top3.innerHTML += `<div class="${bg} border rounded-[35px] p-8 flex flex-col jus
 }
 rankingBody.innerHTML += `<tr class="border-b border-slate-800 hover:bg-slate-800/20 transition-all"><td class="py-5 text-3xl font-black">${i+1}º</td><td class="text-2xl font-black uppercase">${nome}</td><td class="text-2xl font-black uppercase">${sobrenome}</td><td class="text-slate-400 uppercase text-xl">${c.store || ''}</td><td class="text-center text-2xl">${c.rev_und || 0}</td><td class="text-center text-cyan-400 font-black text-2xl">R$ ${(c.serv_adic || 0).toLocaleString('pt-BR')}</td><td class="text-center text-pink-400 font-black text-2xl">R$ ${(c.emb_oficina || 0).toLocaleString('pt-BR')}</td><td class="text-center text-blue-400 font-black text-2xl">R$ ${total.toLocaleString('pt-BR')}</td><td class="text-center text-green-400 font-black text-2xl">R$ ${tkm.toFixed(0)}</td><td class="text-center font-black text-2xl ${hgsiColor}">${c.hgsi || 0}</td><td class="text-center font-black text-2xl ${metaColor}">${pesquisasPercent.toFixed(0)}%</td></tr>`;
 });
+}
+function acompanharCampanha(competencia){
+if(competenciaCampanhaAtual === competencia) return;
+competenciaCampanhaAtual = competencia;
+campanhaAtual = null;
+renderCampanha();
+if(unsubscribeCampanha){
+unsubscribeCampanha();
+}
+unsubscribeCampanha = onSnapshot(doc(db,"campanhas",competencia),(snapshot)=>{
+campanhaAtual = snapshot.exists() ? snapshot.data() : null;
+renderCampanha();
+});
+}
+function renderCampanha(){
+const competencia = filtro.value;
+if(!competencia || !campanhaAtual){
+campanhaSection.classList.add('hidden');
+campanhaSemanas.innerHTML = '';
+return;
+}
+const semanas = [
+{titulo:'SEMANA 1',periodo:'01 a 06',dados:campanhaAtual.semana1},
+{titulo:'SEMANA 2',periodo:'08 a 13',dados:campanhaAtual.semana2},
+{titulo:'SEMANA 3',periodo:'15 a 20',dados:campanhaAtual.semana3},
+{titulo:'SEMANA 4',periodo:'22 a 30',dados:campanhaAtual.semana4}
+];
+const temVencedor = semanas.some(({dados})=>
+dados && (dados.primeiro || dados.segundo || dados.terceiro)
+);
+if(!temVencedor){
+campanhaSection.classList.add('hidden');
+campanhaSemanas.innerHTML = '';
+return;
+}
+campanhaCompetencia.innerText = `COMPETENCIA: ${competencia.replace('-', '/')}`;
+campanhaSemanas.innerHTML = semanas.map(({titulo,periodo,dados})=>{
+const vencedores = [
+{posicao:'1',rotulo:'Primeiro',nome:dados?.primeiro,className:'border-yellow-400/60 bg-yellow-500/10 text-yellow-200'},
+{posicao:'2',rotulo:'Segundo',nome:dados?.segundo,className:'border-slate-300/50 bg-white/10 text-slate-100'},
+{posicao:'3',rotulo:'Terceiro',nome:dados?.terceiro,className:'border-orange-400/50 bg-orange-500/10 text-orange-200'}
+];
+return `
+<div class="bg-[#050b18] border border-slate-800 rounded-[24px] p-5">
+<div class="mb-5">
+<div class="text-2xl font-black">${titulo}</div>
+<div class="text-slate-500 uppercase tracking-widest text-xs mt-1">${periodo}</div>
+</div>
+<div class="space-y-3">
+${vencedores.map(v=>`
+<div class="${v.className} border rounded-2xl p-4 min-h-[92px]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-black text-xl">${v.posicao}</div>
+<div>
+<div class="text-slate-400 uppercase text-xs tracking-widest">${v.rotulo}</div>
+<div class="text-2xl font-black uppercase leading-tight break-words">${escapeHtml(v.nome || 'A definir')}</div>
+</div>
+</div>
+</div>
+`).join('')}
+</div>
+</div>
+`;
+}).join('');
+campanhaSection.classList.remove('hidden');
 }
 </script>
 </body>
