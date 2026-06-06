@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Importar Relatorios Apolo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#020617] text-white min-h-screen p-6">
+<div class="max-w-7xl mx-auto">
+
+<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-10">
+<div>
+<h1 class="text-5xl font-black italic">
+IMPORTAR <span class="text-blue-500">APOLO</span>
+</h1>
+<p class="text-slate-500 uppercase tracking-[5px] mt-2">
+Resumo venda de servicos
+</p>
+</div>
+<div class="flex items-center gap-4">
+<label class="text-slate-400 uppercase text-sm">Competencia:</label>
+<input id="competencia" type="month"
+class="bg-slate-900 border border-slate-700 rounded-2xl p-4 text-xl outline-none"/>
+</div>
+</div>
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 mb-10">
+<h2 class="text-3xl font-black mb-6">Arquivos Exportados</h2>
+<input id="arquivos" type="file" accept=".txt" multiple
+class="block w-full text-lg text-slate-300 file:mr-6 file:rounded-xl file:border-0 file:bg-blue-600 file:px-6 file:py-3 file:font-black file:text-white hover:file:bg-blue-700"/>
+<p class="text-slate-500 mt-4">
+Selecione os arquivos .txt gerados pelo Apolo em C:\ApolloClient\rel.
+</p>
+</div>
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-8">
+<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+<h2 class="text-3xl font-black">Previa da Importacao</h2>
+<button id="salvarBtn"
+class="bg-green-600 hover:bg-green-700 transition-all px-8 py-4 rounded-2xl text-xl font-black disabled:opacity-40"
+disabled>
+SALVAR NO FIRESTORE
+</button>
+</div>
+
+<div class="overflow-x-auto">
+<table class="w-full min-w-[1100px]">
+<thead>
+<tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
+<th class="text-left py-4">Arquivo</th>
+<th class="text-left">Codigo</th>
+<th class="text-left">Consultor</th>
+<th class="text-left">Loja</th>
+<th class="text-center">REV</th>
+<th class="text-center">Servicos</th>
+<th class="text-center">Embelez.</th>
+<th class="text-center">Total</th>
+</tr>
+</thead>
+<tbody id="preview"></tbody>
+</table>
+</div>
+
+<div id="status" class="text-slate-400 mt-6"></div>
+</div>
+
+</div>
+
+<script type="module">
+import { db } from './firebase-config.js';
+import {
+collection,
+addDoc,
+updateDoc,
+doc,
+query,
+where,
+getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const competenciaInput = document.getElementById('competencia');
+const arquivosInput = document.getElementById('arquivos');
+const preview = document.getElementById('preview');
+const salvarBtn = document.getElementById('salvarBtn');
+const statusEl = document.getElementById('status');
+
+let importacoes = [];
+
+const hoje = new Date();
+competenciaInput.value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+
+function dinheiro(valor){
+return `R$ ${Number(valor || 0).toLocaleString('pt-BR')}`;
+}
+
+function numero(valor){
+return Number(String(valor || '0').replace(/\./g,'').replace(',','.')) || 0;
+}
+
+function escapeHtml(valor){
+return String(valor || '')
+.replaceAll('&','&amp;')
+.replaceAll('<','&lt;')
+.replaceAll('>','&gt;')
+.replaceAll('"','&quot;')
+.replaceAll("'","&#039;");
+}
+
+function codigoPorArquivo(nome){
+const base = nome.replace(/\.[^.]+$/,'');
+const match = base.match(/^\d{8}(.+)$/);
+return match ? match[1] : '';
+}
+
+function parseRelatorio(conteudo){
+const linhas = conteudo
+.split(/\r?\n/)
+.map(l=>l.trim())
+.filter(Boolean);
+
+const totais = {
+rev_und:0,
+serv_adic:0,
+emb_oficina:0
+};
+
+linhas.slice(1).forEach((linha)=>{
+const colunas = linha.split(';');
+const categoria = String(colunas[0] || '').trim();
+const valor = numero(colunas[5]);
+const quantidade = numero(colunas[6]);
+
+if(categoria === '2'){
+totais.rev_und += quantidade;
+}
+
+if(categoria === '7'){
+totais.serv_adic += valor;
+}
+
+if(categoria === '11'){
+totais.emb_oficina += valor;
+}
+});
+
+return totais;
+}
+
+function renderizarPreview(){
+preview.innerHTML = '';
+importacoes.forEach((item,index)=>{
+const total = item.serv_adic + item.emb_oficina;
+preview.innerHTML += `
+<tr class="border-b border-slate-800">
+<td class="py-4 text-slate-300">${escapeHtml(item.arquivo)}</td>
+<td>
+<input data-index="${index}" data-campo="codigo" value="${escapeHtml(item.codigo)}"
+class="w-24 bg-slate-950 border border-slate-700 rounded-xl p-2 outline-none">
+</td>
+<td>
+<input data-index="${index}" data-campo="name" value="${escapeHtml(item.name)}"
+placeholder="Nome do consultor"
+class="w-64 bg-slate-950 border border-slate-700 rounded-xl p-2 outline-none">
+</td>
+<td>
+<input data-index="${index}" data-campo="store" value="${escapeHtml(item.store)}"
+placeholder="Loja"
+class="w-48 bg-slate-950 border border-slate-700 rounded-xl p-2 outline-none">
+</td>
+<td class="text-center font-black">${item.rev_und}</td>
+<td class="text-center text-cyan-400 font-black">${dinheiro(item.serv_adic)}</td>
+<td class="text-center text-pink-400 font-black">${dinheiro(item.emb_oficina)}</td>
+<td class="text-center text-blue-400 font-black">${dinheiro(total)}</td>
+</tr>
+`;
+});
+
+salvarBtn.disabled = importacoes.length === 0;
+statusEl.innerText = importacoes.length
+? `${importacoes.length} arquivo(s) pronto(s) para conferencia.`
+: 'Nenhum arquivo carregado.';
+}
+
+arquivosInput.addEventListener('change',async()=>{
+const arquivos = [...arquivosInput.files];
+importacoes = [];
+
+for(const arquivo of arquivos){
+const conteudo = await arquivo.text();
+const totais = parseRelatorio(conteudo);
+importacoes.push({
+arquivo:arquivo.name,
+codigo:codigoPorArquivo(arquivo.name),
+name:'',
+store:'',
+...totais
+});
+}
+
+renderizarPreview();
+});
+
+preview.addEventListener('input',(event)=>{
+const index = Number(event.target.dataset.index);
+const campo = event.target.dataset.campo;
+if(Number.isNaN(index) || !campo) return;
+importacoes[index][campo] = event.target.value;
+});
+
+salvarBtn.addEventListener('click',async()=>{
+const competencia = competenciaInput.value;
+if(!competencia){
+alert('Selecione a competencia.');
+return;
+}
+
+const incompletos = importacoes.filter(i=>!i.name.trim() || !i.store.trim());
+if(incompletos.length){
+alert('Preencha nome e loja antes de salvar.');
+return;
+}
+
+salvarBtn.disabled = true;
+statusEl.innerText = 'Salvando...';
+
+try{
+for(const item of importacoes){
+const dadosApolo = {
+name:item.name.trim(),
+store:item.store.trim(),
+codigo_apolo:item.codigo.trim(),
+competencia,
+rev_und:item.rev_und,
+serv_adic:item.serv_adic,
+emb_oficina:item.emb_oficina,
+ferias:false
+};
+
+const consulta = query(
+collection(db,'consultores'),
+where('name','==',dadosApolo.name),
+where('competencia','==',competencia)
+);
+const existente = await getDocs(consulta);
+
+if(existente.empty){
+await addDoc(collection(db,'consultores'),{
+...dadosApolo,
+hgsi:0,
+pesquisas:0,
+meta_pesquisas:0
+});
+}else{
+const docRef = existente.docs[0];
+const atual = docRef.data();
+await updateDoc(doc(db,'consultores',docRef.id),{
+...dadosApolo,
+hgsi:atual.hgsi || 0,
+pesquisas:atual.pesquisas || 0,
+meta_pesquisas:atual.meta_pesquisas || 0,
+ferias:atual.ferias || false
+});
+}
+}
+
+statusEl.innerText = 'Importacao concluida com sucesso.';
+alert('Dados importados com sucesso.');
+}catch(error){
+console.error(error);
+statusEl.innerText = `Erro: ${error.message}`;
+alert(`Erro ao importar: ${error.message}`);
+}finally{
+salvarBtn.disabled = false;
+}
+});
+</script>
+</body>
+</html>
