@@ -168,10 +168,19 @@ const semanas = [
 ];
 campanhaCompetencia.innerText = `COMPETENCIA: ${competencia.replace('-', '/')}`;
 campanhaSemanas.innerHTML = semanas.map(({titulo,periodo,dados})=>{
+const normalizarVencedor = (valor)=>{
+if(typeof valor === 'string'){
+return {nome:valor,loja:''};
+}
+return {
+nome:valor?.nome || '',
+loja:valor?.loja || ''
+};
+};
 const vencedores = [
-{posicao:'1',rotulo:'Primeiro',nome:dados?.primeiro,className:'border-yellow-400/60 bg-yellow-500/10 text-yellow-200'},
-{posicao:'2',rotulo:'Segundo',nome:dados?.segundo,className:'border-slate-300/50 bg-white/10 text-slate-100'},
-{posicao:'3',rotulo:'Terceiro',nome:dados?.terceiro,className:'border-orange-400/50 bg-orange-500/10 text-orange-200'}
+{posicao:'1',rotulo:'Primeiro',...normalizarVencedor(dados?.primeiro),className:'border-yellow-400/60 bg-yellow-500/10 text-yellow-200'},
+{posicao:'2',rotulo:'Segundo',...normalizarVencedor(dados?.segundo),className:'border-slate-300/50 bg-white/10 text-slate-100'},
+{posicao:'3',rotulo:'Terceiro',...normalizarVencedor(dados?.terceiro),className:'border-orange-400/50 bg-orange-500/10 text-orange-200'}
 ];
 return `
 <div class="bg-[#050b18] border border-slate-800 rounded-[24px] p-5">
@@ -187,6 +196,7 @@ ${vencedores.map(v=>`
 <div>
 <div class="text-slate-400 uppercase text-xs tracking-widest">${v.rotulo}</div>
 <div class="text-2xl font-black uppercase leading-tight break-words">${escapeHtml(v.nome || 'A definir')}</div>
+${v.loja ? `<div class="text-sm uppercase tracking-widest text-slate-400 mt-1 break-words">${escapeHtml(v.loja)}</div>` : ''}
 </div>
 </div>
 </div>
