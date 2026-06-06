@@ -34,6 +34,35 @@ Selecione os arquivos .txt gerados pelo Apolo em C:\ApolloClient\rel.
 </p>
 </div>
 
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 mb-10">
+<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+<div>
+<h2 class="text-3xl font-black">Consultores Cadastrados</h2>
+<p class="text-slate-500 mt-2">
+Confira se codigo Apolo, codigo Linx, nome e loja estao corretos antes de importar.
+</p>
+</div>
+<button id="recarregarCadastrosBtn"
+class="bg-slate-700 hover:bg-slate-600 transition-all px-6 py-3 rounded-2xl text-lg font-black">
+RECARREGAR
+</button>
+</div>
+
+<div class="overflow-x-auto">
+<table class="w-full min-w-[900px]">
+<thead>
+<tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
+<th class="text-left py-4">Codigo Apolo</th>
+<th class="text-left">Codigo Linx</th>
+<th class="text-left">Consultor</th>
+<th class="text-left">Loja</th>
+</tr>
+</thead>
+<tbody id="listaCadastrosImportacao"></tbody>
+</table>
+</div>
+</div>
+
 <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8">
 <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
 <h2 class="text-3xl font-black">Previa da Importacao</h2>
@@ -74,10 +103,13 @@ const arquivosInput = document.getElementById('arquivos');
 const preview = document.getElementById('preview');
 const salvarBtn = document.getElementById('salvarBtn');
 const statusEl = document.getElementById('status');
+const listaCadastrosImportacao = document.getElementById('listaCadastrosImportacao');
+const recarregarCadastrosBtn = document.getElementById('recarregarCadastrosBtn');
 
 let importacoes = [];
 let firebaseCache = null;
 let cadastroCache = null;
+let cadastrosLista = [];
 
 const hoje = new Date();
 competenciaInput.value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
@@ -125,11 +157,44 @@ getDocs
 } = await carregarFirebase();
 const snapshot = await getDocs(collection(db,'consultores_cadastro'));
 cadastroCache = new Map();
+cadastrosLista = [];
 snapshot.forEach((docu)=>{
 const dados = docu.data();
 cadastroCache.set(String(dados.codigo || docu.id),dados);
+cadastrosLista.push({
+id:docu.id,
+...dados
 });
+});
+renderizarCadastrosImportacao();
 return cadastroCache;
+}
+
+function renderizarCadastrosImportacao(){
+if(cadastrosLista.length === 0){
+listaCadastrosImportacao.innerHTML = `
+<tr>
+<td colspan="4" class="py-8 text-center text-slate-500">
+Nenhum consultor carregado.
+</td>
+</tr>
+`;
+return;
+}
+
+listaCadastrosImportacao.innerHTML = '';
+cadastrosLista
+.sort((a,b)=>(a.name || '').localeCompare(b.name || ''))
+.forEach((c)=>{
+listaCadastrosImportacao.innerHTML += `
+<tr class="border-b border-slate-800">
+<td class="py-4 font-black text-blue-400">${escapeHtml(c.codigo || c.id)}</td>
+<td class="text-slate-400">${escapeHtml(c.codigo_linx || '-')}</td>
+<td class="uppercase font-black">${escapeHtml(c.name || '')}</td>
+<td class="uppercase text-slate-400">${escapeHtml(c.store || '')}</td>
+</tr>
+`;
+});
 }
 
 function codigoPorArquivo(nome){
@@ -234,6 +299,25 @@ statusEl.innerText = importacoes.length
 }
 
 renderizarPreview();
+renderizarCadastrosImportacao();
+
+recarregarCadastrosBtn.addEventListener('click',async()=>{
+cadastroCache = null;
+cadastrosLista = [];
+renderizarCadastrosImportacao();
+statusEl.innerText = 'Carregando cadastro de consultores...';
+try{
+await carregarCadastros();
+statusEl.innerText = 'Cadastro de consultores carregado.';
+}catch(error){
+console.error(error);
+statusEl.innerText = `Erro ao carregar cadastro: ${error.message}`;
+}
+});
+
+carregarCadastros().catch((error)=>{
+console.warn('Cadastro de consultores indisponivel.',error);
+});
 
 arquivosInput.addEventListener('change',async()=>{
 const arquivos = [...arquivosInput.files];

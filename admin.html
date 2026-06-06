@@ -102,6 +102,10 @@ class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none
 class="bg-blue-600 hover:bg-blue-700 transition-all px-8 py-4 rounded-2xl text-xl font-black mb-8">
 SALVAR CONSULTOR
 </button>
+<button id="cancelarCadastroBtn"
+class="bg-slate-700 hover:bg-slate-600 transition-all px-8 py-4 rounded-2xl text-xl font-black mb-8 ml-3 hidden">
+CANCELAR EDICAO
+</button>
 
 <div class="overflow-x-auto">
 <table class="w-full">
@@ -349,10 +353,13 @@ const cadastroLoja =
 document.getElementById('cadastroLoja');
 const salvarCadastroBtn =
 document.getElementById('salvarCadastroBtn');
+const cancelarCadastroBtn =
+document.getElementById('cancelarCadastroBtn');
 const listaCadastros =
 document.getElementById('listaCadastros');
 
 let editandoId = null;
+let editandoCadastroId = null;
 let todosDados = [];
 let cadastrosConsultores = [];
 const campos = {
@@ -458,6 +465,7 @@ competenciaFiltro.addEventListener('change',()=>{
 campos.competencia.value = competenciaFiltro.value;
 });
 salvarCadastroBtn.addEventListener('click',salvarCadastroConsultor);
+cancelarCadastroBtn.addEventListener('click',cancelarEdicaoCadastro);
 
 /* ===========================
    CAMPANHA SEMANAL
@@ -484,11 +492,26 @@ store:loja
 }
 );
 
+editandoCadastroId = null;
 cadastroCodigo.value = '';
 cadastroCodigoLinx.value = '';
 cadastroNome.value = '';
 cadastroLoja.value = '';
+cadastroCodigo.disabled = false;
+salvarCadastroBtn.innerText = 'SALVAR CONSULTOR';
+cancelarCadastroBtn.classList.add('hidden');
 alert('Consultor cadastrado.');
+}
+
+function cancelarEdicaoCadastro(){
+editandoCadastroId = null;
+cadastroCodigo.value = '';
+cadastroCodigoLinx.value = '';
+cadastroNome.value = '';
+cadastroLoja.value = '';
+cadastroCodigo.disabled = false;
+salvarCadastroBtn.innerText = 'SALVAR CONSULTOR';
+cancelarCadastroBtn.classList.add('hidden');
 }
 
 onSnapshot(collection(db,'consultores_cadastro'),(snapshot)=>{
@@ -515,6 +538,11 @@ listaCadastros.innerHTML += `
 <td class="uppercase text-slate-400">${c.store}</td>
 <td class="text-center">
 <button
+class="bg-yellow-500 hover:bg-yellow-600 transition-all px-4 py-2 rounded-xl font-black text-sm mr-2"
+onclick="editarCadastroConsultor('${c.id}')">
+Editar
+</button>
+<button
 class="bg-red-600 hover:bg-red-700 transition-all px-4 py-2 rounded-xl font-black text-sm"
 onclick="excluirCadastroConsultor('${c.id}')">
 Excluir
@@ -524,6 +552,21 @@ Excluir
 `;
 });
 }
+
+window.editarCadastroConsultor = (id)=>{
+const cadastro =
+cadastrosConsultores.find(c=>c.id === id);
+if(!cadastro) return;
+editandoCadastroId = id;
+cadastroCodigo.value = cadastro.codigo || cadastro.id;
+cadastroCodigoLinx.value = cadastro.codigo_linx || '';
+cadastroNome.value = cadastro.name || '';
+cadastroLoja.value = cadastro.store || '';
+cadastroCodigo.disabled = true;
+salvarCadastroBtn.innerText = 'ATUALIZAR CONSULTOR';
+cancelarCadastroBtn.classList.remove('hidden');
+cadastroNome.focus();
+};
 
 window.excluirCadastroConsultor = async(id)=>{
 const confirmar =
