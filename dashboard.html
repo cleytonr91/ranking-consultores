@@ -52,7 +52,22 @@ class="bg-slate-800 border-2 border-blue-500 rounded-2xl p-4 text-xl text-white 
 
 <!-- CARDS -->
 
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-5 mb-10">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-5 mb-10">
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+
+<div class="text-slate-400 uppercase text-sm">
+Consultores Ativos
+</div>
+
+<div id="consultoresAtivos"
+class="text-4xl font-black mt-3 text-blue-400">
+
+0
+
+</div>
+
+</div>
 
 <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
 
@@ -112,6 +127,13 @@ class="text-4xl font-black mt-3 text-yellow-400">
 
 </div>
 
+<div id="pesquisasMeta"
+class="text-slate-500 text-sm mt-2">
+
+Meta 0
+
+</div>
+
 </div>
 
 <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
@@ -126,6 +148,78 @@ class="text-4xl font-black mt-3">
 0%
 
 </div>
+
+</div>
+
+</div>
+
+<!-- FEEDBACK -->
+
+<div class="grid grid-cols-1 xl:grid-cols-4 gap-5 mb-10">
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+<div class="text-slate-400 uppercase text-sm">Melhor Loja</div>
+<div id="melhorLoja" class="text-3xl font-black mt-3 text-green-400">-</div>
+<div id="melhorLojaDetalhe" class="text-slate-500 text-sm mt-2">Sem dados</div>
+</div>
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+<div class="text-slate-400 uppercase text-sm">Loja em AtenÃ§Ã£o</div>
+<div id="lojaAtencao" class="text-3xl font-black mt-3 text-red-400">-</div>
+<div id="lojaAtencaoDetalhe" class="text-slate-500 text-sm mt-2">Sem dados</div>
+</div>
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+<div class="text-slate-400 uppercase text-sm">Maior TKM</div>
+<div id="consultorDestaque" class="text-3xl font-black mt-3 text-cyan-400">-</div>
+<div id="consultorDestaqueDetalhe" class="text-slate-500 text-sm mt-2">Sem dados</div>
+</div>
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+<div class="text-slate-400 uppercase text-sm">Prioridade de Feedback</div>
+<div id="consultorAtencao" class="text-3xl font-black mt-3 text-yellow-400">-</div>
+<div id="consultorAtencaoDetalhe" class="text-slate-500 text-sm mt-2">Sem dados</div>
+</div>
+
+</div>
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 mb-10">
+
+<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-8">
+<h2 class="text-3xl font-black">
+Feedback por Consultor
+</h2>
+<div class="text-slate-400 uppercase tracking-widest text-sm">
+TKM, HGSI, pesquisas e sinal de aÃ§Ã£o
+</div>
+</div>
+
+<div class="overflow-x-auto">
+
+<table class="w-full min-w-[1100px]">
+
+<thead>
+
+<tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
+
+<th class="text-left py-4">Consultor</th>
+<th class="text-left">Loja</th>
+<th class="text-center">REV</th>
+<th class="text-center">Faturamento</th>
+<th class="text-center">TKM</th>
+<th class="text-center">HGSI</th>
+<th class="text-center">Pesquisas</th>
+<th class="text-left">Sinal</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tabelaConsultores">
+
+</tbody>
+
+</table>
 
 </div>
 
@@ -228,11 +322,43 @@ document.getElementById('mesFiltro');
 const tabela =
 document.getElementById('tabelaLojas');
 
+const tabelaConsultores =
+document.getElementById('tabelaConsultores');
+
 let todosDados = [];
 
 let chartEvolucao;
 let chartCategorias;
 let chartLojas;
+
+function dinheiro(valor){
+return `R$ ${Number(valor || 0).toLocaleString('pt-BR')}`;
+}
+
+function escapeHtml(valor){
+return String(valor || '')
+.replaceAll('&','&amp;')
+.replaceAll('<','&lt;')
+.replaceAll('>','&gt;')
+.replaceAll('"','&quot;')
+.replaceAll("'","&#039;");
+}
+
+function corHgsi(valor){
+return valor >= 970
+? 'text-green-400'
+: valor >= 960
+? 'text-yellow-400'
+: 'text-red-500';
+}
+
+function corPercentual(valor){
+return valor >= 100
+? 'text-green-400'
+: valor >= 90
+? 'text-yellow-400'
+: 'text-red-500';
+}
 
 const hoje = new Date();
 
@@ -305,6 +431,18 @@ acc + c.pesquisas
 
 ,0);
 
+const totalMetaPesq =
+ativos.reduce((acc,c)=>
+
+acc + c.meta_pesquisas
+
+,0);
+
+const coberturaPesq =
+totalMetaPesq > 0
+? (totalPesq / totalMetaPesq) * 100
+: 0;
+
 const mediaHgsi =
 ativos.length > 0
 ? ativos.reduce((acc,c)=>acc + c.hgsi,0) / ativos.length
@@ -315,8 +453,11 @@ totalRev > 0
 ? totalFat / totalRev
 : 0;
 
+document.getElementById('consultoresAtivos').innerText =
+ativos.length;
+
 document.getElementById('fatTotal').innerText =
-`R$ ${totalFat.toLocaleString('pt-BR')}`;
+dinheiro(totalFat);
 
 document.getElementById('tkmMedio').innerText =
 `R$ ${tkm.toFixed(0)}`;
@@ -345,7 +486,10 @@ hgsiCard.className =
 }
 
 document.getElementById('pesquisasTotal').innerText =
-totalPesq;
+`${totalPesq} (${coberturaPesq.toFixed(0)}%)`;
+
+document.getElementById('pesquisasMeta').innerText =
+`Meta ${totalMetaPesq}`;
 
 const meses =
 [...new Set(
@@ -433,12 +577,57 @@ lojas[c.store].pesq += c.pesquisas;
 
 });
 
+const resumoLojas =
+Object.entries(lojas).map(([loja,d])=>{
+const total = d.serv + d.emb;
+const tkmTotal = d.rev > 0 ? total / d.rev : 0;
+const hgsi = d.hgsi.length > 0
+? d.hgsi.reduce((a,b)=>a+b,0) / d.hgsi.length
+: 0;
+return {
+loja,
+...d,
+total,
+tkmTotal,
+hgsi
+};
+});
+
+const lojasOrdenadas =
+[...resumoLojas].sort((a,b)=>b.total - a.total);
+
+const melhorLoja =
+lojasOrdenadas[0];
+
+const lojaAtencao =
+[...resumoLojas].sort((a,b)=>{
+const scoreA = (a.tkmTotal * 0.65) + (a.hgsi * 0.35);
+const scoreB = (b.tkmTotal * 0.65) + (b.hgsi * 0.35);
+return scoreA - scoreB;
+})[0];
+
+document.getElementById('melhorLoja').innerText =
+melhorLoja ? melhorLoja.loja : '-';
+
+document.getElementById('melhorLojaDetalhe').innerText =
+melhorLoja
+? `${dinheiro(melhorLoja.total)} | TKM R$ ${melhorLoja.tkmTotal.toFixed(0)}`
+: 'Sem dados';
+
+document.getElementById('lojaAtencao').innerText =
+lojaAtencao ? lojaAtencao.loja : '-';
+
+document.getElementById('lojaAtencaoDetalhe').innerText =
+lojaAtencao
+? `TKM R$ ${lojaAtencao.tkmTotal.toFixed(0)} | HGSI ${lojaAtencao.hgsi.toFixed(0)}`
+: 'Sem dados';
+
 tabela.innerHTML = '';
 
-Object.entries(lojas).forEach(([loja,d])=>{
+resumoLojas.forEach((d)=>{
 
 const total =
-d.serv + d.emb;
+d.total;
 
 const tkmServ =
 d.rev > 0
@@ -452,7 +641,7 @@ d.rev > 0
 
 const tkmTotal =
 d.rev > 0
-? total / d.rev
+? d.total / d.rev
 : 0;
 
 const hgsi =
@@ -464,7 +653,7 @@ tabela.innerHTML += `
 <tr class="border-b border-slate-800">
 
 <td class="py-5 font-black uppercase">
-${loja}
+${escapeHtml(d.loja)}
 </td>
 
 <td class="text-center">
@@ -511,6 +700,115 @@ ${hgsi.toFixed(0)}
 
 `;
 
+});
+
+const consultores =
+ativos.map((c)=>{
+const total = (c.serv_adic || 0) + (c.emb_oficina || 0);
+const rev = c.rev_und || 0;
+const tkmConsultor = rev > 0 ? total / rev : 0;
+const pesquisaPercentual =
+c.meta_pesquisas > 0
+? ((c.pesquisas || 0) / c.meta_pesquisas) * 100
+: 0;
+let sinal = 'Manter ritmo';
+let sinalClasse = 'text-green-400';
+if((c.hgsi || 0) < 960){
+sinal = 'Feedback HGSI';
+sinalClasse = 'text-red-400';
+}else if(pesquisaPercentual < 90){
+sinal = 'Aumentar pesquisas';
+sinalClasse = 'text-yellow-400';
+}else if(tkmConsultor < tkm && totalRev > 0){
+sinal = 'Oportunidade TKM';
+sinalClasse = 'text-cyan-400';
+}
+return {
+...c,
+total,
+tkmConsultor,
+pesquisaPercentual,
+sinal,
+sinalClasse
+};
+});
+
+const consultorDestaque =
+[...consultores].sort((a,b)=>b.tkmConsultor - a.tkmConsultor)[0];
+
+const consultorAtencao =
+[...consultores].sort((a,b)=>{
+const scoreA =
+(a.hgsi || 0) +
+(a.pesquisaPercentual * 2) +
+(a.tkmConsultor / 10);
+const scoreB =
+(b.hgsi || 0) +
+(b.pesquisaPercentual * 2) +
+(b.tkmConsultor / 10);
+return scoreA - scoreB;
+})[0];
+
+document.getElementById('consultorDestaque').innerText =
+consultorDestaque ? consultorDestaque.name : '-';
+
+document.getElementById('consultorDestaqueDetalhe').innerText =
+consultorDestaque
+? `${consultorDestaque.store} | TKM R$ ${consultorDestaque.tkmConsultor.toFixed(0)}`
+: 'Sem dados';
+
+document.getElementById('consultorAtencao').innerText =
+consultorAtencao ? consultorAtencao.name : '-';
+
+document.getElementById('consultorAtencaoDetalhe').innerText =
+consultorAtencao
+? `${consultorAtencao.sinal} | TKM R$ ${consultorAtencao.tkmConsultor.toFixed(0)}`
+: 'Sem dados';
+
+tabelaConsultores.innerHTML = '';
+
+consultores
+.sort((a,b)=>b.tkmConsultor - a.tkmConsultor)
+.forEach((c)=>{
+tabelaConsultores.innerHTML += `
+
+<tr class="border-b border-slate-800 hover:bg-slate-800/30">
+
+<td class="py-5 font-black uppercase">
+${escapeHtml(c.name)}
+</td>
+
+<td class="uppercase text-slate-400">
+${escapeHtml(c.store)}
+</td>
+
+<td class="text-center">
+${c.rev_und || 0}
+</td>
+
+<td class="text-center text-blue-400 font-black">
+${dinheiro(c.total)}
+</td>
+
+<td class="text-center text-green-400 font-black">
+R$ ${c.tkmConsultor.toFixed(0)}
+</td>
+
+<td class="text-center font-black ${corHgsi(c.hgsi || 0)}">
+${c.hgsi || 0}
+</td>
+
+<td class="text-center font-black ${corPercentual(c.pesquisaPercentual)}">
+${c.pesquisaPercentual.toFixed(0)}%
+</td>
+
+<td class="font-black uppercase ${c.sinalClasse}">
+${c.sinal}
+</td>
+
+</tr>
+
+`;
 });
 
 if(chartEvolucao) chartEvolucao.destroy();
