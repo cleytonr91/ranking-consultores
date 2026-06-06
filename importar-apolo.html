@@ -76,6 +76,7 @@ const statusEl = document.getElementById('status');
 
 let importacoes = [];
 let firebaseCache = null;
+let cadastroCache = null;
 
 const hoje = new Date();
 competenciaInput.value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
@@ -112,6 +113,22 @@ where:firestore.where,
 getDocs:firestore.getDocs
 };
 return firebaseCache;
+}
+
+async function carregarCadastros(){
+if(cadastroCache) return cadastroCache;
+const {
+db,
+collection,
+getDocs
+} = await carregarFirebase();
+const snapshot = await getDocs(collection(db,'consultores_cadastro'));
+cadastroCache = new Map();
+snapshot.forEach((docu)=>{
+const dados = docu.data();
+cadastroCache.set(String(dados.codigo || docu.id),dados);
+});
+return cadastroCache;
 }
 
 function codigoPorArquivo(nome){
@@ -218,18 +235,30 @@ importacoes = [];
 statusEl.innerText = 'Lendo arquivo(s)...';
 
 try{
+let cadastros = new Map();
+try{
+cadastros = await carregarCadastros();
+}catch(error){
+console.warn('Cadastro de consultores indisponivel.',error);
+}
 for(const arquivo of arquivos){
 const conteudo = await lerArquivoTexto(arquivo);
 const totais = parseRelatorio(conteudo);
+const codigo = codigoPorArquivo(arquivo.name);
+const cadastro = cadastros.get(codigo);
 importacoes.push({
 arquivo:arquivo.name,
-codigo:codigoPorArquivo(arquivo.name),
-name:'',
-store:'',
+codigo,
+name:cadastro?.name || '',
+store:cadastro?.store || '',
 ...totais
 });
 }
 renderizarPreview();
+const semCadastro = importacoes.filter(i=>!i.name || !i.store).length;
+if(semCadastro){
+statusEl.innerText = `${importacoes.length} arquivo(s) carregado(s). ${semCadastro} sem cadastro encontrado.`;
+}
 }catch(error){
 console.error(error);
 importacoes = [];
@@ -287,10 +316,19 @@ ferias:false
 
 const consulta = query(
 collection(db,'consultores'),
+where('codigo_apolo','==',dadosApolo.codigo_apolo),
+where('competencia','==',competencia)
+);
+let existente = await getDocs(consulta);
+
+if(existente.empty){
+const consultaNome = query(
+collection(db,'consultores'),
 where('name','==',dadosApolo.name),
 where('competencia','==',competencia)
 );
-const existente = await getDocs(consulta);
+existente = await getDocs(consultaNome);
+}
 
 if(existente.empty){
 await addDoc(collection(db,'consultores'),{

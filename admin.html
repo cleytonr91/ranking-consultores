@@ -68,6 +68,53 @@ CANCELAR EDIÇÃO
 </button>
 </div>
 </div>
+
+<!-- CADASTRO DE CONSULTORES -->
+
+<div class="bg-slate-900 rounded-3xl p-8 mb-10 border border-slate-800">
+<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-8">
+<div>
+<h2 class="text-3xl font-black">
+Cadastro de Consultores
+</h2>
+<p class="text-slate-500 mt-2">
+Vincule o codigo do Apolo ao nome e loja para evitar erro na importacao.
+</p>
+</div>
+<a href="importar-apolo.html"
+class="bg-green-600 hover:bg-green-700 transition-all px-6 py-4 rounded-2xl text-xl font-black">
+IMPORTAR APOLO
+</a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+<input id="cadastroCodigo" placeholder="Codigo Apolo"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
+<input id="cadastroNome" placeholder="Nome Consultor"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none md:col-span-2">
+<input id="cadastroLoja" placeholder="Loja"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
+</div>
+
+<button id="salvarCadastroBtn"
+class="bg-blue-600 hover:bg-blue-700 transition-all px-8 py-4 rounded-2xl text-xl font-black mb-8">
+SALVAR CONSULTOR
+</button>
+
+<div class="overflow-x-auto">
+<table class="w-full">
+<thead>
+<tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
+<th class="text-left py-4">Codigo</th>
+<th class="text-left">Consultor</th>
+<th class="text-left">Loja</th>
+<th class="text-center">Acoes</th>
+</tr>
+</thead>
+<tbody id="listaCadastros"></tbody>
+</table>
+</div>
+</div>
 <!-- LISTA -->
 <div class="bg-slate-900 rounded-3xl p-8 border border-slate-800">
 <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-5 mb-8">
@@ -289,9 +336,20 @@ document.getElementById('salvarCampanha');
 
 const competenciaCampanha =
 document.getElementById('competenciaCampanha');
+const cadastroCodigo =
+document.getElementById('cadastroCodigo');
+const cadastroNome =
+document.getElementById('cadastroNome');
+const cadastroLoja =
+document.getElementById('cadastroLoja');
+const salvarCadastroBtn =
+document.getElementById('salvarCadastroBtn');
+const listaCadastros =
+document.getElementById('listaCadastros');
 
 let editandoId = null;
 let todosDados = [];
+let cadastrosConsultores = [];
 const campos = {
 name:
 document.getElementById('name'),
@@ -394,10 +452,76 @@ mesFiltro.addEventListener('change',renderizarTabela);
 competenciaFiltro.addEventListener('change',()=>{
 campos.competencia.value = competenciaFiltro.value;
 });
+salvarCadastroBtn.addEventListener('click',salvarCadastroConsultor);
 
 /* ===========================
    CAMPANHA SEMANAL
 =========================== */
+
+async function salvarCadastroConsultor(){
+const codigo = cadastroCodigo.value.trim();
+const nome = cadastroNome.value.trim();
+const loja = cadastroLoja.value.trim();
+
+if(!codigo || !nome || !loja){
+alert('Preencha codigo, nome e loja.');
+return;
+}
+
+await setDoc(
+doc(db,'consultores_cadastro',codigo),
+{
+codigo,
+name:nome,
+store:loja
+}
+);
+
+cadastroCodigo.value = '';
+cadastroNome.value = '';
+cadastroLoja.value = '';
+alert('Consultor cadastrado.');
+}
+
+onSnapshot(collection(db,'consultores_cadastro'),(snapshot)=>{
+cadastrosConsultores = [];
+snapshot.forEach((docu)=>{
+cadastrosConsultores.push({
+id:docu.id,
+...docu.data()
+});
+});
+renderizarCadastros();
+});
+
+function renderizarCadastros(){
+listaCadastros.innerHTML = '';
+cadastrosConsultores
+.sort((a,b)=>a.name.localeCompare(b.name))
+.forEach((c)=>{
+listaCadastros.innerHTML += `
+<tr class="border-b border-slate-800">
+<td class="py-4 font-black text-blue-400">${c.codigo || c.id}</td>
+<td class="uppercase font-black">${c.name}</td>
+<td class="uppercase text-slate-400">${c.store}</td>
+<td class="text-center">
+<button
+class="bg-red-600 hover:bg-red-700 transition-all px-4 py-2 rounded-xl font-black text-sm"
+onclick="excluirCadastroConsultor('${c.id}')">
+Excluir
+</button>
+</td>
+</tr>
+`;
+});
+}
+
+window.excluirCadastroConsultor = async(id)=>{
+const confirmar =
+confirm('Deseja excluir este consultor do cadastro?');
+if(!confirmar) return;
+await deleteDoc(doc(db,'consultores_cadastro',id));
+};
 
 async function salvarCampanha(){
 
