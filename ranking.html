@@ -155,25 +155,17 @@ renderCampanha();
 }
 function renderCampanha(){
 const competencia = filtro.value;
-if(!competencia || !campanhaAtual){
+if(!competencia){
 campanhaSection.classList.add('hidden');
 campanhaSemanas.innerHTML = '';
 return;
 }
 const semanas = [
-{titulo:'SEMANA 1',periodo:'01 a 06',dados:campanhaAtual.semana1},
-{titulo:'SEMANA 2',periodo:'08 a 13',dados:campanhaAtual.semana2},
-{titulo:'SEMANA 3',periodo:'15 a 20',dados:campanhaAtual.semana3},
-{titulo:'SEMANA 4',periodo:'22 a 30',dados:campanhaAtual.semana4}
+{titulo:'SEMANA 1',periodo:'01 a 06',dados:campanhaAtual?.semana1},
+{titulo:'SEMANA 2',periodo:'08 a 13',dados:campanhaAtual?.semana2},
+{titulo:'SEMANA 3',periodo:'15 a 20',dados:campanhaAtual?.semana3},
+{titulo:'SEMANA 4',periodo:'22 a 30',dados:campanhaAtual?.semana4}
 ];
-const temVencedor = semanas.some(({dados})=>
-dados && (dados.primeiro || dados.segundo || dados.terceiro)
-);
-if(!temVencedor){
-campanhaSection.classList.add('hidden');
-campanhaSemanas.innerHTML = '';
-return;
-}
 campanhaCompetencia.innerText = `COMPETENCIA: ${competencia.replace('-', '/')}`;
 campanhaSemanas.innerHTML = semanas.map(({titulo,periodo,dados})=>{
 const vencedores = [
