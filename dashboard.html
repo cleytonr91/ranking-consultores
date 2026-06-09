@@ -462,8 +462,9 @@ select.value = '';
 }
 
 function itensApolo(dados){
-return dados.flatMap(c=>
-(c.apolo_itens || []).map(item=>({
+return dados.flatMap(c=>{
+if(c.apolo_itens?.length){
+return c.apolo_itens.map(item=>({
 consultor:c.name || '',
 loja:c.store || '',
 competencia:c.competencia || '',
@@ -474,8 +475,53 @@ mao_obra:item.mao_obra || '',
 descricao:item.descricao || '',
 valor:numero(item.valor),
 quantidade:numero(item.quantidade)
-}))
-);
+}));
+}
+const itens = [];
+if(numero(c.rev_und) > 0){
+itens.push({
+consultor:c.name || '',
+loja:c.store || '',
+competencia:c.competencia || '',
+categoria:'2',
+grupo:'REVISAO',
+modelo:'',
+mao_obra:'',
+descricao:'Revisoes importadas',
+valor:0,
+quantidade:numero(c.rev_und)
+});
+}
+if(numero(c.serv_adic) > 0){
+itens.push({
+consultor:c.name || '',
+loja:c.store || '',
+competencia:c.competencia || '',
+categoria:'7',
+grupo:'SERVICOS',
+modelo:'',
+mao_obra:'',
+descricao:'Servicos adicionais importados',
+valor:numero(c.serv_adic),
+quantidade:0
+});
+}
+if(numero(c.emb_oficina) > 0){
+itens.push({
+consultor:c.name || '',
+loja:c.store || '',
+competencia:c.competencia || '',
+categoria:'11',
+grupo:'EMBELEZAMENTO',
+modelo:'',
+mao_obra:'',
+descricao:'Embelezamento importado',
+valor:numero(c.emb_oficina),
+quantidade:0
+});
+}
+return itens;
+});
 }
 
 function somarPor(chaves,itens){
@@ -1006,7 +1052,7 @@ if(revisoesDetalhe.length === 0){
 tabelaRevisoesDetalhe.innerHTML = `
 <tr>
 <td colspan="4" class="py-8 text-center text-slate-500">
-Sem detalhamento Linxs para revisoes neste filtro.
+Sem revisoes neste filtro.
 </td>
 </tr>
 `;
@@ -1030,7 +1076,7 @@ if(servicosDetalhe.length === 0){
 tabelaServicosDetalhe.innerHTML = `
 <tr>
 <td colspan="5" class="py-8 text-center text-slate-500">
-Sem detalhamento Linxs para servicos neste filtro.
+Sem servicos neste filtro.
 </td>
 </tr>
 `;
