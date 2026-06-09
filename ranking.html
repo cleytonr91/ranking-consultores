@@ -75,6 +75,7 @@ const campanhaSection = document.getElementById('campanhaSection');
 const campanhaCompetencia = document.getElementById('campanhaCompetencia');
 const campanhaSemanas = document.getElementById('campanhaSemanas');
 let todosDados = [];
+let cadastrosConsultores = [];
 let campanhaAtual = null;
 let unsubscribeCampanha = null;
 let competenciaCampanhaAtual = '';
@@ -107,7 +108,40 @@ filtro.value = competenciaSelecionada;
 }
 render();
 });
+onSnapshot(collection(db, "consultores_cadastro"), (snapshot) => {
+cadastrosConsultores = [];
+snapshot.forEach((doc) => {
+cadastrosConsultores.push({
+id:doc.id,
+...doc.data()
+});
+});
+render();
+});
 filtro.addEventListener('change', render);
+function cadastroDoResultado(resultado){
+const codigo = String(resultado.codigo_apolo || resultado.codigo || '');
+if(codigo){
+const porCodigo =
+cadastrosConsultores.find(c=>String(c.codigo || c.id) === codigo);
+if(porCodigo) return porCodigo;
+}
+const cpf = String(resultado.cpf_hgsi || resultado.cpf || '').replace(/\D/g,'');
+if(cpf){
+const porCpf =
+cadastrosConsultores.find(c=>String(c.cpf || '').replace(/\D/g,'') === cpf);
+if(porCpf) return porCpf;
+}
+return cadastrosConsultores.find(c=>
+String(c.name || '').toUpperCase() === String(resultado.name || '').toUpperCase() &&
+String(c.store || '').toUpperCase() === String(resultado.store || '').toUpperCase()
+);
+}
+function metaPesquisaOficial(resultado){
+const cadastro = cadastroDoResultado(resultado);
+const metaCadastro = Number(cadastro?.meta_pesquisas || 0);
+return metaCadastro > 0 ? metaCadastro : Number(resultado.meta_pesquisas || 0);
+}
 function render(){
 const competencia = filtro.value;
 if (!competencia) {
@@ -129,7 +163,8 @@ const nome = nomeCompleto[0] || '';
 const sobrenome = nomeCompleto.slice(1).join(' ') || '';
 const total = (c.serv_adic || 0) + (c.emb_oficina || 0);
 const tkm = c.rev_und > 0 ? total / c.rev_und : 0;
-const pesquisasPercent = c.meta_pesquisas > 0 ? ((c.pesquisas || 0) / c.meta_pesquisas) * 100 : 0;
+const metaPesquisas = metaPesquisaOficial(c);
+const pesquisasPercent = metaPesquisas > 0 ? ((c.pesquisas || 0) / metaPesquisas) * 100 : 0;
 const metaColor = pesquisasPercent >= 100 ? 'text-green-400' : pesquisasPercent >= 90 ? 'text-yellow-400' : 'text-red-500';
 const hgsiColor = (c.hgsi || 0) >= 970 ? 'text-green-400' : (c.hgsi || 0) >= 960 ? 'text-yellow-400' : 'text-red-500';
 if(i < 3){
