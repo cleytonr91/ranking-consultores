@@ -420,10 +420,14 @@ listaCadastrosImportacao.innerHTML += `
 });
 }
 
-function opcoesConsultores(codigoSelecionado){
+function opcoesConsultores(codigoSelecionado,permitirDesconsiderar = false){
 const opcoes = [
 `<option value="">Selecione um consultor</option>`
 ];
+if(permitirDesconsiderar){
+const selecionado = String(codigoSelecionado || '') === '__ignorar__' ? 'selected' : '';
+opcoes.push(`<option value="__ignorar__" ${selecionado}>Desconsiderar no HGSI</option>`);
+}
 cadastrosLista
 .sort((a,b)=>(a.name || '').localeCompare(b.name || ''))
 .forEach((c)=>{
@@ -589,6 +593,7 @@ return sugestao
 
 function vincularImportacoesHgsi(){
 importacoesHgsi = importacoesHgsi.map(item=>{
+if(item.ignorarHgsi) return item;
 if(item.codigo) return item;
 const sugestao = sugerirCadastroHgsi(item);
 return {
@@ -602,12 +607,22 @@ status:sugestao.status
 }
 
 function aplicarCadastroNaImportacaoHgsi(index,codigo){
-const cadastro = cadastrosLista.find(c=>String(c.codigo || c.id) === String(codigo));
 if(!importacoesHgsi[index]) return;
+if(codigo === '__ignorar__'){
+importacoesHgsi[index].codigo = '';
+importacoesHgsi[index].name = '';
+importacoesHgsi[index].store = '';
+importacoesHgsi[index].ignorarHgsi = true;
+importacoesHgsi[index].status = 'Desconsiderado';
+renderizarPreviewHgsi();
+return;
+}
+const cadastro = cadastrosLista.find(c=>String(c.codigo || c.id) === String(codigo));
 if(!cadastro){
 importacoesHgsi[index].codigo = '';
 importacoesHgsi[index].name = '';
 importacoesHgsi[index].store = '';
+importacoesHgsi[index].ignorarHgsi = false;
 importacoesHgsi[index].status = 'Selecione o consultor';
 renderizarPreviewHgsi();
 return;
@@ -615,6 +630,7 @@ return;
 importacoesHgsi[index].codigo = String(cadastro.codigo || cadastro.id || '');
 importacoesHgsi[index].name = cadastro.name || '';
 importacoesHgsi[index].store = cadastro.store || '';
+importacoesHgsi[index].ignorarHgsi = false;
 importacoesHgsi[index].status = importacoesHgsi[index].cpf && cadastro.cpf === importacoesHgsi[index].cpf
 ? 'CPF encontrado'
 : 'Confirmado manualmente';
@@ -748,9 +764,11 @@ statusHgsiEl.innerText = 'Nenhuma planilha HGSI carregada.';
 return;
 }
 importacoesHgsi.forEach((item,index)=>{
-const precisaConfirmar = !item.codigo;
+const precisaConfirmar = !item.codigo && !item.ignorarHgsi;
 const statusClasse = precisaConfirmar
 ? 'text-red-400'
+: item.ignorarHgsi
+? 'text-slate-500'
 : item.status === 'CPF encontrado'
 ? 'text-green-400'
 : 'text-yellow-400';
@@ -764,7 +782,7 @@ previewHgsi.innerHTML += `
 <td>
 <select data-index="${index}" data-campo="cadastro-hgsi"
 class="w-80 bg-slate-950 border border-slate-700 rounded-xl p-2 outline-none">
-${opcoesConsultores(item.codigo)}
+${opcoesConsultores(item.ignorarHgsi ? '__ignorar__' : item.codigo,true)}
 </select>
 </td>
 <td class="uppercase text-slate-400">${escapeHtml(item.lojaHgsi)}</td>
@@ -775,11 +793,13 @@ ${opcoesConsultores(item.codigo)}
 </tr>
 `;
 });
-const pendentes = importacoesHgsi.filter(i=>!i.codigo).length;
-salvarHgsiBtn.disabled = importacoesHgsi.length === 0 || pendentes > 0;
+const pendentes = importacoesHgsi.filter(i=>!i.codigo && !i.ignorarHgsi).length;
+const ignorados = importacoesHgsi.filter(i=>i.ignorarHgsi).length;
+const importaveis = importacoesHgsi.length - pendentes - ignorados;
+salvarHgsiBtn.disabled = importacoesHgsi.length === 0 || pendentes > 0 || importaveis === 0;
 statusHgsiEl.innerText = pendentes
-? `${importacoesHgsi.length} linha(s) HGSI lida(s). ${pendentes} pendente(s) de confirmacao.`
-: `${importacoesHgsi.length} linha(s) HGSI pronta(s) para importar.`;
+? `${importacoesHgsi.length} linha(s) HGSI lida(s). ${pendentes} pendente(s) de confirmacao. ${ignorados} desconsiderada(s).`
+: `${importaveis} linha(s) HGSI pronta(s) para importar. ${ignorados} desconsiderada(s).`;
 }
 
 renderizarPreview();
@@ -968,7 +988,7 @@ alert('Selecione a competencia.');
 return;
 }
 
-const pendentes = importacoesHgsi.filter(i=>!i.codigo);
+const pendentes = importacoesHgsi.filter(i=>!i.codigo && !i.ignorarHgsi);
 if(pendentes.length){
 alert('Confirme todos os consultores antes de salvar.');
 return;
@@ -980,6 +1000,7 @@ statusHgsiEl.innerText = 'Salvando HGSI...';
 try{
 const importadoEm = new Date().toISOString();
 for(const item of importacoesHgsi){
+if(item.ignorarHgsi) continue;
 const cadastro =
 cadastrosLista.find(c=>String(c.codigo || c.id) === String(item.codigo));
 const dadosHgsi = {
