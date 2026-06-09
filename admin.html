@@ -78,7 +78,7 @@ CANCELAR EDIÇÃO
 Cadastro de Consultores
 </h2>
 <p class="text-slate-500 mt-2">
-Vincule o codigo do Apolo ao nome e loja para evitar erro na importacao.
+Vincule o cod interno ao nome e loja para evitar erro na importacao.
 </p>
 </div>
 <a href="importar-apolo.html"
@@ -87,10 +87,8 @@ IMPORTAR APOLO
 </a>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-5 gap-5 mb-8">
-<input id="cadastroCodigo" placeholder="Codigo Apolo"
-class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
-<input id="cadastroCodigoLinx" placeholder="Cod interno"
+<div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+<input id="cadastroCodigo" placeholder="Cod interno"
 class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
 <input id="cadastroNome" placeholder="Nome Consultor"
 class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none md:col-span-2">
@@ -111,7 +109,6 @@ CANCELAR EDICAO
 <table class="w-full">
 <thead>
 <tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
-<th class="text-left py-4">Codigo</th>
 <th class="text-left">Cod interno</th>
 <th class="text-left">Consultor</th>
 <th class="text-left">Loja</th>
@@ -345,8 +342,6 @@ const competenciaCampanha =
 document.getElementById('competenciaCampanha');
 const cadastroCodigo =
 document.getElementById('cadastroCodigo');
-const cadastroCodigoLinx =
-document.getElementById('cadastroCodigoLinx');
 const cadastroNome =
 document.getElementById('cadastroNome');
 const cadastroLoja =
@@ -473,7 +468,6 @@ cancelarCadastroBtn.addEventListener('click',cancelarEdicaoCadastro);
 
 async function salvarCadastroConsultor(){
 const codigo = cadastroCodigo.value.trim();
-const codigoLinx = cadastroCodigoLinx.value.trim();
 const nome = cadastroNome.value.trim();
 const loja = cadastroLoja.value.trim();
 
@@ -486,7 +480,6 @@ await setDoc(
 doc(db,'consultores_cadastro',codigo),
 {
 codigo,
-codigo_linx:codigoLinx,
 name:nome,
 store:loja
 }
@@ -494,7 +487,6 @@ store:loja
 
 editandoCadastroId = null;
 cadastroCodigo.value = '';
-cadastroCodigoLinx.value = '';
 cadastroNome.value = '';
 cadastroLoja.value = '';
 cadastroCodigo.disabled = false;
@@ -506,7 +498,6 @@ alert('Consultor cadastrado.');
 function cancelarEdicaoCadastro(){
 editandoCadastroId = null;
 cadastroCodigo.value = '';
-cadastroCodigoLinx.value = '';
 cadastroNome.value = '';
 cadastroLoja.value = '';
 cadastroCodigo.disabled = false;
@@ -533,7 +524,6 @@ cadastrosConsultores
 listaCadastros.innerHTML += `
 <tr class="border-b border-slate-800">
 <td class="py-4 font-black text-blue-400">${c.codigo || c.id}</td>
-<td class="text-slate-400">${c.codigo_linx || '-'}</td>
 <td class="uppercase font-black">${c.name}</td>
 <td class="uppercase text-slate-400">${c.store}</td>
 <td class="text-center">
@@ -559,7 +549,6 @@ cadastrosConsultores.find(c=>c.id === id);
 if(!cadastro) return;
 editandoCadastroId = id;
 cadastroCodigo.value = cadastro.codigo || cadastro.id;
-cadastroCodigoLinx.value = cadastro.codigo_linx || '';
 cadastroNome.value = cadastro.name || '';
 cadastroLoja.value = cadastro.store || '';
 cadastroCodigo.disabled = true;

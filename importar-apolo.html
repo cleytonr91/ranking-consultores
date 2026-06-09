@@ -39,7 +39,7 @@ Selecione os arquivos .txt gerados pelo Apolo em C:\ApolloClient\rel.
 <div>
 <h2 class="text-3xl font-black">Consultores Cadastrados</h2>
 <p class="text-slate-500 mt-2">
-Confira se codigo Apolo, cod interno, nome e loja estao corretos antes de importar.
+Confira se cod interno, nome e loja estao corretos antes de importar.
 </p>
 </div>
 <button id="recarregarCadastrosBtn"
@@ -52,7 +52,6 @@ RECARREGAR
 <table class="w-full min-w-[900px]">
 <thead>
 <tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
-<th class="text-left py-4">Codigo Apolo</th>
 <th class="text-left">Cod interno</th>
 <th class="text-left">Consultor</th>
 <th class="text-left">Loja</th>
@@ -78,7 +77,6 @@ SALVAR NO FIRESTORE
 <thead>
 <tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
 <th class="text-left py-4">Arquivo</th>
-<th class="text-left">Codigo</th>
 <th class="text-left">Cod interno</th>
 <th class="text-left">Consultor</th>
 <th class="text-left">Loja</th>
@@ -174,7 +172,7 @@ function renderizarCadastrosImportacao(){
 if(cadastrosLista.length === 0){
 listaCadastrosImportacao.innerHTML = `
 <tr>
-<td colspan="4" class="py-8 text-center text-slate-500">
+<td colspan="3" class="py-8 text-center text-slate-500">
 Nenhum consultor carregado.
 </td>
 </tr>
@@ -189,7 +187,6 @@ cadastrosLista
 listaCadastrosImportacao.innerHTML += `
 <tr class="border-b border-slate-800">
 <td class="py-4 font-black text-blue-400">${escapeHtml(c.codigo || c.id)}</td>
-<td class="text-slate-400">${escapeHtml(c.codigo_linx || '-')}</td>
 <td class="uppercase font-black">${escapeHtml(c.name || '')}</td>
 <td class="uppercase text-slate-400">${escapeHtml(c.store || '')}</td>
 </tr>
@@ -251,7 +248,7 @@ preview.innerHTML = '';
 if(importacoes.length === 0){
 preview.innerHTML = `
 <tr>
-<td colspan="9" class="py-10 text-center text-slate-500">
+<td colspan="8" class="py-10 text-center text-slate-500">
 Selecione um arquivo .txt do Apolo para preencher nome, loja e conferir os totais.
 </td>
 </tr>
@@ -267,10 +264,6 @@ preview.innerHTML += `
 <td class="py-4 text-slate-300">${escapeHtml(item.arquivo)}</td>
 <td>
 <input data-index="${index}" data-campo="codigo" value="${escapeHtml(item.codigo)}"
-class="w-24 bg-slate-950 border border-slate-700 rounded-xl p-2 outline-none">
-</td>
-<td>
-<input data-index="${index}" data-campo="codigo_linx" value="${escapeHtml(item.codigo_linx)}"
 placeholder="Cod interno"
 class="w-28 bg-slate-950 border border-slate-700 rounded-xl p-2 outline-none">
 </td>
@@ -339,7 +332,6 @@ const cadastro = cadastros.get(codigo);
 importacoes.push({
 arquivo:arquivo.name,
 codigo,
-codigo_linx:cadastro?.codigo_linx || '',
 name:cadastro?.name || '',
 store:cadastro?.store || '',
 ...totais
@@ -398,7 +390,6 @@ const dadosApolo = {
 name:item.name.trim(),
 store:item.store.trim(),
 codigo_apolo:item.codigo.trim(),
-codigo_linx:item.codigo_linx.trim(),
 competencia,
 rev_und:item.rev_und,
 serv_adic:item.serv_adic,
