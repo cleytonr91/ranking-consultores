@@ -61,6 +61,7 @@ RECARREGAR
 <th class="text-left">Cod interno</th>
 <th class="text-left">Consultor</th>
 <th class="text-left">Loja</th>
+<th class="text-left">CPF HGSI</th>
 <th class="text-left">Ultima importacao</th>
 </tr>
 </thead>
@@ -174,6 +175,12 @@ if(Number.isNaN(data.getTime())) return 'Nunca';
 return data.toLocaleString('pt-BR');
 }
 
+function formatarCpf(valor){
+const cpf = String(valor || '').replace(/\D/g,'');
+if(cpf.length !== 11) return cpf || '-';
+return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
+}
+
 function campoFirestore(valor){
 if(typeof valor === 'boolean'){
 return {booleanValue:valor};
@@ -240,7 +247,8 @@ const cadastro = {
 id,
 codigo:valorCampoFirestore(fields.codigo) || id,
 name:valorCampoFirestore(fields.name),
-store:valorCampoFirestore(fields.store)
+store:valorCampoFirestore(fields.store),
+cpf:valorCampoFirestore(fields.cpf)
 };
 cadastroCache.set(String(cadastro.codigo || cadastro.id),cadastro);
 cadastrosLista.push(cadastro);
@@ -261,7 +269,7 @@ function renderizarCadastrosImportacao(){
 if(cadastrosLista.length === 0){
 listaCadastrosImportacao.innerHTML = `
 <tr>
-<td colspan="4" class="py-8 text-center text-slate-500">
+<td colspan="5" class="py-8 text-center text-slate-500">
 Nenhum consultor carregado.
 </td>
 </tr>
@@ -278,6 +286,7 @@ listaCadastrosImportacao.innerHTML += `
 <td class="py-4 font-black text-blue-400">${escapeHtml(c.codigo || c.id)}</td>
 <td class="uppercase font-black">${escapeHtml(c.name || '')}</td>
 <td class="uppercase text-slate-400">${escapeHtml(c.store || '')}</td>
+<td class="text-slate-400">${escapeHtml(formatarCpf(c.cpf || ''))}</td>
 <td class="text-slate-400">${formatarDataHora(ultimasImportacoes.get(String(c.codigo || c.id || '')))}</td>
 </tr>
 `;

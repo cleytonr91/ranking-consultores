@@ -87,12 +87,14 @@ IMPORTAR APOLO
 </a>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-5 gap-5 mb-8">
 <input id="cadastroCodigo" placeholder="Cod interno"
 class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
 <input id="cadastroNome" placeholder="Nome Consultor"
 class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none md:col-span-2">
 <input id="cadastroLoja" placeholder="Loja"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
+<input id="cadastroCpf" placeholder="CPF HGSI"
 class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
 </div>
 
@@ -112,6 +114,7 @@ CANCELAR EDICAO
 <th class="text-left">Cod interno</th>
 <th class="text-left">Consultor</th>
 <th class="text-left">Loja</th>
+<th class="text-left">CPF HGSI</th>
 <th class="text-center">Acoes</th>
 </tr>
 </thead>
@@ -346,6 +349,8 @@ const cadastroNome =
 document.getElementById('cadastroNome');
 const cadastroLoja =
 document.getElementById('cadastroLoja');
+const cadastroCpf =
+document.getElementById('cadastroCpf');
 const salvarCadastroBtn =
 document.getElementById('salvarCadastroBtn');
 const cancelarCadastroBtn =
@@ -466,10 +471,17 @@ cancelarCadastroBtn.addEventListener('click',cancelarEdicaoCadastro);
    CAMPANHA SEMANAL
 =========================== */
 
+function formatarCpf(valor){
+const cpf = String(valor || '').replace(/\D/g,'');
+if(cpf.length !== 11) return cpf || '-';
+return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
+}
+
 async function salvarCadastroConsultor(){
 const codigo = cadastroCodigo.value.trim();
 const nome = cadastroNome.value.trim();
 const loja = cadastroLoja.value.trim();
+const cpf = cadastroCpf.value.replace(/\D/g,'');
 
 if(!codigo || !nome || !loja){
 alert('Preencha codigo, nome e loja.');
@@ -481,7 +493,8 @@ doc(db,'consultores_cadastro',codigo),
 {
 codigo,
 name:nome,
-store:loja
+store:loja,
+cpf
 }
 );
 
@@ -489,6 +502,7 @@ editandoCadastroId = null;
 cadastroCodigo.value = '';
 cadastroNome.value = '';
 cadastroLoja.value = '';
+cadastroCpf.value = '';
 cadastroCodigo.disabled = false;
 salvarCadastroBtn.innerText = 'SALVAR CONSULTOR';
 cancelarCadastroBtn.classList.add('hidden');
@@ -500,6 +514,7 @@ editandoCadastroId = null;
 cadastroCodigo.value = '';
 cadastroNome.value = '';
 cadastroLoja.value = '';
+cadastroCpf.value = '';
 cadastroCodigo.disabled = false;
 salvarCadastroBtn.innerText = 'SALVAR CONSULTOR';
 cancelarCadastroBtn.classList.add('hidden');
@@ -526,6 +541,7 @@ listaCadastros.innerHTML += `
 <td class="py-4 font-black text-blue-400">${c.codigo || c.id}</td>
 <td class="uppercase font-black">${c.name}</td>
 <td class="uppercase text-slate-400">${c.store}</td>
+<td class="text-slate-400">${formatarCpf(c.cpf || '')}</td>
 <td class="text-center">
 <button
 class="bg-yellow-500 hover:bg-yellow-600 transition-all px-4 py-2 rounded-xl font-black text-sm mr-2"
@@ -551,6 +567,7 @@ editandoCadastroId = id;
 cadastroCodigo.value = cadastro.codigo || cadastro.id;
 cadastroNome.value = cadastro.name || '';
 cadastroLoja.value = cadastro.store || '';
+cadastroCpf.value = cadastro.cpf || '';
 cadastroCodigo.disabled = true;
 salvarCadastroBtn.innerText = 'ATUALIZAR CONSULTOR';
 cancelarCadastroBtn.classList.remove('hidden');
