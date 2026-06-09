@@ -113,9 +113,10 @@ const listaCadastrosImportacao = document.getElementById('listaCadastrosImportac
 const recarregarCadastrosBtn = document.getElementById('recarregarCadastrosBtn');
 
 let importacoes = [];
-let firebaseCache = null;
 let cadastroCache = null;
 let cadastrosLista = [];
+const firestoreBase =
+'https://firestore.googleapis.com/v1/projects/ranking-consultores/databases/(default)/documents';
 
 const hoje = new Date();
 competenciaInput.value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
@@ -155,23 +156,6 @@ dataFimInput.value = `${fim.getFullYear()}-${String(fim.getMonth()+1).padStart(2
 
 competenciaInput.addEventListener('change',atualizarPeriodoPadrao);
 
-async function carregarFirebase(){
-if(firebaseCache) return firebaseCache;
-const firebaseConfig = await import('./firebase-config.js');
-const firestore = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-firebaseCache = {
-db:firebaseConfig.db,
-collection:firestore.collection,
-addDoc:firestore.addDoc,
-updateDoc:firestore.updateDoc,
-doc:firestore.doc,
-query:firestore.query,
-where:firestore.where,
-getDocs:firestore.getDocs
-};
-return firebaseCache;
-}
-
 function valorCampoFirestore(campo){
 if(!campo) return '';
 return campo.stringValue ??
@@ -181,8 +165,32 @@ campo.booleanValue ??
 '';
 }
 
+function campoFirestore(valor){
+if(typeof valor === 'boolean'){
+return {booleanValue:valor};
+}
+if(typeof valor === 'number'){
+return Number.isInteger(valor)
+? {integerValue:String(valor)}
+: {doubleValue:valor};
+}
+return {stringValue:String(valor ?? '')};
+}
+
+function documentoParaObjeto(docu){
+const fields = docu.fields || {};
+const dados = {
+id:docu.name.split('/').pop(),
+path:docu.name
+};
+Object.entries(fields).forEach(([chave,valor])=>{
+dados[chave] = valorCampoFirestore(valor);
+});
+return dados;
+}
+
 async function carregarCadastrosViaRest(){
-const url = 'https://firestore.googleapis.com/v1/projects/ranking-consultores/databases/(default)/documents/consultores_cadastro?pageSize=1000';
+const url = `${firestoreBase}/consultores_cadastro?pageSize=1000`;
 const resposta = await fetch(url);
 if(!resposta.ok){
 throw new Error(`Falha ao carregar cadastros (${resposta.status})`);
@@ -211,32 +219,7 @@ return cadastroCache;
 
 async function carregarCadastros(){
 if(cadastroCache) return cadastroCache;
-try{
-const {
-db,
-collection,
-getDocs
-} = await carregarFirebase();
-const snapshot = await getDocs(collection(db,'consultores_cadastro'));
-cadastroCache = new Map();
-cadastrosLista = [];
-snapshot.forEach((docu)=>{
-const dados = docu.data();
-cadastroCache.set(String(dados.codigo || docu.id),dados);
-cadastrosLista.push({
-id:docu.id,
-...dados
-});
-});
-renderizarCadastrosImportacao();
-if(importacoes.length){
-renderizarPreview();
-}
-return cadastroCache;
-}catch(error){
-console.warn('Carregamento via Firebase falhou. Tentando REST.',error);
 return carregarCadastrosViaRest();
-}
 }
 
 function renderizarCadastrosImportacao(){
@@ -286,6 +269,81 @@ importacoes[index].codigo = String(cadastro.codigo || cadastro.id || '');
 importacoes[index].name = cadastro.name || '';
 importacoes[index].store = cadastro.store || '';
 renderizarPreview();
+}
+
+async function consultarResultado(campo,valor,competencia){
+const resposta = await fetch(`${firestoreBase}:runQuery`,{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+structuredQuery:{
+from:[{collectionId:'consultores'}],
+where:{
+compositeFilter:{
+op:'AND',
+filters:[
+{
+fieldFilter:{
+field:{fieldPath:campo},
+op:'EQUAL',
+value:campoFirestore(valor)
+}
+},
+{
+fieldFilter:{
+field:{fieldPath:'competencia'},
+op:'EQUAL',
+value:campoFirestore(competencia)
+}
+}
+]
+}
+},
+limit:1
+}
+})
+});
+if(!resposta.ok){
+throw new Error(`Falha ao consultar resultados (${resposta.status})`);
+}
+const dados = await resposta.json();
+const encontrado = dados.find(item=>item.document);
+return encontrado ? documentoParaObjeto(encontrado.document) : null;
+}
+
+async function salvarNovoResultado(dados){
+const fields = {};
+Object.entries(dados).forEach(([chave,valor])=>{
+fields[chave] = campoFirestore(valor);
+});
+const resposta = await fetch(`${firestoreBase}/consultores`,{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({fields})
+});
+if(!resposta.ok){
+throw new Error(`Falha ao criar resultado (${resposta.status})`);
+}
+return resposta.json();
+}
+
+async function atualizarResultado(path,dados){
+const fields = {};
+Object.entries(dados).forEach(([chave,valor])=>{
+fields[chave] = campoFirestore(valor);
+});
+const updateMask = Object.keys(fields)
+.map(campo=>`updateMask.fieldPaths=${encodeURIComponent(campo)}`)
+.join('&');
+const resposta = await fetch(`https://firestore.googleapis.com/v1/${path}?${updateMask}`,{
+method:'PATCH',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({fields})
+});
+if(!resposta.ok){
+throw new Error(`Falha ao atualizar resultado (${resposta.status})`);
+}
+return resposta.json();
 }
 
 function codigoPorArquivo(nome){
@@ -479,17 +537,6 @@ salvarBtn.disabled = true;
 statusEl.innerText = 'Salvando...';
 
 try{
-const {
-db,
-collection,
-addDoc,
-updateDoc,
-doc,
-query,
-where,
-getDocs
-} = await carregarFirebase();
-
 for(const item of importacoes){
 const dadosApolo = {
 name:item.name.trim(),
@@ -504,38 +551,28 @@ emb_oficina:item.emb_oficina,
 ferias:false
 };
 
-const consulta = query(
-collection(db,'consultores'),
-where('codigo_apolo','==',dadosApolo.codigo_apolo),
-where('competencia','==',competencia)
-);
-let existente = await getDocs(consulta);
+let existente =
+await consultarResultado('codigo_apolo',dadosApolo.codigo_apolo,competencia);
 
-if(existente.empty){
-const consultaNome = query(
-collection(db,'consultores'),
-where('name','==',dadosApolo.name),
-where('competencia','==',competencia)
-);
-existente = await getDocs(consultaNome);
+if(!existente){
+existente =
+await consultarResultado('name',dadosApolo.name,competencia);
 }
 
-if(existente.empty){
-await addDoc(collection(db,'consultores'),{
+if(!existente){
+await salvarNovoResultado({
 ...dadosApolo,
 hgsi:0,
 pesquisas:0,
 meta_pesquisas:0
 });
 }else{
-const docRef = existente.docs[0];
-const atual = docRef.data();
-await updateDoc(doc(db,'consultores',docRef.id),{
+await atualizarResultado(existente.path,{
 ...dadosApolo,
-hgsi:atual.hgsi || 0,
-pesquisas:atual.pesquisas || 0,
-meta_pesquisas:atual.meta_pesquisas || 0,
-ferias:atual.ferias || false
+hgsi:numero(existente.hgsi || 0),
+pesquisas:numero(existente.pesquisas || 0),
+meta_pesquisas:numero(existente.meta_pesquisas || 0),
+ferias:Boolean(existente.ferias)
 });
 }
 }
