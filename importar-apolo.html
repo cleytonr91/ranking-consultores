@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Importar Relatorios Apolo</title>
+<title>Central de Importacoes</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body class="bg-[#020617] text-white min-h-screen p-6">
 <div class="max-w-7xl mx-auto">
@@ -12,10 +13,10 @@
 <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-10">
 <div>
 <h1 class="text-5xl font-black italic">
-IMPORTAR <span class="text-blue-500">APOLO</span>
+CENTRAL DE <span class="text-blue-500">IMPORTACOES</span>
 </h1>
 <p class="text-slate-500 uppercase tracking-[5px] mt-2">
-Resumo venda de servicos
+Apolo e HGSI
 </p>
 </div>
 <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
@@ -32,12 +33,22 @@ class="bg-slate-900 border border-slate-700 rounded-2xl p-4 text-xl outline-none
 </div>
 
 <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 mb-10">
-<h2 class="text-3xl font-black mb-6">Arquivos Exportados</h2>
+<h2 class="text-3xl font-black mb-6">Apolo - Resumo Venda de Servicos</h2>
 <input id="arquivos" type="file" accept=".txt" multiple
 class="block w-full text-lg text-slate-300 file:mr-6 file:rounded-xl file:border-0 file:bg-blue-600 file:px-6 file:py-3 file:font-black file:text-white hover:file:bg-blue-700"/>
 <p class="text-slate-500 mt-4">
 Selecione os arquivos .txt gerados pelo Apolo em C:\ApolloClient\rel.
 </p>
+</div>
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 mb-10">
+<h2 class="text-3xl font-black mb-6">HGSI - Ranking de Consultores</h2>
+<input id="arquivoHgsi" type="file" accept=".xls,.xlsx"
+class="block w-full text-lg text-slate-300 file:mr-6 file:rounded-xl file:border-0 file:bg-cyan-600 file:px-6 file:py-3 file:font-black file:text-white hover:file:bg-cyan-700"/>
+<p class="text-slate-500 mt-4">
+Selecione a planilha do Portal HGSI. O batimento automatico usa CPF HGSI do cadastro.
+</p>
+<div id="periodoHgsi" class="text-slate-400 mt-4"></div>
 </div>
 
 <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 mb-10">
@@ -72,7 +83,7 @@ RECARREGAR
 
 <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8">
 <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
-<h2 class="text-3xl font-black">Previa da Importacao</h2>
+<h2 class="text-3xl font-black">Previa da Importacao Apolo</h2>
 <button id="salvarBtn"
 class="bg-green-600 hover:bg-green-700 transition-all px-8 py-4 rounded-2xl text-xl font-black disabled:opacity-40"
 disabled>
@@ -101,6 +112,37 @@ SALVAR NO FIRESTORE
 <div id="status" class="text-slate-400 mt-6"></div>
 </div>
 
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 mt-10">
+<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+<h2 class="text-3xl font-black">Previa da Importacao HGSI</h2>
+<button id="salvarHgsiBtn"
+class="bg-green-600 hover:bg-green-700 transition-all px-8 py-4 rounded-2xl text-xl font-black disabled:opacity-40"
+disabled>
+SALVAR HGSI NO FIRESTORE
+</button>
+</div>
+
+<div class="overflow-x-auto">
+<table class="w-full min-w-[1300px]">
+<thead>
+<tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
+<th class="text-left py-4">Consultor HGSI</th>
+<th class="text-left">CPF</th>
+<th class="text-left">Consultor cadastrado</th>
+<th class="text-left">Loja HGSI</th>
+<th class="text-center">HGSI</th>
+<th class="text-center">Pesquisas</th>
+<th class="text-center">Cota</th>
+<th class="text-left">Status</th>
+</tr>
+</thead>
+<tbody id="previewHgsi"></tbody>
+</table>
+</div>
+
+<div id="statusHgsi" class="text-slate-400 mt-6"></div>
+</div>
+
 </div>
 
 <script>
@@ -108,16 +150,23 @@ const competenciaInput = document.getElementById('competencia');
 const dataInicioInput = document.getElementById('dataInicio');
 const dataFimInput = document.getElementById('dataFim');
 const arquivosInput = document.getElementById('arquivos');
+const arquivoHgsiInput = document.getElementById('arquivoHgsi');
+const periodoHgsiEl = document.getElementById('periodoHgsi');
 const preview = document.getElementById('preview');
+const previewHgsi = document.getElementById('previewHgsi');
 const salvarBtn = document.getElementById('salvarBtn');
+const salvarHgsiBtn = document.getElementById('salvarHgsiBtn');
 const statusEl = document.getElementById('status');
+const statusHgsiEl = document.getElementById('statusHgsi');
 const listaCadastrosImportacao = document.getElementById('listaCadastrosImportacao');
 const recarregarCadastrosBtn = document.getElementById('recarregarCadastrosBtn');
 
 let importacoes = [];
+let importacoesHgsi = [];
 let cadastroCache = null;
 let cadastrosLista = [];
 let ultimasImportacoes = new Map();
+let periodoHgsi = {inicio:'',fim:'',texto:''};
 const firestoreBase =
 'https://firestore.googleapis.com/v1/projects/ranking-consultores/databases/(default)/documents';
 
@@ -181,6 +230,74 @@ if(cpf.length !== 11) return cpf || '-';
 return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
 }
 
+function somenteDigitos(valor){
+return String(valor || '').replace(/\D/g,'');
+}
+
+function normalizarTexto(valor){
+return String(valor || '')
+.normalize('NFD')
+.replace(/[\u0300-\u036f]/g,'')
+.replace(/[^A-Za-z0-9 ]/g,' ')
+.replace(/\s+/g,' ')
+.trim()
+.toUpperCase();
+}
+
+function lojaChave(valor){
+const texto = normalizarTexto(valor);
+if(texto.includes('ARACAJU') || texto.includes('AJU')) return 'AJU';
+if(texto.includes('NATAL') || texto.includes('NTL')) return 'NTL';
+if(texto.includes('MOSSORO') || texto.includes('MSS')) return 'MSS';
+if(texto.includes('JUAZEIRO') || texto.includes('JUA')) return 'JUA';
+if(texto.includes('RENASCENCA') || texto.includes('RNT')) return 'RNT';
+return texto;
+}
+
+function dataIsoBr(valor){
+const partes = String(valor || '').match(/(\d{2})\/(\d{2})\/(\d{4})/);
+if(!partes) return '';
+return `${partes[3]}-${partes[2]}-${partes[1]}`;
+}
+
+function competenciaPorTexto(texto){
+const meses = {
+JANEIRO:'01',
+FEVEREIRO:'02',
+MARCO:'03',
+ABRIL:'04',
+MAIO:'05',
+JUNHO:'06',
+JULHO:'07',
+AGOSTO:'08',
+SETEMBRO:'09',
+OUTUBRO:'10',
+NOVEMBRO:'11',
+DEZEMBRO:'12'
+};
+const normalizado = normalizarTexto(texto);
+const ano = normalizado.match(/20\d{2}/)?.[0];
+const mesNome = Object.keys(meses).find(m=>normalizado.includes(m));
+return ano && mesNome ? `${ano}-${meses[mesNome]}` : '';
+}
+
+function aplicarPeriodoHgsiDetectado(texto){
+const periodoMatch = String(texto || '').match(/(\d{2}\/\d{2}\/\d{4})\s*\D+\s*(\d{2}\/\d{2}\/\d{4})/i);
+periodoHgsi = {
+inicio:periodoMatch ? dataIsoBr(periodoMatch[1]) : '',
+fim:periodoMatch ? dataIsoBr(periodoMatch[2]) : '',
+texto:String(texto || '')
+};
+const competenciaDetectada = competenciaPorTexto(texto);
+if(competenciaDetectada){
+competenciaInput.value = competenciaDetectada;
+atualizarPeriodoPadrao();
+}
+periodoHgsiEl.innerText = periodoHgsi.texto
+? `Periodo detectado: ${periodoHgsi.texto}`
+: 'Periodo nao detectado na planilha.';
+}
+
 function campoFirestore(valor){
 if(typeof valor === 'boolean'){
 return {booleanValue:valor};
@@ -217,7 +334,10 @@ ultimasImportacoes = new Map();
 const resultado = documentoParaObjeto(docu);
 const codigo = String(resultado.codigo_apolo || '');
 if(!codigo) return;
-const dataRef = resultado.importado_em || docu.updateTime;
+const datas = [resultado.importado_em,resultado.importado_hgsi_em,docu.updateTime]
+.filter(Boolean)
+.sort((a,b)=>new Date(b)-new Date(a));
+const dataRef = datas[0];
 if(!dataRef) return;
 const atual = ultimasImportacoes.get(codigo);
 if(!atual || new Date(dataRef) > new Date(atual)){
@@ -248,14 +368,21 @@ id,
 codigo:valorCampoFirestore(fields.codigo) || id,
 name:valorCampoFirestore(fields.name),
 store:valorCampoFirestore(fields.store),
-cpf:valorCampoFirestore(fields.cpf)
+cpf:somenteDigitos(valorCampoFirestore(fields.cpf))
 };
 cadastroCache.set(String(cadastro.codigo || cadastro.id),cadastro);
+if(cadastro.cpf){
+cadastroCache.set(`cpf:${cadastro.cpf}`,cadastro);
+}
 cadastrosLista.push(cadastro);
 });
 renderizarCadastrosImportacao();
 if(importacoes.length){
 renderizarPreview();
+}
+if(importacoesHgsi.length){
+vincularImportacoesHgsi();
+renderizarPreviewHgsi();
 }
 return cadastroCache;
 }
@@ -440,6 +567,127 @@ totais.emb_oficina += valor;
 return totais;
 }
 
+function sugerirCadastroHgsi(item){
+const porCpf = cadastroCache?.get(`cpf:${item.cpf}`);
+if(porCpf){
+return {cadastro:porCpf,status:'CPF encontrado'};
+}
+const nomeHgsi = normalizarTexto(item.nomeHgsi);
+const lojaHgsi = lojaChave(item.lojaHgsi);
+const sugestao = cadastrosLista.find(c=>{
+const nomeCadastro = normalizarTexto(c.name);
+const lojaCadastro = lojaChave(c.store);
+const partes = nomeCadastro.split(' ').filter(Boolean).slice(0,2);
+return partes.length > 0 &&
+partes.every(parte=>nomeHgsi.split(' ').includes(parte)) &&
+lojaCadastro === lojaHgsi;
+});
+return sugestao
+? {cadastro:sugestao,status:'Sugestao por nome/loja'}
+: {cadastro:null,status:'Selecione o consultor'};
+}
+
+function vincularImportacoesHgsi(){
+importacoesHgsi = importacoesHgsi.map(item=>{
+if(item.codigo) return item;
+const sugestao = sugerirCadastroHgsi(item);
+return {
+...item,
+codigo:sugestao.cadastro ? String(sugestao.cadastro.codigo || sugestao.cadastro.id || '') : '',
+name:sugestao.cadastro?.name || '',
+store:sugestao.cadastro?.store || '',
+status:sugestao.status
+};
+});
+}
+
+function aplicarCadastroNaImportacaoHgsi(index,codigo){
+const cadastro = cadastrosLista.find(c=>String(c.codigo || c.id) === String(codigo));
+if(!importacoesHgsi[index]) return;
+if(!cadastro){
+importacoesHgsi[index].codigo = '';
+importacoesHgsi[index].name = '';
+importacoesHgsi[index].store = '';
+importacoesHgsi[index].status = 'Selecione o consultor';
+renderizarPreviewHgsi();
+return;
+}
+importacoesHgsi[index].codigo = String(cadastro.codigo || cadastro.id || '');
+importacoesHgsi[index].name = cadastro.name || '';
+importacoesHgsi[index].store = cadastro.store || '';
+importacoesHgsi[index].status = importacoesHgsi[index].cpf && cadastro.cpf === importacoesHgsi[index].cpf
+? 'CPF encontrado'
+: 'Confirmado manualmente';
+renderizarPreviewHgsi();
+}
+
+function linhaParaTexto(linha){
+return linha.map(c=>String(c ?? '')).join(' ');
+}
+
+function extrairLinhasHgsi(workbook){
+const nomeAba = workbook.SheetNames.includes('Ranking')
+? 'Ranking'
+: workbook.SheetNames[0];
+const sheet = workbook.Sheets[nomeAba];
+const linhas = XLSX.utils.sheet_to_json(sheet,{header:1,raw:false,defval:''});
+const periodoLinha = linhas.find(linha=>linhaParaTexto(linha).includes('Periodo do campo')) || [];
+aplicarPeriodoHgsiDetectado(linhaParaTexto(periodoLinha));
+const cabecalhoIndex = linhas.findIndex(linha=>{
+const texto = linha.map(c=>normalizarTexto(c)).join('|');
+return texto.includes('CODIGO') && texto.includes('CPF') && texto.includes('HGSI');
+});
+if(cabecalhoIndex < 0){
+throw new Error('Nao encontrei o cabecalho da planilha HGSI.');
+}
+const cabecalhoSuperior = cabecalhoIndex > 0
+? linhas[cabecalhoIndex - 1].map(c=>normalizarTexto(c))
+: [];
+const cabecalho = linhas[cabecalhoIndex].map((c,i)=>{
+const atual = normalizarTexto(c);
+return atual || cabecalhoSuperior[i] || '';
+});
+const colCodigo = cabecalho.findIndex(c=>c === 'CODIGO');
+const colLoja = cabecalho.findIndex((c,i)=>c === 'NOME' && i > colCodigo);
+const colConsultor = cabecalho.findIndex((c,i)=>c === 'NOME' && i > colLoja);
+const colCpf = cabecalho.findIndex(c=>c === 'CPF');
+const colHgsi = cabecalho.findIndex(c=>c === 'HGSI');
+const colAmostra = cabecalho.findIndex(c=>c === 'AMOSTRA');
+const colCota = cabecalho.findIndex(c=>c.includes('CUMPRI') || c.includes('COTA'));
+const colAtendimento = cabecalho.findIndex(c=>c.includes('CONSULTOR') && c.startsWith('Q 3'));
+const colTempo = cabecalho.findIndex(c=>c.includes('TEMPO') && c.startsWith('Q 4'));
+const colQualidade = cabecalho.findIndex(c=>c.includes('QUALIDADE') && c.startsWith('Q 5'));
+const colLavagem = cabecalho.findIndex(c=>c.includes('LAVAGEM'));
+const colValores = cabecalho.findIndex(c=>c.includes('VALORES'));
+const colCorretos = cabecalho.findIndex(c=>c.includes('CORRETOS'));
+return linhas.slice(cabecalhoIndex + 1)
+.map(linha=>({
+codigoConcessionaria:String(linha[colCodigo] || '').trim(),
+lojaHgsi:String(linha[colLoja] || '').trim(),
+nomeHgsi:String(linha[colConsultor] || '').trim(),
+cpf:somenteDigitos(linha[colCpf]),
+hgsi:numero(linha[colHgsi]),
+pesquisas:numero(linha[colAmostra]),
+cumpreCota:String(linha[colCota] || '').trim(),
+atendimentoConsultor:numero(linha[colAtendimento]),
+tempo:numero(linha[colTempo]),
+qualidadeServicos:numero(linha[colQualidade]),
+lavagem:numero(linha[colLavagem]),
+valoresTabela:numero(linha[colValores]),
+servicosCorretosPrimeiraVez:numero(linha[colCorretos])
+}))
+.filter(item=>item.nomeHgsi && item.hgsi > 0);
+}
+
+async function lerPlanilhaHgsi(arquivo){
+if(typeof XLSX === 'undefined'){
+throw new Error('Biblioteca de leitura de planilhas nao carregou.');
+}
+const buffer = await arquivo.arrayBuffer();
+const workbook = XLSX.read(buffer,{type:'array'});
+return extrairLinhasHgsi(workbook);
+}
+
 function renderizarPreview(){
 preview.innerHTML = '';
 if(importacoes.length === 0){
@@ -485,7 +733,57 @@ statusEl.innerText = importacoes.length
 : 'Nenhum arquivo carregado.';
 }
 
+function renderizarPreviewHgsi(){
+previewHgsi.innerHTML = '';
+if(importacoesHgsi.length === 0){
+previewHgsi.innerHTML = `
+<tr>
+<td colspan="8" class="py-10 text-center text-slate-500">
+Selecione uma planilha HGSI para conferir os consultores.
+</td>
+</tr>
+`;
+salvarHgsiBtn.disabled = true;
+statusHgsiEl.innerText = 'Nenhuma planilha HGSI carregada.';
+return;
+}
+importacoesHgsi.forEach((item,index)=>{
+const precisaConfirmar = !item.codigo;
+const statusClasse = precisaConfirmar
+? 'text-red-400'
+: item.status === 'CPF encontrado'
+? 'text-green-400'
+: 'text-yellow-400';
+previewHgsi.innerHTML += `
+<tr class="border-b border-slate-800">
+<td class="py-4">
+<div class="uppercase font-black">${escapeHtml(item.nomeHgsi)}</div>
+<div class="text-slate-500 text-sm">${escapeHtml(item.codigoConcessionaria)}</div>
+</td>
+<td class="text-slate-300">${escapeHtml(formatarCpf(item.cpf))}</td>
+<td>
+<select data-index="${index}" data-campo="cadastro-hgsi"
+class="w-80 bg-slate-950 border border-slate-700 rounded-xl p-2 outline-none">
+${opcoesConsultores(item.codigo)}
+</select>
+</td>
+<td class="uppercase text-slate-400">${escapeHtml(item.lojaHgsi)}</td>
+<td class="text-center font-black ${item.hgsi >= 970 ? 'text-green-400' : item.hgsi >= 960 ? 'text-yellow-400' : 'text-red-400'}">${item.hgsi}</td>
+<td class="text-center font-black text-cyan-400">${item.pesquisas}</td>
+<td class="text-center">${escapeHtml(item.cumpreCota || '-')}</td>
+<td class="${statusClasse} font-black">${escapeHtml(item.status || 'Selecione o consultor')}</td>
+</tr>
+`;
+});
+const pendentes = importacoesHgsi.filter(i=>!i.codigo).length;
+salvarHgsiBtn.disabled = importacoesHgsi.length === 0 || pendentes > 0;
+statusHgsiEl.innerText = pendentes
+? `${importacoesHgsi.length} linha(s) HGSI lida(s). ${pendentes} pendente(s) de confirmacao.`
+: `${importacoesHgsi.length} linha(s) HGSI pronta(s) para importar.`;
+}
+
 renderizarPreview();
+renderizarPreviewHgsi();
 renderizarCadastrosImportacao();
 
 recarregarCadastrosBtn.addEventListener('click',async()=>{
@@ -544,6 +842,27 @@ statusEl.innerText = `Erro ao ler arquivo: ${error.message}`;
 }
 });
 
+arquivoHgsiInput.addEventListener('change',async()=>{
+const arquivo = arquivoHgsiInput.files[0];
+importacoesHgsi = [];
+if(!arquivo){
+renderizarPreviewHgsi();
+return;
+}
+statusHgsiEl.innerText = 'Lendo planilha HGSI...';
+try{
+await carregarCadastros();
+importacoesHgsi = await lerPlanilhaHgsi(arquivo);
+vincularImportacoesHgsi();
+renderizarPreviewHgsi();
+}catch(error){
+console.error(error);
+importacoesHgsi = [];
+renderizarPreviewHgsi();
+statusHgsiEl.innerText = `Erro ao ler planilha HGSI: ${error.message}`;
+}
+});
+
 preview.addEventListener('input',(event)=>{
 const index = Number(event.target.dataset.index);
 const campo = event.target.dataset.campo;
@@ -556,6 +875,13 @@ const index = Number(event.target.dataset.index);
 const campo = event.target.dataset.campo;
 if(Number.isNaN(index) || campo !== 'cadastro') return;
 aplicarCadastroNaImportacao(index,event.target.value);
+});
+
+previewHgsi.addEventListener('change',(event)=>{
+const index = Number(event.target.dataset.index);
+const campo = event.target.dataset.campo;
+if(Number.isNaN(index) || campo !== 'cadastro-hgsi') return;
+aplicarCadastroNaImportacaoHgsi(index,event.target.value);
 });
 
 salvarBtn.addEventListener('click',async()=>{
@@ -632,6 +958,89 @@ statusEl.innerText = `Erro: ${error.message}`;
 alert(`Erro ao importar: ${error.message}`);
 }finally{
 salvarBtn.disabled = false;
+}
+});
+
+salvarHgsiBtn.addEventListener('click',async()=>{
+const competencia = competenciaInput.value;
+if(!competencia){
+alert('Selecione a competencia.');
+return;
+}
+
+const pendentes = importacoesHgsi.filter(i=>!i.codigo);
+if(pendentes.length){
+alert('Confirme todos os consultores antes de salvar.');
+return;
+}
+
+salvarHgsiBtn.disabled = true;
+statusHgsiEl.innerText = 'Salvando HGSI...';
+
+try{
+const importadoEm = new Date().toISOString();
+for(const item of importacoesHgsi){
+const cadastro =
+cadastrosLista.find(c=>String(c.codigo || c.id) === String(item.codigo));
+const dadosHgsi = {
+name:(cadastro?.name || item.name || item.nomeHgsi).trim(),
+store:(cadastro?.store || item.store || item.lojaHgsi).trim(),
+codigo_apolo:String(item.codigo).trim(),
+cpf_hgsi:item.cpf,
+competencia,
+hgsi:item.hgsi,
+pesquisas:item.pesquisas,
+meta_pesquisas:item.pesquisas,
+cumpre_cota_hgsi:item.cumpreCota,
+periodo_hgsi_inicio:periodoHgsi.inicio,
+periodo_hgsi_fim:periodoHgsi.fim,
+periodo_hgsi_texto:periodoHgsi.texto,
+importado_hgsi_em:importadoEm,
+hgsi_atendimento_consultor:item.atendimentoConsultor,
+hgsi_tempo:item.tempo,
+hgsi_qualidade_servicos:item.qualidadeServicos,
+hgsi_lavagem:item.lavagem,
+hgsi_valores_tabela:item.valoresTabela,
+hgsi_servicos_corretos_primeira_vez:item.servicosCorretosPrimeiraVez,
+ferias:false
+};
+
+let existente =
+await consultarResultado('codigo_apolo',dadosHgsi.codigo_apolo,competencia);
+
+if(!existente){
+existente =
+await consultarResultado('name',dadosHgsi.name,competencia);
+}
+
+if(!existente){
+await salvarNovoResultado({
+...dadosHgsi,
+rev_und:0,
+serv_adic:0,
+emb_oficina:0
+});
+}else{
+await atualizarResultado(existente.path,{
+...dadosHgsi,
+rev_und:numero(existente.rev_und || 0),
+serv_adic:numero(existente.serv_adic || 0),
+emb_oficina:numero(existente.emb_oficina || 0),
+ferias:Boolean(existente.ferias)
+});
+}
+}
+
+statusHgsiEl.innerText = 'Importacao HGSI concluida com sucesso.';
+alert('Dados HGSI importados com sucesso.');
+cadastroCache = null;
+await carregarCadastros();
+}catch(error){
+console.error(error);
+statusHgsiEl.innerText = `Erro: ${error.message}`;
+alert(`Erro ao importar HGSI: ${error.message}`);
+}finally{
+renderizarPreviewHgsi();
 }
 });
 </script>
