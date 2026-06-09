@@ -92,6 +92,9 @@ return String(valor || '')
 .replaceAll('"','&quot;')
 .replaceAll("'","&#039;");
 }
+function dinheiroInteiro(valor){
+return `R$ ${Math.ceil(Number(valor || 0)).toLocaleString('pt-BR')}`;
+}
 setInterval(atualizarRelogio, 1000);
 atualizarRelogio();
 onSnapshot(collection(db, "consultores"), (snapshot) => {
@@ -157,12 +160,17 @@ return tkmB - tkmA;
 });
 top3.innerHTML = '';
 rankingBody.innerHTML = '';
-data.forEach((c, i) => {
+data.forEach((original, i) => {
+const c = {
+...original,
+serv_adic:Math.ceil(Number(original.serv_adic || 0)),
+emb_oficina:Math.ceil(Number(original.emb_oficina || 0))
+};
 const nomeCompleto = (c.name || '').trim().split(' ');
 const nome = nomeCompleto[0] || '';
 const sobrenome = nomeCompleto.slice(1).join(' ') || '';
-const total = (c.serv_adic || 0) + (c.emb_oficina || 0);
-const tkm = c.rev_und > 0 ? total / c.rev_und : 0;
+const total = Math.ceil((Number(original.serv_adic || 0)) + (Number(original.emb_oficina || 0)));
+const tkm = c.rev_und > 0 ? Math.ceil(total / c.rev_und) : 0;
 const metaPesquisas = metaPesquisaOficial(c);
 const pesquisasPercent = metaPesquisas > 0 ? ((c.pesquisas || 0) / metaPesquisas) * 100 : 0;
 const metaColor = pesquisasPercent >= 100 ? 'text-green-400' : pesquisasPercent >= 90 ? 'text-yellow-400' : 'text-red-500';
