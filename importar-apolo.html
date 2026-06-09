@@ -61,6 +61,7 @@ RECARREGAR
 <th class="text-left">Cod interno</th>
 <th class="text-left">Consultor</th>
 <th class="text-left">Loja</th>
+<th class="text-left">Ultima importacao</th>
 </tr>
 </thead>
 <tbody id="listaCadastrosImportacao"></tbody>
@@ -115,6 +116,7 @@ const recarregarCadastrosBtn = document.getElementById('recarregarCadastrosBtn')
 let importacoes = [];
 let cadastroCache = null;
 let cadastrosLista = [];
+let ultimasImportacoes = new Map();
 const firestoreBase =
 'https://firestore.googleapis.com/v1/projects/ranking-consultores/databases/(default)/documents';
 
@@ -165,6 +167,13 @@ campo.booleanValue ??
 '';
 }
 
+function formatarDataHora(valor){
+if(!valor) return 'Nunca';
+const data = new Date(valor);
+if(Number.isNaN(data.getTime())) return 'Nunca';
+return data.toLocaleString('pt-BR');
+}
+
 function campoFirestore(valor){
 if(typeof valor === 'boolean'){
 return {booleanValue:valor};
@@ -189,9 +198,35 @@ dados[chave] = valorCampoFirestore(valor);
 return dados;
 }
 
+async function carregarUltimasImportacoes(){
+const url = `${firestoreBase}/consultores?pageSize=1000`;
+const resposta = await fetch(url);
+if(!resposta.ok){
+throw new Error(`Falha ao carregar historico (${resposta.status})`);
+}
+const dados = await resposta.json();
+ultimasImportacoes = new Map();
+(dados.documents || []).forEach((docu)=>{
+const resultado = documentoParaObjeto(docu);
+const codigo = String(resultado.codigo_apolo || '');
+if(!codigo) return;
+const dataRef = resultado.importado_em || docu.updateTime;
+if(!dataRef) return;
+const atual = ultimasImportacoes.get(codigo);
+if(!atual || new Date(dataRef) > new Date(atual)){
+ultimasImportacoes.set(codigo,dataRef);
+}
+});
+}
+
 async function carregarCadastrosViaRest(){
 const url = `${firestoreBase}/consultores_cadastro?pageSize=1000`;
-const resposta = await fetch(url);
+const [resposta] = await Promise.all([
+fetch(url),
+carregarUltimasImportacoes().catch((error)=>{
+console.warn('Historico de importacoes indisponivel.',error);
+})
+]);
 if(!resposta.ok){
 throw new Error(`Falha ao carregar cadastros (${resposta.status})`);
 }
@@ -226,7 +261,7 @@ function renderizarCadastrosImportacao(){
 if(cadastrosLista.length === 0){
 listaCadastrosImportacao.innerHTML = `
 <tr>
-<td colspan="3" class="py-8 text-center text-slate-500">
+<td colspan="4" class="py-8 text-center text-slate-500">
 Nenhum consultor carregado.
 </td>
 </tr>
@@ -243,6 +278,7 @@ listaCadastrosImportacao.innerHTML += `
 <td class="py-4 font-black text-blue-400">${escapeHtml(c.codigo || c.id)}</td>
 <td class="uppercase font-black">${escapeHtml(c.name || '')}</td>
 <td class="uppercase text-slate-400">${escapeHtml(c.store || '')}</td>
+<td class="text-slate-400">${formatarDataHora(ultimasImportacoes.get(String(c.codigo || c.id || '')))}</td>
 </tr>
 `;
 });
@@ -537,6 +573,7 @@ salvarBtn.disabled = true;
 statusEl.innerText = 'Salvando...';
 
 try{
+const importadoEm = new Date().toISOString();
 for(const item of importacoes){
 const dadosApolo = {
 name:item.name.trim(),
@@ -545,6 +582,7 @@ codigo_apolo:item.codigo.trim(),
 competencia,
 periodo_inicio:periodoInicio,
 periodo_fim:periodoFim,
+importado_em:importadoEm,
 rev_und:item.rev_und,
 serv_adic:item.serv_adic,
 emb_oficina:item.emb_oficina,
