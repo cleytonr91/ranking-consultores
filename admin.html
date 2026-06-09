@@ -409,6 +409,10 @@ meta_pesquisas:
 Number(campos.meta_pesquisas.value),
 ferias:false
 };
+const cadastroResultado = cadastroDoResultado(dados);
+if(cadastroResultado && Number(cadastroResultado.meta_pesquisas || 0) > 0){
+dados.meta_pesquisas = Number(cadastroResultado.meta_pesquisas || 0);
+}
 if(
 !dados.name ||
 !dados.store ||
@@ -482,6 +486,31 @@ if(cpf.length !== 11) return cpf || '-';
 return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
 }
 
+function cadastroDoResultado(resultado){
+const codigo = String(resultado.codigo_apolo || resultado.codigo || '');
+if(codigo){
+const porCodigo =
+cadastrosConsultores.find(c=>String(c.codigo || c.id) === codigo);
+if(porCodigo) return porCodigo;
+}
+const cpf = String(resultado.cpf_hgsi || resultado.cpf || '').replace(/\D/g,'');
+if(cpf){
+const porCpf =
+cadastrosConsultores.find(c=>String(c.cpf || '').replace(/\D/g,'') === cpf);
+if(porCpf) return porCpf;
+}
+return cadastrosConsultores.find(c=>
+String(c.name || '').toUpperCase() === String(resultado.name || '').toUpperCase() &&
+String(c.store || '').toUpperCase() === String(resultado.store || '').toUpperCase()
+);
+}
+
+function metaPesquisaOficial(resultado){
+const cadastro = cadastroDoResultado(resultado);
+const metaCadastro = Number(cadastro?.meta_pesquisas || 0);
+return metaCadastro > 0 ? metaCadastro : Number(resultado.meta_pesquisas || 0);
+}
+
 async function salvarCadastroConsultor(){
 const codigo = cadastroCodigo.value.trim();
 const nome = cadastroNome.value.trim();
@@ -538,6 +567,7 @@ id:docu.id,
 });
 });
 renderizarCadastros();
+renderizarTabela();
 });
 
 function renderizarCadastros(){
@@ -696,6 +726,7 @@ dadosFiltrados.sort((a,b)=>{
 return a.name.localeCompare(b.name);
 });
 dadosFiltrados.forEach((c)=>{
+const metaOficial = metaPesquisaOficial(c);
 lista.innerHTML += `
 <tr class="border-b border-slate-800 hover:bg-slate-800/30 transition-all
 ${c.ferias ? 'opacity-40' : ''}
@@ -731,7 +762,7 @@ ${c.hgsi}
 ${c.pesquisas}
 </td>
 <td class="text-center">
-${c.meta_pesquisas}
+${metaOficial}
 </td>
 <td class="text-center">
 ${c.ferias
@@ -784,7 +815,7 @@ consultor.hgsi;
 campos.pesquisas.value =
 consultor.pesquisas;
 campos.meta_pesquisas.value =
-consultor.meta_pesquisas;
+metaPesquisaOficial(consultor);
 salvarBtn.innerText =
 'ATUALIZAR RESULTADO';
 cancelarBtn.classList.remove('hidden');

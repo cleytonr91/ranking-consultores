@@ -1035,14 +1035,14 @@ await salvarNovoResultado({
 ...dadosApolo,
 hgsi:0,
 pesquisas:0,
-meta_pesquisas:0
+meta_pesquisas:numero(cadastro?.meta_pesquisas || 0)
 });
 }else{
 await atualizarResultado(existente.path,{
 ...dadosApolo,
 hgsi:numero(existente.hgsi || 0),
 pesquisas:numero(existente.pesquisas || 0),
-meta_pesquisas:numero(existente.meta_pesquisas || 0),
+meta_pesquisas:numero(cadastro?.meta_pesquisas || existente.meta_pesquisas || 0),
 ferias:Boolean(existente.ferias)
 });
 }
