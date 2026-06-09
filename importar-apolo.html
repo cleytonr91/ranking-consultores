@@ -73,7 +73,8 @@ RECARREGAR
 <th class="text-left">Consultor</th>
 <th class="text-left">Loja</th>
 <th class="text-left">CPF HGSI</th>
-<th class="text-left">Ultima importacao</th>
+<th class="text-left">Ultima importacao Linxs</th>
+<th class="text-left">Ultima importacao HGSI</th>
 </tr>
 </thead>
 <tbody id="listaCadastrosImportacao"></tbody>
@@ -165,7 +166,8 @@ let importacoes = [];
 let importacoesHgsi = [];
 let cadastroCache = null;
 let cadastrosLista = [];
-let ultimasImportacoes = new Map();
+let ultimasImportacoesApolo = new Map();
+let ultimasImportacoesHgsi = new Map();
 let periodoHgsi = {inicio:'',fim:'',texto:''};
 const firestoreBase =
 'https://firestore.googleapis.com/v1/projects/ranking-consultores/databases/(default)/documents';
@@ -329,19 +331,25 @@ if(!resposta.ok){
 throw new Error(`Falha ao carregar historico (${resposta.status})`);
 }
 const dados = await resposta.json();
-ultimasImportacoes = new Map();
+ultimasImportacoesApolo = new Map();
+ultimasImportacoesHgsi = new Map();
 (dados.documents || []).forEach((docu)=>{
 const resultado = documentoParaObjeto(docu);
 const codigo = String(resultado.codigo_apolo || '');
 if(!codigo) return;
-const datas = [resultado.importado_em,resultado.importado_hgsi_em,docu.updateTime]
-.filter(Boolean)
-.sort((a,b)=>new Date(b)-new Date(a));
-const dataRef = datas[0];
-if(!dataRef) return;
-const atual = ultimasImportacoes.get(codigo);
-if(!atual || new Date(dataRef) > new Date(atual)){
-ultimasImportacoes.set(codigo,dataRef);
+const dataApolo = resultado.importado_em || '';
+if(dataApolo){
+const atualApolo = ultimasImportacoesApolo.get(codigo);
+if(!atualApolo || new Date(dataApolo) > new Date(atualApolo)){
+ultimasImportacoesApolo.set(codigo,dataApolo);
+}
+}
+const dataHgsi = resultado.importado_hgsi_em || '';
+if(dataHgsi){
+const atualHgsi = ultimasImportacoesHgsi.get(codigo);
+if(!atualHgsi || new Date(dataHgsi) > new Date(atualHgsi)){
+ultimasImportacoesHgsi.set(codigo,dataHgsi);
+}
 }
 });
 }
@@ -396,7 +404,7 @@ function renderizarCadastrosImportacao(){
 if(cadastrosLista.length === 0){
 listaCadastrosImportacao.innerHTML = `
 <tr>
-<td colspan="5" class="py-8 text-center text-slate-500">
+<td colspan="6" class="py-8 text-center text-slate-500">
 Nenhum consultor carregado.
 </td>
 </tr>
@@ -414,7 +422,8 @@ listaCadastrosImportacao.innerHTML += `
 <td class="uppercase font-black">${escapeHtml(c.name || '')}</td>
 <td class="uppercase text-slate-400">${escapeHtml(c.store || '')}</td>
 <td class="text-slate-400">${escapeHtml(formatarCpf(c.cpf || ''))}</td>
-<td class="text-slate-400">${formatarDataHora(ultimasImportacoes.get(String(c.codigo || c.id || '')))}</td>
+<td class="text-slate-400">${formatarDataHora(ultimasImportacoesApolo.get(String(c.codigo || c.id || '')))}</td>
+<td class="text-slate-400">${formatarDataHora(ultimasImportacoesHgsi.get(String(c.codigo || c.id || '')))}</td>
 </tr>
 `;
 });
