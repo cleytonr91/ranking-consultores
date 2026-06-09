@@ -34,7 +34,7 @@ BI EXECUTIVO GP PERFORMANCE
 
 </div>
 
-<div class="flex items-center gap-4">
+<div class="flex flex-col md:flex-row items-start md:items-center gap-4">
 
 <label class="text-slate-400 uppercase text-sm">
 Competência:
@@ -45,6 +45,27 @@ id="mesFiltro"
 type="month"
 class="bg-slate-800 border-2 border-blue-500 rounded-2xl p-4 text-xl text-white font-bold outline-none shadow-lg shadow-blue-500/20"
 />
+
+<select
+id="lojaFiltro"
+class="bg-slate-900 border border-slate-700 rounded-2xl p-4 text-lg text-white font-bold outline-none"
+>
+<option value="">Todas as lojas</option>
+</select>
+
+<select
+id="consultorFiltro"
+class="bg-slate-900 border border-slate-700 rounded-2xl p-4 text-lg text-white font-bold outline-none"
+>
+<option value="">Todos os consultores</option>
+</select>
+
+<select
+id="grupoFiltro"
+class="bg-slate-900 border border-slate-700 rounded-2xl p-4 text-lg text-white font-bold outline-none"
+>
+<option value="">Todos os grupos</option>
+</select>
 
 </div>
 
@@ -225,6 +246,61 @@ TKM, HGSI, pesquisas e sinal de aÃ§Ã£o
 
 </div>
 
+<!-- ANALISE LINXS -->
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-10">
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-8">
+<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+<h2 class="text-3xl font-black">
+RevisÃµes Realizadas
+</h2>
+<div id="detalheRevisoesResumo" class="text-slate-400 uppercase tracking-widest text-sm">
+Base Linxs
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full min-w-[700px]">
+<thead>
+<tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
+<th class="text-left py-4">RevisÃ£o</th>
+<th class="text-center">Quantidade</th>
+<th class="text-center">Valor</th>
+<th class="text-center">Ticket</th>
+</tr>
+</thead>
+<tbody id="tabelaRevisoesDetalhe"></tbody>
+</table>
+</div>
+</div>
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-8">
+<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+<h2 class="text-3xl font-black">
+ServiÃ§os Vendidos
+</h2>
+<div id="detalheServicosResumo" class="text-slate-400 uppercase tracking-widest text-sm">
+ServiÃ§os e embelezamento
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full min-w-[900px]">
+<thead>
+<tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
+<th class="text-left py-4">Grupo</th>
+<th class="text-left">ServiÃ§o</th>
+<th class="text-center">Quantidade</th>
+<th class="text-center">Valor</th>
+<th class="text-center">Ticket</th>
+</tr>
+</thead>
+<tbody id="tabelaServicosDetalhe"></tbody>
+</table>
+</div>
+</div>
+
+</div>
+
 <!-- GRAFICOS -->
 
 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-10">
@@ -318,12 +394,22 @@ onSnapshot
 
 const mesFiltro =
 document.getElementById('mesFiltro');
+const lojaFiltro =
+document.getElementById('lojaFiltro');
+const consultorFiltro =
+document.getElementById('consultorFiltro');
+const grupoFiltro =
+document.getElementById('grupoFiltro');
 
 const tabela =
 document.getElementById('tabelaLojas');
 
 const tabelaConsultores =
 document.getElementById('tabelaConsultores');
+const tabelaRevisoesDetalhe =
+document.getElementById('tabelaRevisoesDetalhe');
+const tabelaServicosDetalhe =
+document.getElementById('tabelaServicosDetalhe');
 
 let todosDados = [];
 
@@ -360,6 +446,54 @@ return valor >= 100
 : 'text-red-500';
 }
 
+function numero(valor){
+return Number(valor || 0) || 0;
+}
+
+function atualizarOpcoes(select,opcoes,labelTodos,valorAtual){
+select.innerHTML = `<option value="">${labelTodos}</option>`;
+opcoes.forEach(opcao=>{
+const selected = opcao === valorAtual ? 'selected' : '';
+select.innerHTML += `<option value="${escapeHtml(opcao)}" ${selected}>${escapeHtml(opcao)}</option>`;
+});
+if(valorAtual && !opcoes.includes(valorAtual)){
+select.value = '';
+}
+}
+
+function itensApolo(dados){
+return dados.flatMap(c=>
+(c.apolo_itens || []).map(item=>({
+consultor:c.name || '',
+loja:c.store || '',
+competencia:c.competencia || '',
+categoria:String(item.categoria || ''),
+grupo:item.grupo || '',
+modelo:item.modelo || '',
+mao_obra:item.mao_obra || '',
+descricao:item.descricao || '',
+valor:numero(item.valor),
+quantidade:numero(item.quantidade)
+}))
+);
+}
+
+function somarPor(chaves,itens){
+const mapa = new Map();
+itens.forEach(item=>{
+const chave = chaves.map(campo=>item[campo] || '').join('||');
+if(!mapa.has(chave)){
+const base = {};
+chaves.forEach(campo=>base[campo] = item[campo] || '');
+mapa.set(chave,{...base,quantidade:0,valor:0});
+}
+const atual = mapa.get(chave);
+atual.quantidade += item.quantidade;
+atual.valor += item.valor;
+});
+return [...mapa.values()];
+}
+
 const hoje = new Date();
 
 mesFiltro.value =
@@ -368,6 +502,9 @@ hoje.getMonth()+1
 ).padStart(2,'0')}`;
 
 mesFiltro.addEventListener('change',renderizar);
+lojaFiltro.addEventListener('change',renderizar);
+consultorFiltro.addEventListener('change',renderizar);
+grupoFiltro.addEventListener('change',renderizar);
 
 onSnapshot(collection(db,"consultores"),(snapshot)=>{
 
@@ -388,12 +525,38 @@ function renderizar(){
 const competencia =
 mesFiltro.value;
 
-const ativos =
+const dadosCompetencia =
 todosDados.filter(c=>
 
 c.competencia === competencia &&
 !c.ferias
 
+);
+
+const lojasDisponiveis =
+[...new Set(dadosCompetencia.map(c=>c.store).filter(Boolean))].sort();
+const consultoresDisponiveis =
+[...new Set(dadosCompetencia.map(c=>c.name).filter(Boolean))].sort();
+const gruposDisponiveis =
+[...new Set(itensApolo(dadosCompetencia).map(i=>i.grupo).filter(Boolean))].sort();
+
+const lojaSelecionada = lojasDisponiveis.includes(lojaFiltro.value) ? lojaFiltro.value : '';
+const consultorSelecionado = consultoresDisponiveis.includes(consultorFiltro.value) ? consultorFiltro.value : '';
+const grupoSelecionado = gruposDisponiveis.includes(grupoFiltro.value) ? grupoFiltro.value : '';
+
+atualizarOpcoes(lojaFiltro,lojasDisponiveis,'Todas as lojas',lojaSelecionada);
+atualizarOpcoes(consultorFiltro,consultoresDisponiveis,'Todos os consultores',consultorSelecionado);
+atualizarOpcoes(grupoFiltro,gruposDisponiveis,'Todos os grupos',grupoSelecionado);
+
+const ativos =
+dadosCompetencia.filter(c=>
+(!lojaSelecionada || c.store === lojaSelecionada) &&
+(!consultorSelecionado || c.name === consultorSelecionado)
+);
+
+const detalhesApolo =
+itensApolo(ativos).filter(item=>
+!grupoSelecionado || item.grupo === grupoSelecionado
 );
 
 const totalFat =
@@ -810,6 +973,81 @@ ${c.sinal}
 
 `;
 });
+
+const revisoesDetalhe =
+somarPor(['descricao'],detalhesApolo.filter(item=>item.categoria === '2'))
+.sort((a,b)=>b.quantidade - a.quantidade);
+
+const servicosDetalhe =
+somarPor(['grupo','descricao'],detalhesApolo.filter(item=>item.categoria === '7' || item.categoria === '11'))
+.sort((a,b)=>b.valor - a.valor);
+
+const totalRevisoesDetalhe =
+revisoesDetalhe.reduce((acc,item)=>acc + item.quantidade,0);
+
+const valorRevisoesDetalhe =
+revisoesDetalhe.reduce((acc,item)=>acc + item.valor,0);
+
+const totalServicosDetalhe =
+servicosDetalhe.reduce((acc,item)=>acc + item.quantidade,0);
+
+const valorServicosDetalhe =
+servicosDetalhe.reduce((acc,item)=>acc + item.valor,0);
+
+document.getElementById('detalheRevisoesResumo').innerText =
+`${totalRevisoesDetalhe} revisoes | ${dinheiro(valorRevisoesDetalhe)}`;
+
+document.getElementById('detalheServicosResumo').innerText =
+`${totalServicosDetalhe} vendas | ${dinheiro(valorServicosDetalhe)}`;
+
+tabelaRevisoesDetalhe.innerHTML = '';
+
+if(revisoesDetalhe.length === 0){
+tabelaRevisoesDetalhe.innerHTML = `
+<tr>
+<td colspan="4" class="py-8 text-center text-slate-500">
+Sem detalhamento Linxs para revisoes neste filtro.
+</td>
+</tr>
+`;
+}else{
+revisoesDetalhe.forEach(item=>{
+const ticket = item.quantidade > 0 ? item.valor / item.quantidade : 0;
+tabelaRevisoesDetalhe.innerHTML += `
+<tr class="border-b border-slate-800 hover:bg-slate-800/30">
+<td class="py-4 uppercase font-black">${escapeHtml(item.descricao || '-')}</td>
+<td class="text-center">${item.quantidade}</td>
+<td class="text-center text-blue-400 font-black">${dinheiro(item.valor)}</td>
+<td class="text-center text-green-400 font-black">${dinheiro(ticket)}</td>
+</tr>
+`;
+});
+}
+
+tabelaServicosDetalhe.innerHTML = '';
+
+if(servicosDetalhe.length === 0){
+tabelaServicosDetalhe.innerHTML = `
+<tr>
+<td colspan="5" class="py-8 text-center text-slate-500">
+Sem detalhamento Linxs para servicos neste filtro.
+</td>
+</tr>
+`;
+}else{
+servicosDetalhe.forEach(item=>{
+const ticket = item.quantidade > 0 ? item.valor / item.quantidade : 0;
+tabelaServicosDetalhe.innerHTML += `
+<tr class="border-b border-slate-800 hover:bg-slate-800/30">
+<td class="py-4 uppercase text-slate-400">${escapeHtml(item.grupo || '-')}</td>
+<td class="uppercase font-black">${escapeHtml(item.descricao || '-')}</td>
+<td class="text-center">${item.quantidade}</td>
+<td class="text-center text-blue-400 font-black">${dinheiro(item.valor)}</td>
+<td class="text-center text-green-400 font-black">${dinheiro(ticket)}</td>
+</tr>
+`;
+});
+}
 
 if(chartEvolucao) chartEvolucao.destroy();
 

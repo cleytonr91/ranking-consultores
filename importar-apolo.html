@@ -33,7 +33,7 @@ class="bg-slate-900 border border-slate-700 rounded-2xl p-4 text-xl outline-none
 </div>
 
 <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 mb-10">
-<h2 class="text-3xl font-black mb-6">Apolo - Resumo Venda de Servicos</h2>
+<h2 class="text-3xl font-black mb-6">Linxs/Apolo - Resumo Venda de Servicos</h2>
 <input id="arquivos" type="file" accept=".txt" multiple
 class="block w-full text-lg text-slate-300 file:mr-6 file:rounded-xl file:border-0 file:bg-blue-600 file:px-6 file:py-3 file:font-black file:text-white hover:file:bg-blue-700"/>
 <p class="text-slate-500 mt-4">
@@ -84,7 +84,7 @@ RECARREGAR
 
 <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8">
 <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
-<h2 class="text-3xl font-black">Previa da Importacao Apolo</h2>
+<h2 class="text-3xl font-black">Previa da Importacao Linxs/Apolo</h2>
 <button id="salvarBtn"
 class="bg-green-600 hover:bg-green-700 transition-all px-8 py-4 rounded-2xl text-xl font-black disabled:opacity-40"
 disabled>
@@ -301,6 +301,20 @@ periodoHgsiEl.innerText = periodoHgsi.texto
 }
 
 function campoFirestore(valor){
+if(Array.isArray(valor)){
+return {
+arrayValue:{
+values:valor.map(item=>campoFirestore(item))
+}
+};
+}
+if(valor && typeof valor === 'object'){
+const fields = {};
+Object.entries(valor).forEach(([chave,item])=>{
+fields[chave] = campoFirestore(item);
+});
+return {mapValue:{fields}};
+}
 if(typeof valor === 'boolean'){
 return {booleanValue:valor};
 }
@@ -555,25 +569,79 @@ const linhas = conteudo
 const totais = {
 rev_und:0,
 serv_adic:0,
-emb_oficina:0
+emb_oficina:0,
+apolo_itens:[],
+apolo_resumo:{
+revisoes:{quantidade:0,valor:0},
+servicos:{quantidade:0,valor:0},
+embelezamento:{quantidade:0,valor:0},
+por_grupo:{},
+por_revisao:{},
+por_servico:{}
+}
 };
 
 linhas.slice(1).forEach((linha)=>{
 const colunas = linha.split(';');
 const categoria = String(colunas[0] || '').trim();
+const grupo = String(colunas[1] || '').trim();
+const modelo = String(colunas[2] || '').trim();
+const maoObra = String(colunas[3] || '').trim();
+const descricao = String(colunas[4] || '').trim();
 const valor = numero(colunas[5]);
 const quantidade = numero(colunas[6]);
+const item = {
+categoria,
+grupo,
+modelo,
+mao_obra:maoObra,
+descricao,
+valor,
+quantidade
+};
+totais.apolo_itens.push(item);
+
+if(!totais.apolo_resumo.por_grupo[grupo]){
+totais.apolo_resumo.por_grupo[grupo] = {quantidade:0,valor:0};
+}
+totais.apolo_resumo.por_grupo[grupo].quantidade += quantidade;
+totais.apolo_resumo.por_grupo[grupo].valor += valor;
 
 if(categoria === '2'){
 totais.rev_und += quantidade;
+totais.apolo_resumo.revisoes.quantidade += quantidade;
+totais.apolo_resumo.revisoes.valor += valor;
+if(!totais.apolo_resumo.por_revisao[descricao]){
+totais.apolo_resumo.por_revisao[descricao] = {quantidade:0,valor:0};
+}
+totais.apolo_resumo.por_revisao[descricao].quantidade += quantidade;
+totais.apolo_resumo.por_revisao[descricao].valor += valor;
 }
 
 if(categoria === '7'){
 totais.serv_adic += valor;
+totais.apolo_resumo.servicos.quantidade += quantidade;
+totais.apolo_resumo.servicos.valor += valor;
 }
 
 if(categoria === '11'){
 totais.emb_oficina += valor;
+totais.apolo_resumo.embelezamento.quantidade += quantidade;
+totais.apolo_resumo.embelezamento.valor += valor;
+}
+
+if(categoria === '7' || categoria === '11'){
+const chaveServico = `${grupo} | ${descricao}`;
+if(!totais.apolo_resumo.por_servico[chaveServico]){
+totais.apolo_resumo.por_servico[chaveServico] = {
+grupo,
+descricao,
+quantidade:0,
+valor:0
+};
+}
+totais.apolo_resumo.por_servico[chaveServico].quantidade += quantidade;
+totais.apolo_resumo.por_servico[chaveServico].valor += valor;
 }
 });
 
@@ -950,6 +1018,8 @@ importado_em:importadoEm,
 rev_und:item.rev_und,
 serv_adic:item.serv_adic,
 emb_oficina:item.emb_oficina,
+apolo_itens:item.apolo_itens || [],
+apolo_resumo:item.apolo_resumo || {},
 ferias:false
 };
 
