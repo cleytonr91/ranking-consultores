@@ -18,9 +18,15 @@ IMPORTAR <span class="text-blue-500">APOLO</span>
 Resumo venda de servicos
 </p>
 </div>
-<div class="flex items-center gap-4">
+<div class="flex flex-col md:flex-row items-start md:items-center gap-4">
 <label class="text-slate-400 uppercase text-sm">Competencia:</label>
 <input id="competencia" type="month"
+class="bg-slate-900 border border-slate-700 rounded-2xl p-4 text-xl outline-none"/>
+<label class="text-slate-400 uppercase text-sm">Inicio:</label>
+<input id="dataInicio" type="date"
+class="bg-slate-900 border border-slate-700 rounded-2xl p-4 text-xl outline-none"/>
+<label class="text-slate-400 uppercase text-sm">Fim:</label>
+<input id="dataFim" type="date"
 class="bg-slate-900 border border-slate-700 rounded-2xl p-4 text-xl outline-none"/>
 </div>
 </div>
@@ -97,6 +103,8 @@ SALVAR NO FIRESTORE
 
 <script>
 const competenciaInput = document.getElementById('competencia');
+const dataInicioInput = document.getElementById('dataInicio');
+const dataFimInput = document.getElementById('dataFim');
 const arquivosInput = document.getElementById('arquivos');
 const preview = document.getElementById('preview');
 const salvarBtn = document.getElementById('salvarBtn');
@@ -111,6 +119,7 @@ let cadastrosLista = [];
 
 const hoje = new Date();
 competenciaInput.value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+atualizarPeriodoPadrao();
 
 function dinheiro(valor){
 return `R$ ${Number(valor || 0).toLocaleString('pt-BR')}`;
@@ -129,6 +138,23 @@ return String(valor || '')
 .replaceAll("'","&#039;");
 }
 
+function atualizarPeriodoPadrao(){
+const competencia = competenciaInput.value;
+if(!competencia) return;
+const [ano,mes] = competencia.split('-').map(Number);
+const inicio = new Date(ano,mes - 1,1);
+const fimMes = new Date(ano,mes,0);
+const hojeLocal = new Date();
+const fim =
+ano === hojeLocal.getFullYear() && mes === hojeLocal.getMonth() + 1
+? hojeLocal
+: fimMes;
+dataInicioInput.value = `${inicio.getFullYear()}-${String(inicio.getMonth()+1).padStart(2,'0')}-${String(inicio.getDate()).padStart(2,'0')}`;
+dataFimInput.value = `${fim.getFullYear()}-${String(fim.getMonth()+1).padStart(2,'0')}-${String(fim.getDate()).padStart(2,'0')}`;
+}
+
+competenciaInput.addEventListener('change',atualizarPeriodoPadrao);
+
 async function carregarFirebase(){
 if(firebaseCache) return firebaseCache;
 const firebaseConfig = await import('./firebase-config.js');
@@ -146,8 +172,46 @@ getDocs:firestore.getDocs
 return firebaseCache;
 }
 
+function valorCampoFirestore(campo){
+if(!campo) return '';
+return campo.stringValue ??
+campo.integerValue ??
+campo.doubleValue ??
+campo.booleanValue ??
+'';
+}
+
+async function carregarCadastrosViaRest(){
+const url = 'https://firestore.googleapis.com/v1/projects/ranking-consultores/databases/(default)/documents/consultores_cadastro?pageSize=1000';
+const resposta = await fetch(url);
+if(!resposta.ok){
+throw new Error(`Falha ao carregar cadastros (${resposta.status})`);
+}
+const dados = await resposta.json();
+cadastroCache = new Map();
+cadastrosLista = [];
+(dados.documents || []).forEach((docu)=>{
+const fields = docu.fields || {};
+const id = docu.name.split('/').pop();
+const cadastro = {
+id,
+codigo:valorCampoFirestore(fields.codigo) || id,
+name:valorCampoFirestore(fields.name),
+store:valorCampoFirestore(fields.store)
+};
+cadastroCache.set(String(cadastro.codigo || cadastro.id),cadastro);
+cadastrosLista.push(cadastro);
+});
+renderizarCadastrosImportacao();
+if(importacoes.length){
+renderizarPreview();
+}
+return cadastroCache;
+}
+
 async function carregarCadastros(){
 if(cadastroCache) return cadastroCache;
+try{
 const {
 db,
 collection,
@@ -165,7 +229,14 @@ id:docu.id,
 });
 });
 renderizarCadastrosImportacao();
+if(importacoes.length){
+renderizarPreview();
+}
 return cadastroCache;
+}catch(error){
+console.warn('Carregamento via Firebase falhou. Tentando REST.',error);
+return carregarCadastrosViaRest();
+}
 }
 
 function renderizarCadastrosImportacao(){
@@ -192,6 +263,29 @@ listaCadastrosImportacao.innerHTML += `
 </tr>
 `;
 });
+}
+
+function opcoesConsultores(codigoSelecionado){
+const opcoes = [
+`<option value="">Selecione um consultor</option>`
+];
+cadastrosLista
+.sort((a,b)=>(a.name || '').localeCompare(b.name || ''))
+.forEach((c)=>{
+const codigo = String(c.codigo || c.id || '');
+const selecionado = codigo === String(codigoSelecionado || '') ? 'selected' : '';
+opcoes.push(`<option value="${escapeHtml(codigo)}" ${selecionado}>${escapeHtml(c.name || '')} - ${escapeHtml(c.store || '')} (${escapeHtml(codigo)})</option>`);
+});
+return opcoes.join('');
+}
+
+function aplicarCadastroNaImportacao(index,codigo){
+const cadastro = cadastrosLista.find(c=>String(c.codigo || c.id) === String(codigo));
+if(!cadastro || !importacoes[index]) return;
+importacoes[index].codigo = String(cadastro.codigo || cadastro.id || '');
+importacoes[index].name = cadastro.name || '';
+importacoes[index].store = cadastro.store || '';
+renderizarPreview();
 }
 
 function codigoPorArquivo(nome){
@@ -263,19 +357,16 @@ preview.innerHTML += `
 <tr class="border-b border-slate-800">
 <td class="py-4 text-slate-300">${escapeHtml(item.arquivo)}</td>
 <td>
-<input data-index="${index}" data-campo="codigo" value="${escapeHtml(item.codigo)}"
-placeholder="Cod interno"
-class="w-28 bg-slate-950 border border-slate-700 rounded-xl p-2 outline-none">
+<div class="font-black text-blue-400">${escapeHtml(item.codigo || '-')}</div>
 </td>
 <td>
-<input data-index="${index}" data-campo="name" value="${escapeHtml(item.name)}"
-placeholder="Nome do consultor"
-class="w-64 bg-slate-950 border border-slate-700 rounded-xl p-2 outline-none">
+<select data-index="${index}" data-campo="cadastro"
+class="w-80 bg-slate-950 border border-slate-700 rounded-xl p-2 outline-none">
+${opcoesConsultores(item.codigo)}
+</select>
 </td>
 <td>
-<input data-index="${index}" data-campo="store" value="${escapeHtml(item.store)}"
-placeholder="Loja"
-class="w-48 bg-slate-950 border border-slate-700 rounded-xl p-2 outline-none">
+<div class="uppercase text-slate-300">${escapeHtml(item.store || '-')}</div>
 </td>
 <td class="text-center font-black">${item.rev_und}</td>
 <td class="text-center text-cyan-400 font-black">${dinheiro(item.serv_adic)}</td>
@@ -357,10 +448,24 @@ if(Number.isNaN(index) || !campo) return;
 importacoes[index][campo] = event.target.value;
 });
 
+preview.addEventListener('change',(event)=>{
+const index = Number(event.target.dataset.index);
+const campo = event.target.dataset.campo;
+if(Number.isNaN(index) || campo !== 'cadastro') return;
+aplicarCadastroNaImportacao(index,event.target.value);
+});
+
 salvarBtn.addEventListener('click',async()=>{
 const competencia = competenciaInput.value;
+const periodoInicio = dataInicioInput.value;
+const periodoFim = dataFimInput.value;
 if(!competencia){
 alert('Selecione a competencia.');
+return;
+}
+
+if(!periodoInicio || !periodoFim){
+alert('Preencha o periodo do relatorio.');
 return;
 }
 
@@ -391,6 +496,8 @@ name:item.name.trim(),
 store:item.store.trim(),
 codigo_apolo:item.codigo.trim(),
 competencia,
+periodo_inicio:periodoInicio,
+periodo_fim:periodoFim,
 rev_und:item.rev_und,
 serv_adic:item.serv_adic,
 emb_oficina:item.emb_oficina,
