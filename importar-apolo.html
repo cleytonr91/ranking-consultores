@@ -1006,6 +1006,8 @@ statusEl.innerText = 'Salvando...';
 try{
 const importadoEm = new Date().toISOString();
 for(const item of importacoes){
+const cadastro =
+cadastrosLista.find(c=>String(c.codigo || c.id) === String(item.codigo));
 const dadosApolo = {
 name:item.name.trim(),
 store:item.store.trim(),
