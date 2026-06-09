@@ -311,7 +311,9 @@ Serviços e embelezamento
 Evolução Mensal
 </h2>
 
+<div class="h-[320px]">
 <canvas id="graficoEvolucao"></canvas>
+</div>
 
 </div>
 
@@ -321,7 +323,9 @@ Evolução Mensal
 Serviços x Embelezamento
 </h2>
 
+<div class="h-[320px]">
 <canvas id="graficoCategorias"></canvas>
+</div>
 
 </div>
 
@@ -375,7 +379,9 @@ Performance por Loja
 Comparativo Entre Lojas
 </h2>
 
+<div class="h-[360px]">
 <canvas id="graficoLojas"></canvas>
+</div>
 
 </div>
 
@@ -421,6 +427,10 @@ function dinheiro(valor){
 return `R$ ${Number(valor || 0).toLocaleString('pt-BR')}`;
 }
 
+function valorNumero(valor){
+return Number(valor || 0) || 0;
+}
+
 function escapeHtml(valor){
 return String(valor || '')
 .replaceAll('&','&amp;')
@@ -448,6 +458,20 @@ return valor >= 100
 
 function numero(valor){
 return Number(valor || 0) || 0;
+}
+
+function opcoesGrafico(){
+return {
+responsive:true,
+maintainAspectRatio:false,
+plugins:{
+legend:{labels:{color:'#cbd5e1'}}
+},
+scales:{
+x:{ticks:{color:'#cbd5e1'},grid:{color:'rgba(148,163,184,.15)'}},
+y:{ticks:{color:'#cbd5e1'},grid:{color:'rgba(148,163,184,.15)'},beginAtZero:true}
+}
+};
 }
 
 function atualizarOpcoes(select,opcoes,labelTodos,valorAtual){
@@ -607,44 +631,32 @@ itensApolo(ativos).filter(item=>
 
 const totalFat =
 ativos.reduce((acc,c)=>
-
-acc + c.serv_adic + c.emb_oficina
-
+acc + valorNumero(c.serv_adic) + valorNumero(c.emb_oficina)
 ,0);
 
 const totalRev =
 ativos.reduce((acc,c)=>
-
-acc + c.rev_und
-
+acc + valorNumero(c.rev_und)
 ,0);
 
 const totalServ =
 ativos.reduce((acc,c)=>
-
-acc + c.serv_adic
-
+acc + valorNumero(c.serv_adic)
 ,0);
 
 const totalEmb =
 ativos.reduce((acc,c)=>
-
-acc + c.emb_oficina
-
+acc + valorNumero(c.emb_oficina)
 ,0);
 
 const totalPesq =
 ativos.reduce((acc,c)=>
-
-acc + c.pesquisas
-
+acc + valorNumero(c.pesquisas)
 ,0);
 
 const totalMetaPesq =
 ativos.reduce((acc,c)=>
-
-acc + c.meta_pesquisas
-
+acc + valorNumero(c.meta_pesquisas)
 ,0);
 
 const coberturaPesq =
@@ -654,7 +666,7 @@ totalMetaPesq > 0
 
 const mediaHgsi =
 ativos.length > 0
-? ativos.reduce((acc,c)=>acc + c.hgsi,0) / ativos.length
+? ativos.reduce((acc,c)=>acc + valorNumero(c.hgsi),0) / ativos.length
 : 0;
 
 const tkm =
@@ -718,7 +730,7 @@ c.competencia === m &&
 
 return dadosMes.reduce((acc,c)=>
 
-acc + c.serv_adic + c.emb_oficina
+acc + valorNumero(c.serv_adic) + valorNumero(c.emb_oficina)
 
 ,0);
 
@@ -778,11 +790,11 @@ pesq:0
 
 }
 
-lojas[c.store].rev += c.rev_und;
-lojas[c.store].serv += c.serv_adic;
-lojas[c.store].emb += c.emb_oficina;
-lojas[c.store].hgsi.push(c.hgsi);
-lojas[c.store].pesq += c.pesquisas;
+lojas[c.store].rev += valorNumero(c.rev_und);
+lojas[c.store].serv += valorNumero(c.serv_adic);
+lojas[c.store].emb += valorNumero(c.emb_oficina);
+lojas[c.store].hgsi.push(valorNumero(c.hgsi));
+lojas[c.store].pesq += valorNumero(c.pesquisas);
 
 });
 
@@ -832,6 +844,16 @@ lojaAtencao
 : 'Sem dados';
 
 tabela.innerHTML = '';
+
+if(resumoLojas.length === 0){
+tabela.innerHTML = `
+<tr>
+<td colspan="9" class="py-8 text-center text-slate-500">
+Sem dados de loja neste filtro.
+</td>
+</tr>
+`;
+}
 
 resumoLojas.forEach((d)=>{
 
@@ -913,12 +935,12 @@ ${hgsi.toFixed(0)}
 
 const consultores =
 ativos.map((c)=>{
-const total = (c.serv_adic || 0) + (c.emb_oficina || 0);
-const rev = c.rev_und || 0;
+const total = valorNumero(c.serv_adic) + valorNumero(c.emb_oficina);
+const rev = valorNumero(c.rev_und);
 const tkmConsultor = rev > 0 ? total / rev : 0;
 const pesquisaPercentual =
-c.meta_pesquisas > 0
-? ((c.pesquisas || 0) / c.meta_pesquisas) * 100
+valorNumero(c.meta_pesquisas) > 0
+? (valorNumero(c.pesquisas) / valorNumero(c.meta_pesquisas)) * 100
 : 0;
 let sinal = 'Manter ritmo';
 let sinalClasse = 'text-green-400';
@@ -1095,6 +1117,10 @@ tabelaServicosDetalhe.innerHTML += `
 });
 }
 
+if(typeof Chart === 'undefined'){
+return;
+}
+
 if(chartEvolucao) chartEvolucao.destroy();
 
 chartEvolucao =
@@ -1107,10 +1133,15 @@ labels:meses,
 datasets:[{
 label:'Faturamento',
 data:evolucao,
+borderColor:'#38bdf8',
+backgroundColor:'rgba(56,189,248,.18)',
 borderWidth:3,
-tension:0.3
+tension:0.3,
+fill:true
 }]
 }
+,
+options:opcoesGrafico()
 }
 );
 
@@ -1126,9 +1157,13 @@ labels:['Serviços','Embelezamento'],
 datasets:[{
 label:'Valores',
 data:[totalServ,totalEmb],
+backgroundColor:['#22d3ee','#f472b6'],
+borderColor:['#67e8f9','#f9a8d4'],
 borderWidth:1
 }]
 }
+,
+options:opcoesGrafico()
 }
 );
 
@@ -1140,15 +1175,24 @@ document.getElementById('graficoLojas'),
 {
 type:'bar',
 data:{
-labels:Object.keys(lojas),
-datasets:[{
-label:'Faturamento',
-data:Object.values(lojas).map(
-l=>l.serv + l.emb
-),
+labels:resumoLojas.map(l=>l.loja),
+datasets:[
+{
+label:'Servicos',
+data:resumoLojas.map(l=>l.serv),
+backgroundColor:'#22d3ee',
 borderWidth:1
-}]
+},
+{
+label:'Embelezamento',
+data:resumoLojas.map(l=>l.emb),
+backgroundColor:'#f472b6',
+borderWidth:1
 }
+]
+}
+,
+options:opcoesGrafico()
 }
 );
 
