@@ -87,7 +87,7 @@ IMPORTACOES
 </a>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-5 gap-5 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-6 gap-5 mb-8">
 <input id="cadastroCodigo" placeholder="Cod interno"
 class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
 <input id="cadastroNome" placeholder="Nome Consultor"
@@ -95,6 +95,8 @@ class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none
 <input id="cadastroLoja" placeholder="Loja"
 class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
 <input id="cadastroCpf" placeholder="CPF HGSI"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
+<input id="cadastroMetaPesquisas" type="number" min="0" placeholder="Meta pesquisas"
 class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
 </div>
 
@@ -115,6 +117,7 @@ CANCELAR EDICAO
 <th class="text-left">Consultor</th>
 <th class="text-left">Loja</th>
 <th class="text-left">CPF HGSI</th>
+<th class="text-center">Meta Pesq.</th>
 <th class="text-center">Acoes</th>
 </tr>
 </thead>
@@ -351,6 +354,8 @@ const cadastroLoja =
 document.getElementById('cadastroLoja');
 const cadastroCpf =
 document.getElementById('cadastroCpf');
+const cadastroMetaPesquisas =
+document.getElementById('cadastroMetaPesquisas');
 const salvarCadastroBtn =
 document.getElementById('salvarCadastroBtn');
 const cancelarCadastroBtn =
@@ -482,6 +487,7 @@ const codigo = cadastroCodigo.value.trim();
 const nome = cadastroNome.value.trim();
 const loja = cadastroLoja.value.trim();
 const cpf = cadastroCpf.value.replace(/\D/g,'');
+const metaPesquisas = Number(cadastroMetaPesquisas.value || 0);
 
 if(!codigo || !nome || !loja){
 alert('Preencha codigo, nome e loja.');
@@ -494,7 +500,8 @@ doc(db,'consultores_cadastro',codigo),
 codigo,
 name:nome,
 store:loja,
-cpf
+cpf,
+meta_pesquisas:metaPesquisas
 }
 );
 
@@ -503,6 +510,7 @@ cadastroCodigo.value = '';
 cadastroNome.value = '';
 cadastroLoja.value = '';
 cadastroCpf.value = '';
+cadastroMetaPesquisas.value = '';
 cadastroCodigo.disabled = false;
 salvarCadastroBtn.innerText = 'SALVAR CONSULTOR';
 cancelarCadastroBtn.classList.add('hidden');
@@ -515,6 +523,7 @@ cadastroCodigo.value = '';
 cadastroNome.value = '';
 cadastroLoja.value = '';
 cadastroCpf.value = '';
+cadastroMetaPesquisas.value = '';
 cadastroCodigo.disabled = false;
 salvarCadastroBtn.innerText = 'SALVAR CONSULTOR';
 cancelarCadastroBtn.classList.add('hidden');
@@ -542,6 +551,7 @@ listaCadastros.innerHTML += `
 <td class="uppercase font-black">${c.name}</td>
 <td class="uppercase text-slate-400">${c.store}</td>
 <td class="text-slate-400">${formatarCpf(c.cpf || '')}</td>
+<td class="text-center font-black text-yellow-400">${c.meta_pesquisas || 0}</td>
 <td class="text-center">
 <button
 class="bg-yellow-500 hover:bg-yellow-600 transition-all px-4 py-2 rounded-xl font-black text-sm mr-2"
@@ -568,6 +578,7 @@ cadastroCodigo.value = cadastro.codigo || cadastro.id;
 cadastroNome.value = cadastro.name || '';
 cadastroLoja.value = cadastro.store || '';
 cadastroCpf.value = cadastro.cpf || '';
+cadastroMetaPesquisas.value = cadastro.meta_pesquisas || '';
 cadastroCodigo.disabled = true;
 salvarCadastroBtn.innerText = 'ATUALIZAR CONSULTOR';
 cancelarCadastroBtn.classList.remove('hidden');

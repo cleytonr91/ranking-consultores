@@ -73,6 +73,7 @@ RECARREGAR
 <th class="text-left">Consultor</th>
 <th class="text-left">Loja</th>
 <th class="text-left">CPF HGSI</th>
+<th class="text-center">Meta Pesq.</th>
 <th class="text-left">Ultima importacao Linxs</th>
 <th class="text-left">Ultima importacao HGSI</th>
 </tr>
@@ -133,7 +134,6 @@ SALVAR HGSI NO FIRESTORE
 <th class="text-left">Loja HGSI</th>
 <th class="text-center">HGSI</th>
 <th class="text-center">Pesquisas</th>
-<th class="text-center">Cota</th>
 <th class="text-left">Status</th>
 </tr>
 </thead>
@@ -390,7 +390,8 @@ id,
 codigo:valorCampoFirestore(fields.codigo) || id,
 name:valorCampoFirestore(fields.name),
 store:valorCampoFirestore(fields.store),
-cpf:somenteDigitos(valorCampoFirestore(fields.cpf))
+cpf:somenteDigitos(valorCampoFirestore(fields.cpf)),
+meta_pesquisas:numero(valorCampoFirestore(fields.meta_pesquisas))
 };
 cadastroCache.set(String(cadastro.codigo || cadastro.id),cadastro);
 if(cadastro.cpf){
@@ -418,7 +419,7 @@ function renderizarCadastrosImportacao(){
 if(cadastrosLista.length === 0){
 listaCadastrosImportacao.innerHTML = `
 <tr>
-<td colspan="6" class="py-8 text-center text-slate-500">
+<td colspan="7" class="py-8 text-center text-slate-500">
 Nenhum consultor carregado.
 </td>
 </tr>
@@ -436,6 +437,7 @@ listaCadastrosImportacao.innerHTML += `
 <td class="uppercase font-black">${escapeHtml(c.name || '')}</td>
 <td class="uppercase text-slate-400">${escapeHtml(c.store || '')}</td>
 <td class="text-slate-400">${escapeHtml(formatarCpf(c.cpf || ''))}</td>
+<td class="text-center font-black text-yellow-400">${c.meta_pesquisas || 0}</td>
 <td class="text-slate-400">${formatarDataHora(ultimasImportacoesApolo.get(String(c.codigo || c.id || '')))}</td>
 <td class="text-slate-400">${formatarDataHora(ultimasImportacoesHgsi.get(String(c.codigo || c.id || '')))}</td>
 </tr>
@@ -746,7 +748,6 @@ const colConsultor = cabecalho.findIndex((c,i)=>c === 'NOME' && i > colLoja);
 const colCpf = cabecalho.findIndex(c=>c === 'CPF');
 const colHgsi = cabecalho.findIndex(c=>c === 'HGSI');
 const colAmostra = cabecalho.findIndex(c=>c === 'AMOSTRA');
-const colCota = cabecalho.findIndex(c=>c.includes('CUMPRI') || c.includes('COTA'));
 const colAtendimento = cabecalho.findIndex(c=>c.includes('CONSULTOR') && c.startsWith('Q 3'));
 const colTempo = cabecalho.findIndex(c=>c.includes('TEMPO') && c.startsWith('Q 4'));
 const colQualidade = cabecalho.findIndex(c=>c.includes('QUALIDADE') && c.startsWith('Q 5'));
@@ -761,7 +762,6 @@ nomeHgsi:String(linha[colConsultor] || '').trim(),
 cpf:somenteDigitos(linha[colCpf]),
 hgsi:numero(linha[colHgsi]),
 pesquisas:numero(linha[colAmostra]),
-cumpreCota:String(linha[colCota] || '').trim(),
 atendimentoConsultor:numero(linha[colAtendimento]),
 tempo:numero(linha[colTempo]),
 qualidadeServicos:numero(linha[colQualidade]),
@@ -831,7 +831,7 @@ previewHgsi.innerHTML = '';
 if(importacoesHgsi.length === 0){
 previewHgsi.innerHTML = `
 <tr>
-<td colspan="8" class="py-10 text-center text-slate-500">
+<td colspan="7" class="py-10 text-center text-slate-500">
 Selecione uma planilha HGSI para conferir os consultores.
 </td>
 </tr>
@@ -865,7 +865,6 @@ ${opcoesConsultores(item.ignorarHgsi ? '__ignorar__' : item.codigo,true)}
 <td class="uppercase text-slate-400">${escapeHtml(item.lojaHgsi)}</td>
 <td class="text-center font-black ${item.hgsi >= 970 ? 'text-green-400' : item.hgsi >= 960 ? 'text-yellow-400' : 'text-red-400'}">${item.hgsi}</td>
 <td class="text-center font-black text-cyan-400">${item.pesquisas}</td>
-<td class="text-center">${escapeHtml(item.cumpreCota || '-')}</td>
 <td class="${statusClasse} font-black">${escapeHtml(item.status || 'Selecione o consultor')}</td>
 </tr>
 `;
@@ -1090,8 +1089,7 @@ cpf_hgsi:item.cpf,
 competencia,
 hgsi:item.hgsi,
 pesquisas:item.pesquisas,
-meta_pesquisas:item.pesquisas,
-cumpre_cota_hgsi:item.cumpreCota,
+meta_pesquisas:numero(cadastro?.meta_pesquisas || 0),
 periodo_hgsi_inicio:periodoHgsi.inicio,
 periodo_hgsi_fim:periodoHgsi.fim,
 periodo_hgsi_texto:periodoHgsi.texto,
@@ -1123,6 +1121,7 @@ emb_oficina:0
 }else{
 await atualizarResultado(existente.path,{
 ...dadosHgsi,
+meta_pesquisas:numero(cadastro?.meta_pesquisas || existente.meta_pesquisas || 0),
 rev_und:numero(existente.rev_und || 0),
 serv_adic:numero(existente.serv_adic || 0),
 emb_oficina:numero(existente.emb_oficina || 0),
