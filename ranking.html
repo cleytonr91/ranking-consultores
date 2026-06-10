@@ -3,88 +3,123 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>RANKING CONSULTORES</title>
+<title>Ranking Consultores</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 body{
-background: radial-gradient(circle at top left,#07133a,#020617 55%);
+background:
+radial-gradient(circle at 22% 0%,rgba(37,99,235,.22),transparent 34%),
+radial-gradient(circle at 80% 18%,rgba(14,165,233,.14),transparent 28%),
+linear-gradient(135deg,#020617 0%,#07111f 52%,#020617 100%);
 }
-.glow-gold{box-shadow:0 0 40px rgba(255,196,0,.35);}
-.glow-silver{box-shadow:0 0 35px rgba(255,255,255,.18);}
-.glow-bronze{box-shadow:0 0 35px rgba(255,132,0,.18);}
+.panel{
+background:linear-gradient(180deg,rgba(15,23,42,.92),rgba(8,15,29,.9));
+border:1px solid rgba(148,163,184,.16);
+box-shadow:0 24px 80px rgba(0,0,0,.35);
+}
+.podium-gold{
+box-shadow:0 0 0 1px rgba(250,204,21,.55),0 0 48px rgba(250,204,21,.2);
+}
+.podium-silver{
+box-shadow:0 0 0 1px rgba(226,232,240,.38),0 0 34px rgba(148,163,184,.18);
+}
+.podium-bronze{
+box-shadow:0 0 0 1px rgba(251,146,60,.42),0 0 34px rgba(251,146,60,.14);
+}
 </style>
 </head>
 <body class="text-white min-h-screen p-5 md:p-8">
-<div class="max-w-[1800px] mx-auto">
-<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-10">
+<div class="max-w-[1880px] mx-auto">
+
+<header class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8 mb-8">
 <div>
-<div class="flex items-center gap-4">
-<div class="w-5 h-5 bg-green-400 rounded-full"></div>
-<h1 class="text-5xl md:text-7xl font-black italic tracking-tight">
+<h1 class="text-5xl md:text-7xl xl:text-8xl font-black italic tracking-tight leading-none">
 RANKING <span class="text-blue-500">CONSULTORES</span>
 </h1>
+<img src="logo-linhares.png" alt="Linhares" class="mt-5 h-14 md:h-20 w-auto object-contain">
 </div>
-<img src="logo-linhares.png" alt="Linhares" class="mt-4 h-14 md:h-20 w-auto object-contain">
-</div>
-<div class="flex flex-col md:flex-row gap-5">
-<select id="filtroCompetencia" class="bg-[#0f172a] border border-slate-700 rounded-2xl px-6 py-5 text-2xl outline-none min-w-[320px]"></select>
-<div class="bg-[#111827] border border-slate-700 rounded-3xl px-10 py-6 text-center min-w-[300px]">
-<div id="clock" class="text-6xl font-black">00:00:00</div>
-<div id="date" class="text-slate-400 text-2xl mt-2">00/00/0000</div>
-</div>
+<div class="flex flex-col md:flex-row gap-4 w-full xl:w-auto">
+<select id="filtroCompetencia" class="bg-[#0f172a] border border-slate-700 rounded-2xl px-6 py-5 text-xl md:text-2xl outline-none min-w-[280px]"></select>
+<div class="panel rounded-3xl px-8 py-5 text-center min-w-[260px]">
+<div id="clock" class="text-5xl md:text-6xl font-black leading-none">00:00:00</div>
+<div id="date" class="text-slate-400 text-xl mt-2">00/00/0000</div>
 </div>
 </div>
-<div id="top3" class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-10"></div>
-<div id="campanhaSection" class="hidden bg-[#0b1224]/90 border border-yellow-500/30 rounded-[30px] p-5 md:p-8 mb-10 backdrop-blur">
-<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-3 mb-8">
+</header>
+
+<main class="grid grid-cols-1 2xl:grid-cols-[1fr_420px] gap-7 mb-8">
+<section class="panel rounded-[30px] p-5 md:p-8">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-7">
 <div>
-<h2 class="text-3xl md:text-5xl font-black">CAMPANHA SEMANAL</h2>
-<div id="campanhaCompetencia" class="text-yellow-300 uppercase tracking-[4px] mt-2 text-sm font-black"></div>
-</div>
-<div class="text-slate-400 uppercase tracking-widest text-sm">
-VENCEDORES POR SEMANA
+<h2 class="text-3xl md:text-5xl font-black">PÓDIO DO MÊS</h2>
+<div id="podioCompetencia" class="text-blue-300 uppercase tracking-[4px] mt-2 text-sm font-black"></div>
 </div>
 </div>
-<div id="campanhaSemanas" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5"></div>
+<div id="top3" class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-end"></div>
+</section>
+
+<aside id="campanhaSection" class="panel rounded-[30px] p-5 md:p-7">
+<div class="mb-6">
+<h2 class="text-3xl md:text-4xl font-black">CAMPANHA SEMANAL</h2>
+<div id="campanhaCompetencia" class="text-yellow-300 uppercase tracking-[4px] mt-2 text-xs font-black"></div>
 </div>
-<div class="bg-[#081226]/80 border border-slate-800 rounded-[30px] p-5 md:p-8 backdrop-blur">
-<div class="flex justify-between items-center mb-6">
+<div id="campanhaSemanas" class="space-y-4"></div>
+</aside>
+</main>
+
+<section class="panel rounded-[30px] p-5 md:p-8">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
 <h2 class="text-3xl md:text-5xl font-black">RANKING GERAL</h2>
-<div class="flex items-center gap-3 text-slate-400 uppercase tracking-widest text-sm">
-ATUALIZAÇÃO EM TEMPO REAL <div class="w-3 h-3 bg-green-400 rounded-full"></div>
-</div>
+<div id="rankingResumo" class="text-slate-400 uppercase tracking-widest text-sm"></div>
 </div>
 <div class="overflow-x-auto">
-<table class="w-full min-w-[1300px]">
+<table class="w-full min-w-[1320px]">
 <thead>
 <tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
-<th class="text-left py-4">Pos</th><th class="text-left">Nome</th><th class="text-left">Sobrenome</th><th class="text-left">Loja</th><th class="text-center">REV</th><th class="text-center">Serviços</th><th class="text-center">Embelez.</th><th class="text-center">Total</th><th class="text-center">TKM</th><th class="text-center">HGSI</th><th class="text-center">Pesquisas</th>
+<th class="text-left py-4">Pos</th>
+<th class="text-left">Consultor</th>
+<th class="text-left">Loja</th>
+<th class="text-center">REV</th>
+<th class="text-center">Serviços</th>
+<th class="text-center">Embelez.</th>
+<th class="text-center">Total</th>
+<th class="text-center">TKM</th>
+<th class="text-center">HGSI</th>
+<th class="text-center">Pesquisas</th>
 </tr>
 </thead>
 <tbody id="ranking-body"></tbody>
 </table>
 </div>
+</section>
+
 </div>
-</div>
+
 <script type="module">
 import { db } from './firebase-config.js';
 import { collection, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 const top3 = document.getElementById('top3');
 const rankingBody = document.getElementById('ranking-body');
 const filtro = document.getElementById('filtroCompetencia');
 const campanhaSection = document.getElementById('campanhaSection');
 const campanhaCompetencia = document.getElementById('campanhaCompetencia');
 const campanhaSemanas = document.getElementById('campanhaSemanas');
+const podioCompetencia = document.getElementById('podioCompetencia');
+const rankingResumo = document.getElementById('rankingResumo');
+
 let todosDados = [];
 let cadastrosConsultores = [];
 let campanhaAtual = null;
 let unsubscribeCampanha = null;
 let competenciaCampanhaAtual = '';
+
 function atualizarRelogio(){
 const agora = new Date();
 document.getElementById('clock').innerText = agora.toLocaleTimeString('pt-BR');
 document.getElementById('date').innerText = agora.toLocaleDateString('pt-BR');
 }
+
 function escapeHtml(valor){
 return String(valor || '')
 .replaceAll('&','&amp;')
@@ -93,36 +128,20 @@ return String(valor || '')
 .replaceAll('"','&quot;')
 .replaceAll("'","&#039;");
 }
+
 function dinheiroInteiro(valor){
 return `R$ ${Math.ceil(Number(valor || 0)).toLocaleString('pt-BR')}`;
 }
-setInterval(atualizarRelogio, 1000);
-atualizarRelogio();
-onSnapshot(collection(db, "consultores"), (snapshot) => {
-todosDados = [];
-snapshot.forEach((doc) => { todosDados.push(doc.data()); });
-const competenciaSelecionada = filtro.value;
-const competencias = [...new Set(todosDados.filter(c => !c.ferias).map(c => c.competencia))].sort().reverse();
-filtro.innerHTML = '';
-competencias.forEach((comp) => {
-filtro.innerHTML += `<option value="${comp}">Competência: ${comp.replace('-', '/')}</option>`;
-});
-if(competencias.includes(competenciaSelecionada)){
-filtro.value = competenciaSelecionada;
+
+function numero(valor){
+return Number(valor || 0) || 0;
 }
-render();
-});
-onSnapshot(collection(db, "consultores_cadastro"), (snapshot) => {
-cadastrosConsultores = [];
-snapshot.forEach((doc) => {
-cadastrosConsultores.push({
-id:doc.id,
-...doc.data()
-});
-});
-render();
-});
-filtro.addEventListener('change', render);
+
+function iniciais(nome){
+const partes = String(nome || '').trim().split(/\s+/).filter(Boolean);
+return partes.slice(0,2).map(p=>p[0]).join('').toUpperCase() || '?';
+}
+
 function cadastroDoResultado(resultado){
 const codigo = String(resultado.codigo_apolo || resultado.codigo || '');
 if(codigo){
@@ -141,49 +160,198 @@ String(c.name || '').toUpperCase() === String(resultado.name || '').toUpperCase(
 String(c.store || '').toUpperCase() === String(resultado.store || '').toUpperCase()
 );
 }
+
 function metaPesquisaOficial(resultado){
 const cadastro = cadastroDoResultado(resultado);
 const metaCadastro = Number(cadastro?.meta_pesquisas || 0);
 return metaCadastro > 0 ? metaCadastro : Number(resultado.meta_pesquisas || 0);
 }
+
+function enriquecerResultado(original){
+const servicos = Math.ceil(numero(original.serv_adic));
+const embelezamento = Math.ceil(numero(original.emb_oficina));
+const total = Math.ceil(numero(original.serv_adic) + numero(original.emb_oficina));
+const revisoes = numero(original.rev_und);
+const tkm = revisoes > 0 ? Math.ceil(total / revisoes) : 0;
+const metaPesquisas = metaPesquisaOficial(original);
+const pesquisasPercent = metaPesquisas > 0
+? (numero(original.pesquisas) / metaPesquisas) * 100
+: 0;
+return {
+...original,
+servicos,
+embelezamento,
+total,
+revisoes,
+tkm,
+pesquisasPercent,
+metaPesquisas
+};
+}
+
+function classeHgsi(valor){
+return valor >= 970
+? 'text-green-400'
+: valor >= 960
+? 'text-yellow-400'
+: 'text-red-400';
+}
+
+function classeMeta(valor){
+return valor >= 100
+? 'text-green-400'
+: valor >= 90
+? 'text-yellow-400'
+: 'text-red-400';
+}
+
+function renderCardPodio(c, posicao){
+const nomeCompleto = String(c.name || '').trim();
+const primeiroNome = nomeCompleto.split(/\s+/)[0] || '';
+const nomeRestante = nomeCompleto.split(/\s+/).slice(1).join(' ');
+const estilo = {
+1:{
+ordem:'xl:order-2',
+altura:'min-h-[520px]',
+card:'podium-gold border-yellow-400/50',
+numero:'bg-yellow-400 text-slate-950',
+titulo:'text-yellow-200',
+avatar:'from-yellow-300 to-yellow-600',
+label:'1º LUGAR'
+},
+2:{
+ordem:'xl:order-1',
+altura:'min-h-[440px]',
+card:'podium-silver border-slate-300/40',
+numero:'bg-slate-200 text-slate-950',
+titulo:'text-slate-100',
+avatar:'from-slate-200 to-slate-500',
+label:'2º LUGAR'
+},
+3:{
+ordem:'xl:order-3',
+altura:'min-h-[420px]',
+card:'podium-bronze border-orange-400/40',
+numero:'bg-orange-400 text-slate-950',
+titulo:'text-orange-200',
+avatar:'from-orange-300 to-orange-700',
+label:'3º LUGAR'
+}
+}[posicao];
+
+return `
+<article class="${estilo.ordem} ${estilo.card} ${estilo.altura} rounded-[28px] border bg-[#071225]/90 p-6 flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div>
+<div class="${estilo.titulo} text-2xl font-black tracking-wide">${estilo.label}</div>
+<div class="text-slate-500 uppercase tracking-[4px] text-xs mt-2">Ranking mensal</div>
+</div>
+<div class="${estilo.numero} w-14 h-14 rounded-2xl flex items-center justify-center text-3xl font-black">${posicao}</div>
+</div>
+
+<div class="text-center my-8">
+<div class="mx-auto w-32 h-32 rounded-full bg-gradient-to-br ${estilo.avatar} p-[3px]">
+<div class="w-full h-full rounded-full bg-[#06101f] flex items-center justify-center text-4xl font-black">
+${escapeHtml(iniciais(c.name))}
+</div>
+</div>
+<div class="mt-6 text-5xl font-black uppercase leading-none break-words">${escapeHtml(primeiroNome)}</div>
+<div class="mt-1 text-3xl font-black uppercase leading-tight text-slate-200 break-words">${escapeHtml(nomeRestante)}</div>
+<div class="mt-4 text-xl uppercase tracking-widest text-slate-400 break-words">${escapeHtml(c.store || '')}</div>
+</div>
+
+<div>
+<div class="text-center mb-6">
+<div class="text-slate-400 uppercase text-sm tracking-widest">TKM</div>
+<div class="text-6xl font-black text-green-400 mt-1">${dinheiroInteiro(c.tkm)}</div>
+</div>
+<div class="grid grid-cols-3 gap-3">
+<div class="rounded-2xl bg-white/5 border border-white/10 p-4 text-center">
+<div class="text-slate-500 uppercase text-xs">REV</div>
+<div class="text-3xl font-black mt-2">${c.revisoes || 0}</div>
+</div>
+<div class="rounded-2xl bg-white/5 border border-white/10 p-4 text-center">
+<div class="text-slate-500 uppercase text-xs">HGSI</div>
+<div class="text-3xl font-black mt-2 ${classeHgsi(numero(c.hgsi))}">${numero(c.hgsi).toFixed(0)}</div>
+</div>
+<div class="rounded-2xl bg-white/5 border border-white/10 p-4 text-center">
+<div class="text-slate-500 uppercase text-xs">Meta</div>
+<div class="text-3xl font-black mt-2 ${classeMeta(c.pesquisasPercent)}">${c.pesquisasPercent.toFixed(0)}%</div>
+</div>
+</div>
+</div>
+</article>
+`;
+}
+
 function render(){
 const competencia = filtro.value;
-if (!competencia) {
+if(!competencia){
 renderCampanha();
-return;
-}
-acompanharCampanha(competencia);
-const data = todosDados.filter(c => c.competencia === competencia && !c.ferias);
-data.sort((a, b) => {
-const tkmA = a.rev_und > 0 ? (a.serv_adic + a.emb_oficina) / a.rev_und : 0;
-const tkmB = b.rev_und > 0 ? (b.serv_adic + b.emb_oficina) / b.rev_und : 0;
-return tkmB - tkmA;
-});
 top3.innerHTML = '';
 rankingBody.innerHTML = '';
-data.forEach((original, i) => {
-const c = {
-...original,
-serv_adic:Math.ceil(Number(original.serv_adic || 0)),
-emb_oficina:Math.ceil(Number(original.emb_oficina || 0))
-};
-const nomeCompleto = (c.name || '').trim().split(' ');
-const nome = nomeCompleto[0] || '';
-const sobrenome = nomeCompleto.slice(1).join(' ') || '';
-const total = Math.ceil((Number(original.serv_adic || 0)) + (Number(original.emb_oficina || 0)));
-const tkm = c.rev_und > 0 ? Math.ceil(total / c.rev_und) : 0;
-const metaPesquisas = metaPesquisaOficial(c);
-const pesquisasPercent = metaPesquisas > 0 ? ((c.pesquisas || 0) / metaPesquisas) * 100 : 0;
-const metaColor = pesquisasPercent >= 100 ? 'text-green-400' : pesquisasPercent >= 90 ? 'text-yellow-400' : 'text-red-500';
-const hgsiColor = (c.hgsi || 0) >= 970 ? 'text-green-400' : (c.hgsi || 0) >= 960 ? 'text-yellow-400' : 'text-red-500';
-if(i < 3){
-const medalha = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉';
-const bg = i === 0 ? 'bg-gradient-to-br from-yellow-900/90 to-yellow-700/40 border-yellow-400 glow-gold' : i === 1 ? 'bg-gradient-to-br from-slate-400/40 to-slate-600/30 border-slate-300 glow-silver' : 'bg-gradient-to-br from-orange-900/80 to-orange-700/30 border-orange-400 glow-bronze';
-top3.innerHTML += `<div class="${bg} border rounded-[35px] p-8 flex flex-col justify-between min-h-[600px]"><div><div class="flex justify-between items-start"><div><div class="text-7xl">${medalha}</div><div class="text-4xl mt-3 uppercase tracking-wide">${i+1}º LUGAR</div></div><div class="text-right"><div class="text-slate-300 uppercase text-3xl">TKM</div><div class="text-7xl font-black mt-2">R$ ${tkm.toFixed(0)}</div></div></div><div class="mt-12"><div class="text-6xl font-black uppercase leading-[1.0] break-words">${nome}</div><div class="text-6xl font-black uppercase leading-[1.0] break-words">${sobrenome}</div><div class="text-3xl uppercase text-slate-200 mt-5 break-words">${c.store || ''}</div></div></div><div class="grid grid-cols-3 gap-4 mt-10"><div class="bg-white/5 border border-white/10 rounded-3xl p-5 text-center"><div class="text-slate-400 uppercase text-xl">REV</div><div class="text-5xl font-black mt-3">${c.rev_und || 0}</div></div><div class="bg-white/5 border border-white/10 rounded-3xl p-5 text-center"><div class="text-slate-400 uppercase text-xl">HGSI</div><div class="text-5xl font-black mt-3 ${hgsiColor}">${c.hgsi || 0}</div></div><div class="bg-white/5 border border-white/10 rounded-3xl p-5 text-center"><div class="text-slate-400 uppercase text-xl">META</div><div class="text-5xl font-black mt-3 ${metaColor}">${pesquisasPercent.toFixed(0)}%</div></div></div></div>`;
+return;
 }
-rankingBody.innerHTML += `<tr class="border-b border-slate-800 hover:bg-slate-800/20 transition-all"><td class="py-5 text-3xl font-black">${i+1}º</td><td class="text-2xl font-black uppercase">${nome}</td><td class="text-2xl font-black uppercase">${sobrenome}</td><td class="text-slate-400 uppercase text-xl">${c.store || ''}</td><td class="text-center text-2xl">${c.rev_und || 0}</td><td class="text-center text-cyan-400 font-black text-2xl">R$ ${(c.serv_adic || 0).toLocaleString('pt-BR')}</td><td class="text-center text-pink-400 font-black text-2xl">R$ ${(c.emb_oficina || 0).toLocaleString('pt-BR')}</td><td class="text-center text-blue-400 font-black text-2xl">R$ ${total.toLocaleString('pt-BR')}</td><td class="text-center text-green-400 font-black text-2xl">R$ ${tkm.toFixed(0)}</td><td class="text-center font-black text-2xl ${hgsiColor}">${c.hgsi || 0}</td><td class="text-center font-black text-2xl ${metaColor}">${pesquisasPercent.toFixed(0)}%</td></tr>`;
+
+acompanharCampanha(competencia);
+podioCompetencia.innerText = `Competência ${competencia.replace('-', '/')}`;
+
+const data = todosDados
+.filter(c => c.competencia === competencia && !c.ferias)
+.map(enriquecerResultado)
+.sort((a,b)=>b.tkm - a.tkm);
+
+rankingResumo.innerText = `${data.length} consultores no ranking`;
+top3.innerHTML = '';
+rankingBody.innerHTML = '';
+
+const podio = data.slice(0,3);
+if(podio.length === 0){
+top3.innerHTML = `
+<div class="xl:col-span-3 rounded-[28px] border border-slate-800 bg-white/5 p-12 text-center text-slate-500 text-2xl">
+Sem dados para a competência selecionada.
+</div>
+`;
+}else{
+top3.innerHTML = podio.map((c,index)=>renderCardPodio(c,index + 1)).join('');
+}
+
+data.forEach((c,i)=>{
+const nomeCompleto = String(c.name || '').trim();
+rankingBody.innerHTML += `
+<tr class="border-b border-slate-800 hover:bg-slate-800/25 transition-all">
+<td class="py-5 text-3xl font-black">${i+1}º</td>
+<td>
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center font-black text-blue-200">${escapeHtml(iniciais(nomeCompleto))}</div>
+<div class="text-2xl font-black uppercase break-words">${escapeHtml(nomeCompleto)}</div>
+</div>
+</td>
+<td class="text-slate-400 uppercase text-xl">${escapeHtml(c.store || '')}</td>
+<td class="text-center text-2xl">${c.revisoes || 0}</td>
+<td class="text-center text-cyan-400 font-black text-2xl">${dinheiroInteiro(c.servicos)}</td>
+<td class="text-center text-pink-400 font-black text-2xl">${dinheiroInteiro(c.embelezamento)}</td>
+<td class="text-center text-blue-400 font-black text-2xl">${dinheiroInteiro(c.total)}</td>
+<td class="text-center text-green-400 font-black text-2xl">${dinheiroInteiro(c.tkm)}</td>
+<td class="text-center font-black text-2xl ${classeHgsi(numero(c.hgsi))}">${numero(c.hgsi).toFixed(0)}</td>
+<td class="text-center font-black text-2xl ${classeMeta(c.pesquisasPercent)}">${c.pesquisasPercent.toFixed(0)}%</td>
+</tr>
+`;
 });
 }
+
+function atualizarCompetencias(){
+const competenciaSelecionada = filtro.value;
+const competencias = [...new Set(todosDados.filter(c=>!c.ferias).map(c=>c.competencia).filter(Boolean))].sort().reverse();
+filtro.innerHTML = '';
+competencias.forEach((comp)=>{
+filtro.innerHTML += `<option value="${escapeHtml(comp)}">Competência: ${escapeHtml(comp.replace('-', '/'))}</option>`;
+});
+if(competencias.includes(competenciaSelecionada)){
+filtro.value = competenciaSelecionada;
+}
+}
+
 function acompanharCampanha(competencia){
 if(competenciaCampanhaAtual === competencia) return;
 competenciaCampanhaAtual = competencia;
@@ -197,6 +365,7 @@ campanhaAtual = snapshot.exists() ? snapshot.data() : null;
 renderCampanha();
 });
 }
+
 function renderCampanha(){
 const competencia = filtro.value;
 if(!competencia){
@@ -204,13 +373,15 @@ campanhaSection.classList.add('hidden');
 campanhaSemanas.innerHTML = '';
 return;
 }
+
 const semanas = [
-{titulo:'SEMANA 1',periodo:'01 a 06',dados:campanhaAtual?.semana1},
-{titulo:'SEMANA 2',periodo:'08 a 13',dados:campanhaAtual?.semana2},
-{titulo:'SEMANA 3',periodo:'15 a 20',dados:campanhaAtual?.semana3},
-{titulo:'SEMANA 4',periodo:'22 a 30',dados:campanhaAtual?.semana4}
+{titulo:'Semana 1',periodo:'01 a 06',dados:campanhaAtual?.semana1},
+{titulo:'Semana 2',periodo:'08 a 13',dados:campanhaAtual?.semana2},
+{titulo:'Semana 3',periodo:'15 a 20',dados:campanhaAtual?.semana3},
+{titulo:'Semana 4',periodo:'22 a 30',dados:campanhaAtual?.semana4}
 ];
-campanhaCompetencia.innerText = `COMPETENCIA: ${competencia.replace('-', '/')}`;
+
+campanhaCompetencia.innerText = `Competência ${competencia.replace('-', '/')}`;
 campanhaSemanas.innerHTML = semanas.map(({titulo,periodo,dados})=>{
 const normalizarVencedor = (valor)=>{
 if(typeof valor === 'string'){
@@ -222,25 +393,27 @@ loja:valor?.loja || ''
 };
 };
 const vencedores = [
-{posicao:'1',rotulo:'Primeiro',...normalizarVencedor(dados?.primeiro),className:'border-yellow-400/60 bg-yellow-500/10 text-yellow-200'},
-{posicao:'2',rotulo:'Segundo',...normalizarVencedor(dados?.segundo),className:'border-slate-300/50 bg-white/10 text-slate-100'},
-{posicao:'3',rotulo:'Terceiro',...normalizarVencedor(dados?.terceiro),className:'border-orange-400/50 bg-orange-500/10 text-orange-200'}
+{posicao:'1º',rotulo:'Primeiro',...normalizarVencedor(dados?.primeiro),classe:'text-yellow-200 border-yellow-400/40'},
+{posicao:'2º',rotulo:'Segundo',...normalizarVencedor(dados?.segundo),classe:'text-slate-100 border-slate-300/30'},
+{posicao:'3º',rotulo:'Terceiro',...normalizarVencedor(dados?.terceiro),classe:'text-orange-200 border-orange-400/35'}
 ];
 return `
-<div class="bg-[#050b18] border border-slate-800 rounded-[24px] p-5">
-<div class="mb-5">
+<div class="rounded-3xl border border-slate-800 bg-[#050b18]/70 p-5">
+<div class="flex justify-between items-start gap-3 mb-4">
+<div>
 <div class="text-2xl font-black">${titulo}</div>
 <div class="text-slate-500 uppercase tracking-widest text-xs mt-1">${periodo}</div>
 </div>
+</div>
 <div class="space-y-3">
 ${vencedores.map(v=>`
-<div class="${v.className} border rounded-2xl p-4 min-h-[92px]">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-black text-xl">${v.posicao}</div>
+<div class="${v.classe} border rounded-2xl p-4">
+<div class="flex gap-3 items-start">
+<div class="text-xl font-black min-w-[36px]">${v.posicao}</div>
 <div>
-<div class="text-slate-400 uppercase text-xs tracking-widest">${v.rotulo}</div>
-<div class="text-2xl font-black uppercase leading-tight break-words">${escapeHtml(v.nome || 'A definir')}</div>
-${v.loja ? `<div class="text-sm uppercase tracking-widest text-slate-400 mt-1 break-words">${escapeHtml(v.loja)}</div>` : ''}
+<div class="text-slate-500 uppercase text-xs tracking-widest">${v.rotulo}</div>
+<div class="text-xl font-black uppercase leading-tight break-words">${escapeHtml(v.nome || 'A definir')}</div>
+${v.loja ? `<div class="text-xs uppercase tracking-widest text-slate-400 mt-1 break-words">${escapeHtml(v.loja)}</div>` : ''}
 </div>
 </div>
 </div>
@@ -251,6 +424,31 @@ ${v.loja ? `<div class="text-sm uppercase tracking-widest text-slate-400 mt-1 br
 }).join('');
 campanhaSection.classList.remove('hidden');
 }
+
+setInterval(atualizarRelogio,1000);
+atualizarRelogio();
+
+onSnapshot(collection(db,"consultores"),(snapshot)=>{
+todosDados = [];
+snapshot.forEach((docu)=>{
+todosDados.push(docu.data());
+});
+atualizarCompetencias();
+render();
+});
+
+onSnapshot(collection(db,"consultores_cadastro"),(snapshot)=>{
+cadastrosConsultores = [];
+snapshot.forEach((docu)=>{
+cadastrosConsultores.push({
+id:docu.id,
+...docu.data()
+});
+});
+render();
+});
+
+filtro.addEventListener('change',render);
 </script>
 </body>
 </html>
