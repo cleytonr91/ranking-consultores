@@ -460,6 +460,13 @@ function numero(valor){
 return Number(valor || 0) || 0;
 }
 
+function mediaNumeros(valores){
+const validos = valores.map(valorNumero).filter(valor=>valor > 0);
+return validos.length
+? validos.reduce((acc,valor)=>acc + valor,0) / validos.length
+: 0;
+}
+
 function opcoesGrafico(){
 return {
 responsive:true,
@@ -629,25 +636,32 @@ itensApolo(ativos).filter(item=>
 !grupoSelecionado || item.grupo === grupoSelecionado
 );
 
-const totalFat =
-ativos.reduce((acc,c)=>
-acc + valorNumero(c.serv_adic) + valorNumero(c.emb_oficina)
-,0);
-
-const totalRev =
+const totalRevBase =
 ativos.reduce((acc,c)=>
 acc + valorNumero(c.rev_und)
 ,0);
 
+const totalFat =
+detalhesApolo
+.filter(item=>item.categoria === '7' || item.categoria === '11')
+.reduce((acc,item)=>acc + valorNumero(item.valor),0);
+
+const totalRev =
+grupoSelecionado
+? detalhesApolo
+.filter(item=>item.categoria === '2')
+.reduce((acc,item)=>acc + valorNumero(item.quantidade),0)
+: totalRevBase;
+
 const totalServ =
-ativos.reduce((acc,c)=>
-acc + valorNumero(c.serv_adic)
-,0);
+detalhesApolo
+.filter(item=>item.categoria === '7')
+.reduce((acc,item)=>acc + valorNumero(item.valor),0);
 
 const totalEmb =
-ativos.reduce((acc,c)=>
-acc + valorNumero(c.emb_oficina)
-,0);
+detalhesApolo
+.filter(item=>item.categoria === '11')
+.reduce((acc,item)=>acc + valorNumero(item.valor),0);
 
 const totalPesq =
 ativos.reduce((acc,c)=>
@@ -665,13 +679,11 @@ totalMetaPesq > 0
 : 0;
 
 const mediaHgsi =
-ativos.length > 0
-? ativos.reduce((acc,c)=>acc + valorNumero(c.hgsi),0) / ativos.length
-: 0;
+mediaNumeros(ativos.map(c=>c.hgsi));
 
 const tkm =
-totalRev > 0
-? totalFat / totalRev
+totalRevBase > 0
+? totalFat / totalRevBase
 : 0;
 
 document.getElementById('consultoresAtivos').innerText =
@@ -724,15 +736,17 @@ const dadosMes =
 todosDados.filter(c=>
 
 c.competencia === m &&
-!c.ferias
+!c.ferias &&
+(!lojaSelecionada || c.store === lojaSelecionada) &&
+(!consultorSelecionado || c.name === consultorSelecionado)
 
 );
 
-return dadosMes.reduce((acc,c)=>
+const itensMes = itensApolo(dadosMes)
+.filter(item=>!grupoSelecionado || item.grupo === grupoSelecionado)
+.filter(item=>item.categoria === '7' || item.categoria === '11');
 
-acc + valorNumero(c.serv_adic) + valorNumero(c.emb_oficina)
-
-,0);
+return itensMes.reduce((acc,item)=>acc + valorNumero(item.valor),0);
 
 });
 
@@ -774,37 +788,45 @@ crescimentoEl.className =
 
 const lojas = {};
 
-ativos.forEach(c=>{
-
-if(!lojas[c.store]){
-
-lojas[c.store] = {
-
+function obterLojaResumo(loja){
+const chave = loja || 'Sem loja';
+if(!lojas[chave]){
+lojas[chave] = {
 rev:0,
 serv:0,
 emb:0,
-hgsi:[],
+hgsiValores:[],
 pesq:0
-
 };
-
+}
+return lojas[chave];
 }
 
-lojas[c.store].rev += valorNumero(c.rev_und);
-lojas[c.store].serv += valorNumero(c.serv_adic);
-lojas[c.store].emb += valorNumero(c.emb_oficina);
-lojas[c.store].hgsi.push(valorNumero(c.hgsi));
-lojas[c.store].pesq += valorNumero(c.pesquisas);
+ativos.forEach(c=>{
 
+const lojaResumo = obterLojaResumo(c.store);
+lojaResumo.rev += valorNumero(c.rev_und);
+if(valorNumero(c.hgsi) > 0){
+lojaResumo.hgsiValores.push(valorNumero(c.hgsi));
+}
+lojaResumo.pesq += valorNumero(c.pesquisas);
+
+});
+
+detalhesApolo.forEach(item=>{
+const lojaResumo = obterLojaResumo(item.loja);
+if(item.categoria === '7'){
+lojaResumo.serv += valorNumero(item.valor);
+}else if(item.categoria === '11'){
+lojaResumo.emb += valorNumero(item.valor);
+}
 });
 
 const resumoLojas =
 Object.entries(lojas).map(([loja,d])=>{
 const total = d.serv + d.emb;
 const tkmTotal = d.rev > 0 ? total / d.rev : 0;
-const hgsi = d.hgsi.length > 0
-? d.hgsi.reduce((a,b)=>a+b,0) / d.hgsi.length
-: 0;
+const hgsi = mediaNumeros(d.hgsiValores);
 return {
 loja,
 ...d,
@@ -876,8 +898,7 @@ d.rev > 0
 : 0;
 
 const hgsi =
-d.hgsi.reduce((a,b)=>a+b,0)
-/ d.hgsi.length;
+d.hgsi;
 
 tabela.innerHTML += `
 
@@ -937,6 +958,7 @@ const consultores =
 ativos.map((c)=>{
 const total = valorNumero(c.serv_adic) + valorNumero(c.emb_oficina);
 const rev = valorNumero(c.rev_und);
+const hgsi = valorNumero(c.hgsi);
 const tkmConsultor = rev > 0 ? total / rev : 0;
 const pesquisaPercentual =
 valorNumero(c.meta_pesquisas) > 0
@@ -944,13 +966,16 @@ valorNumero(c.meta_pesquisas) > 0
 : 0;
 let sinal = 'Manter ritmo';
 let sinalClasse = 'text-green-400';
-if((c.hgsi || 0) < 960){
+if(hgsi === 0){
+sinal = 'Importar HGSI';
+sinalClasse = 'text-slate-400';
+}else if(hgsi < 960){
 sinal = 'Feedback HGSI';
 sinalClasse = 'text-red-400';
 }else if(pesquisaPercentual < 90){
 sinal = 'Aumentar pesquisas';
 sinalClasse = 'text-yellow-400';
-}else if(tkmConsultor < tkm && totalRev > 0){
+}else if(tkmConsultor < tkm && totalRevBase > 0){
 sinal = 'Oportunidade TKM';
 sinalClasse = 'text-cyan-400';
 }
@@ -970,11 +995,11 @@ const consultorDestaque =
 const consultorAtencao =
 [...consultores].sort((a,b)=>{
 const scoreA =
-(a.hgsi || 0) +
+((a.hgsi || 0) || 900) +
 (a.pesquisaPercentual * 2) +
 (a.tkmConsultor / 10);
 const scoreB =
-(b.hgsi || 0) +
+((b.hgsi || 0) || 900) +
 (b.pesquisaPercentual * 2) +
 (b.tkmConsultor / 10);
 return scoreA - scoreB;
