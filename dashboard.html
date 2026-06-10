@@ -418,6 +418,7 @@ const tabelaServicosDetalhe =
 document.getElementById('tabelaServicosDetalhe');
 
 let todosDados = [];
+let dadosDashboardBase = [];
 
 let chartEvolucao;
 let chartCategorias;
@@ -438,6 +439,14 @@ return String(valor || '')
 .replaceAll('>','&gt;')
 .replaceAll('"','&quot;')
 .replaceAll("'","&#039;");
+}
+
+function normalizarTexto(valor){
+return String(valor || '')
+.normalize('NFD')
+.replace(/[\u0300-\u036f]/g,'')
+.toUpperCase()
+.trim();
 }
 
 function corHgsi(valor){
@@ -597,6 +606,20 @@ renderizar();
 
 });
 
+onSnapshot(collection(db,"dashboard_base"),(snapshot)=>{
+
+dadosDashboardBase = [];
+
+snapshot.forEach((doc)=>{
+
+dadosDashboardBase.push(doc.data());
+
+});
+
+renderizar();
+
+});
+
 function renderizar(){
 
 const competencia =
@@ -610,12 +633,21 @@ c.competencia === competencia &&
 
 );
 
+const baseCompetencia =
+dadosDashboardBase.filter(item=>item.competencia === competencia);
+
 const lojasDisponiveis =
-[...new Set(dadosCompetencia.map(c=>c.store).filter(Boolean))].sort();
+[...new Set([
+...dadosCompetencia.map(c=>c.store).filter(Boolean),
+...baseCompetencia.filter(item=>!item.consolidado).map(item=>item.loja).filter(Boolean)
+])].sort();
 const consultoresDisponiveis =
 [...new Set(dadosCompetencia.map(c=>c.name).filter(Boolean))].sort();
 const gruposDisponiveis =
-[...new Set(itensApolo(dadosCompetencia).map(i=>i.grupo).filter(Boolean))].sort();
+[...new Set([
+...itensApolo(dadosCompetencia).map(i=>i.grupo).filter(Boolean),
+...baseCompetencia.filter(item=>item.tipo === 'canal').map(item=>item.canal).filter(Boolean)
+])].sort();
 
 const lojaSelecionada = lojasDisponiveis.includes(lojaFiltro.value) ? lojaFiltro.value : '';
 const consultorSelecionado = consultoresDisponiveis.includes(consultorFiltro.value) ? consultorFiltro.value : '';
@@ -636,12 +668,33 @@ itensApolo(ativos).filter(item=>
 !grupoSelecionado || item.grupo === grupoSelecionado
 );
 
+const baseMensal =
+baseCompetencia.filter(item=>
+item.tipo === 'mensal' &&
+!item.consolidado &&
+(!lojaSelecionada || item.loja === lojaSelecionada)
+);
+
+const baseCanal =
+baseCompetencia.filter(item=>
+item.tipo === 'canal' &&
+!item.consolidado &&
+(!lojaSelecionada || item.loja === lojaSelecionada) &&
+(!grupoSelecionado || item.canal === grupoSelecionado)
+);
+
+const usarBaseDashboard =
+baseMensal.length > 0 && !consultorSelecionado;
+
 const totalRevBase =
 ativos.reduce((acc,c)=>
 acc + valorNumero(c.rev_und)
 ,0);
 
 const totalFat =
+usarBaseDashboard
+? baseMensal.reduce((acc,item)=>acc + valorNumero(item.total),0)
+:
 detalhesApolo
 .filter(item=>item.categoria === '7' || item.categoria === '11')
 .reduce((acc,item)=>acc + valorNumero(item.valor),0);
@@ -654,11 +707,19 @@ grupoSelecionado
 : totalRevBase;
 
 const totalServ =
+usarBaseDashboard
+? baseMensal.reduce((acc,item)=>acc + valorNumero(item.servicos),0)
+:
 detalhesApolo
 .filter(item=>item.categoria === '7')
 .reduce((acc,item)=>acc + valorNumero(item.valor),0);
 
 const totalEmb =
+usarBaseDashboard
+? baseCanal
+.filter(item=>normalizarTexto(item.canal) === 'EMBELEZAMENTO')
+.reduce((acc,item)=>acc + valorNumero(item.total),0)
+:
 detalhesApolo
 .filter(item=>item.categoria === '11')
 .reduce((acc,item)=>acc + valorNumero(item.valor),0);
@@ -683,7 +744,7 @@ mediaNumeros(ativos.map(c=>c.hgsi));
 
 const tkm =
 totalRevBase > 0
-? totalFat / totalRevBase
+? (usarBaseDashboard ? totalServ : totalFat) / totalRevBase
 : 0;
 
 document.getElementById('consultoresAtivos').innerText =
@@ -742,6 +803,27 @@ c.competencia === m &&
 
 );
 
+const baseMes = dadosDashboardBase.filter(item=>
+item.competencia === m &&
+item.tipo === 'mensal' &&
+!item.consolidado &&
+(!lojaSelecionada || item.loja === lojaSelecionada)
+);
+
+if(baseMes.length > 0 && !consultorSelecionado){
+const baseMesCanal = dadosDashboardBase.filter(item=>
+item.competencia === m &&
+item.tipo === 'canal' &&
+!item.consolidado &&
+(!lojaSelecionada || item.loja === lojaSelecionada) &&
+(!grupoSelecionado || item.canal === grupoSelecionado)
+);
+if(grupoSelecionado){
+return baseMesCanal.reduce((acc,item)=>acc + valorNumero(item.total),0);
+}
+return baseMes.reduce((acc,item)=>acc + valorNumero(item.total),0);
+}
+
 const itensMes = itensApolo(dadosMes)
 .filter(item=>!grupoSelecionado || item.grupo === grupoSelecionado)
 .filter(item=>item.categoria === '7' || item.categoria === '11');
@@ -793,8 +875,10 @@ const chave = loja || 'Sem loja';
 if(!lojas[chave]){
 lojas[chave] = {
 rev:0,
+pecas:0,
 serv:0,
 emb:0,
+totalBase:0,
 hgsiValores:[],
 pesq:0
 };
@@ -813,6 +897,20 @@ lojaResumo.pesq += valorNumero(c.pesquisas);
 
 });
 
+if(usarBaseDashboard){
+baseMensal.forEach(item=>{
+const lojaResumo = obterLojaResumo(item.loja);
+lojaResumo.pecas += valorNumero(item.pecas);
+lojaResumo.serv += valorNumero(item.servicos);
+lojaResumo.totalBase += valorNumero(item.total);
+});
+baseCanal
+.filter(item=>normalizarTexto(item.canal) === 'EMBELEZAMENTO')
+.forEach(item=>{
+const lojaResumo = obterLojaResumo(item.loja);
+lojaResumo.emb += valorNumero(item.total);
+});
+}else{
 detalhesApolo.forEach(item=>{
 const lojaResumo = obterLojaResumo(item.loja);
 if(item.categoria === '7'){
@@ -821,10 +919,11 @@ lojaResumo.serv += valorNumero(item.valor);
 lojaResumo.emb += valorNumero(item.valor);
 }
 });
+}
 
 const resumoLojas =
 Object.entries(lojas).map(([loja,d])=>{
-const total = d.serv + d.emb;
+const total = d.totalBase > 0 ? d.totalBase : d.serv + d.emb;
 const tkmTotal = d.rev > 0 ? total / d.rev : 0;
 const hgsi = mediaNumeros(d.hgsiValores);
 return {

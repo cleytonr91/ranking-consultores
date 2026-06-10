@@ -16,7 +16,7 @@
 CENTRAL DE <span class="text-blue-500">IMPORTACOES</span>
 </h1>
 <p class="text-slate-500 uppercase tracking-[5px] mt-2">
-Apolo e HGSI
+Apolo, HGSI e Dashboard
 </p>
 </div>
 <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
@@ -49,6 +49,15 @@ class="block w-full text-lg text-slate-300 file:mr-6 file:rounded-xl file:border
 Selecione a planilha do Portal HGSI. O batimento automatico usa CPF HGSI do cadastro.
 </p>
 <div id="periodoHgsi" class="text-slate-400 mt-4"></div>
+</div>
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 mb-10">
+<h2 class="text-3xl font-black mb-6">Base Dashboard - Faturamento por Loja e Canal</h2>
+<input id="arquivoDashboard" type="file" accept=".xls,.xlsx"
+class="block w-full text-lg text-slate-300 file:mr-6 file:rounded-xl file:border-0 file:bg-purple-600 file:px-6 file:py-3 file:font-black file:text-white hover:file:bg-purple-700"/>
+<p class="text-slate-500 mt-4">
+Selecione a planilha gerencial com faturamento por loja, pecas, servicos e canais.
+</p>
 </div>
 
 <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 mb-10">
@@ -144,6 +153,36 @@ SALVAR HGSI NO FIRESTORE
 <div id="statusHgsi" class="text-slate-400 mt-6"></div>
 </div>
 
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 mt-10">
+<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+<h2 class="text-3xl font-black">Previa da Importacao Base Dashboard</h2>
+<button id="salvarDashboardBtn"
+class="bg-green-600 hover:bg-green-700 transition-all px-8 py-4 rounded-2xl text-xl font-black disabled:opacity-40"
+disabled>
+SALVAR BASE DASHBOARD
+</button>
+</div>
+
+<div class="overflow-x-auto">
+<table class="w-full min-w-[1200px]">
+<thead>
+<tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
+<th class="text-left py-4">Competencia</th>
+<th class="text-left">Loja</th>
+<th class="text-center">Pecas</th>
+<th class="text-center">Servicos</th>
+<th class="text-center">Embelez.</th>
+<th class="text-center">Total</th>
+<th class="text-center">Represent.</th>
+</tr>
+</thead>
+<tbody id="previewDashboard"></tbody>
+</table>
+</div>
+
+<div id="statusDashboard" class="text-slate-400 mt-6"></div>
+</div>
+
 </div>
 
 <script>
@@ -152,18 +191,23 @@ const dataInicioInput = document.getElementById('dataInicio');
 const dataFimInput = document.getElementById('dataFim');
 const arquivosInput = document.getElementById('arquivos');
 const arquivoHgsiInput = document.getElementById('arquivoHgsi');
+const arquivoDashboardInput = document.getElementById('arquivoDashboard');
 const periodoHgsiEl = document.getElementById('periodoHgsi');
 const preview = document.getElementById('preview');
 const previewHgsi = document.getElementById('previewHgsi');
+const previewDashboard = document.getElementById('previewDashboard');
 const salvarBtn = document.getElementById('salvarBtn');
 const salvarHgsiBtn = document.getElementById('salvarHgsiBtn');
+const salvarDashboardBtn = document.getElementById('salvarDashboardBtn');
 const statusEl = document.getElementById('status');
 const statusHgsiEl = document.getElementById('statusHgsi');
+const statusDashboardEl = document.getElementById('statusDashboard');
 const listaCadastrosImportacao = document.getElementById('listaCadastrosImportacao');
 const recarregarCadastrosBtn = document.getElementById('recarregarCadastrosBtn');
 
 let importacoes = [];
 let importacoesHgsi = [];
+let importacoesDashboard = [];
 let cadastroCache = null;
 let cadastrosLista = [];
 let ultimasImportacoesApolo = new Map();
@@ -181,6 +225,9 @@ return `R$ ${Number(valor || 0).toLocaleString('pt-BR')}`;
 }
 
 function numero(valor){
+if(typeof valor === 'number'){
+return Number.isFinite(valor) ? valor : 0;
+}
 return Number(String(valor || '0').replace(/\./g,'').replace(',','.')) || 0;
 }
 
@@ -547,6 +594,25 @@ throw new Error(`Falha ao atualizar resultado (${resposta.status})`);
 return resposta.json();
 }
 
+async function salvarDocumentoColecao(colecao,id,dados){
+const fields = {};
+Object.entries(dados).forEach(([chave,valor])=>{
+fields[chave] = campoFirestore(valor);
+});
+const updateMask = Object.keys(fields)
+.map(campo=>`updateMask.fieldPaths=${encodeURIComponent(campo)}`)
+.join('&');
+const resposta = await fetch(`${firestoreBase}/${colecao}/${encodeURIComponent(id)}?${updateMask}`,{
+method:'PATCH',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({fields})
+});
+if(!resposta.ok){
+throw new Error(`Falha ao salvar ${colecao} (${resposta.status})`);
+}
+return resposta.json();
+}
+
 function codigoPorArquivo(nome){
 const base = nome.replace(/\.[^.]+$/,'');
 const match = base.match(/^\d{8}(.+)$/);
@@ -781,6 +847,195 @@ const workbook = XLSX.read(buffer,{type:'array'});
 return extrairLinhasHgsi(workbook);
 }
 
+const lojasDashboard = [
+{loja:'PV4R',col:1,consolidado:true},
+{loja:'NATAL 7.1',col:4},
+{loja:'MOSSORO 7.2',col:8},
+{loja:'ARACAJU 7.3',col:12},
+{loja:'JUAZEIRO 7.4',col:16},
+{loja:'RENAULT 12.1',col:20},
+{loja:'BYD 14.1',col:24}
+];
+
+const mesesDashboard = {
+JANEIRO:'01',
+FEVEREIRO:'02',
+MARCO:'03',
+MARÇO:'03',
+ABRIL:'04',
+MAIO:'05',
+JUNHO:'06',
+JULHO:'07',
+AGOSTO:'08',
+SETEMBRO:'09',
+OUTUBRO:'10',
+NOVEMBRO:'11',
+DEZEMBRO:'12'
+};
+
+function normalizarMesCompetencia(valor){
+const texto = normalizarTexto(valor).replace(/\s+/g,' ');
+const mes = Object.keys(mesesDashboard).find(nome=>texto.includes(nome));
+if(!mes) return '';
+const anoMatch = texto.match(/(?:^|[^0-9])([0-9]{2,4})(?:[^0-9]|$)/);
+if(!anoMatch) return '';
+let ano = anoMatch[1];
+if(ano.length === 2){
+ano = Number(ano) >= 80 ? `19${ano}` : `20${ano}`;
+}
+return `${ano}-${mesesDashboard[mes]}`;
+}
+
+function chaveDocumentoDashboard(item){
+return [
+item.tipo,
+item.competencia || 'sem-competencia',
+normalizarTexto(item.loja).replace(/\s+/g,'-') || 'sem-loja',
+normalizarTexto(item.canal || 'TOTAL').replace(/\s+/g,'-') || 'total'
+].join('_').toLowerCase();
+}
+
+function valorPlanilha(linha,indice){
+return numero(linha?.[indice]);
+}
+
+function lojaRegistroDashboard(linha,config){
+return {
+loja:config.loja,
+pecas:valorPlanilha(linha,config.col),
+servicos:valorPlanilha(linha,config.col + 1),
+total:valorPlanilha(linha,config.col + 2),
+representatividade:config.consolidado ? 1 : numero(linha?.[config.col + 3]),
+consolidado:Boolean(config.consolidado)
+};
+}
+
+function extrairBaseDashboard(workbook){
+const sheet = workbook.Sheets[workbook.SheetNames[0]];
+const linhas = XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:''});
+const importadoEm = new Date().toISOString();
+const mensais = [];
+const canais = [];
+
+linhas.forEach((linha,index)=>{
+const competencia = normalizarMesCompetencia(linha[0]);
+if(!competencia) return;
+const temTotal = numero(linha[3]) > 0;
+if(!temTotal) return;
+lojasDashboard.forEach(config=>{
+const dadosLoja = lojaRegistroDashboard(linha,config);
+if(dadosLoja.total <= 0) return;
+mensais.push({
+...dadosLoja,
+tipo:'mensal',
+competencia,
+canal:'TOTAL',
+linha_origem:index + 1,
+importado_dashboard_em:importadoEm
+});
+});
+});
+
+const indicePorTotal = new Map();
+mensais
+.filter(item=>item.loja === 'PV4R')
+.forEach(item=>{
+const chave = Math.round(item.total * 100);
+indicePorTotal.set(chave,item.competencia);
+});
+
+linhas.forEach((linha,index)=>{
+const titulo = normalizarTexto(linha[0]);
+if(!titulo.startsWith('FATURAMENTO POR CANAL')) return;
+const totalLinha = linhas[index + 7];
+const totalPv = valorPlanilha(totalLinha,3);
+const competencia = indicePorTotal.get(Math.round(totalPv * 100));
+if(!competencia) return;
+for(let offset = 2; offset <= 7; offset++){
+const linhaCanal = linhas[index + offset];
+const canal = String(linhaCanal?.[0] || '').trim();
+if(!canal || normalizarTexto(canal) === 'TOTAL') continue;
+lojasDashboard.forEach(config=>{
+const dadosLoja = lojaRegistroDashboard(linhaCanal,config);
+if(dadosLoja.total <= 0 && dadosLoja.pecas <= 0 && dadosLoja.servicos <= 0) return;
+canais.push({
+...dadosLoja,
+tipo:'canal',
+competencia,
+canal,
+linha_origem:index + offset + 1,
+importado_dashboard_em:importadoEm
+});
+});
+}
+});
+
+return [...mensais,...canais];
+}
+
+async function lerPlanilhaDashboard(arquivo){
+if(typeof XLSX === 'undefined'){
+throw new Error('Biblioteca de leitura de planilhas nao carregou.');
+}
+const buffer = await arquivo.arrayBuffer();
+const workbook = XLSX.read(buffer,{type:'array'});
+const linhas = extrairBaseDashboard(workbook);
+if(linhas.length === 0){
+throw new Error('Nao encontrei dados validos na base dashboard.');
+}
+return linhas;
+}
+
+function resumoMensalDashboard(){
+const embelezamento = new Map();
+importacoesDashboard
+.filter(item=>item.tipo === 'canal' && normalizarTexto(item.canal) === 'EMBELEZAMENTO')
+.forEach(item=>{
+embelezamento.set(`${item.competencia}|${item.loja}`,item.total);
+});
+return importacoesDashboard
+.filter(item=>item.tipo === 'mensal' && !item.consolidado)
+.map(item=>({
+...item,
+embelezamento:embelezamento.get(`${item.competencia}|${item.loja}`) || 0
+}))
+.sort((a,b)=>b.competencia.localeCompare(a.competencia) || b.total - a.total);
+}
+
+function renderizarPreviewDashboard(){
+previewDashboard.innerHTML = '';
+if(importacoesDashboard.length === 0){
+previewDashboard.innerHTML = `
+<tr>
+<td colspan="7" class="py-10 text-center text-slate-500">
+Selecione a planilha base do dashboard para conferir os totais.
+</td>
+</tr>
+`;
+salvarDashboardBtn.disabled = true;
+statusDashboardEl.innerText = 'Nenhuma base dashboard carregada.';
+return;
+}
+const resumo = resumoMensalDashboard();
+resumo.slice(0,42).forEach(item=>{
+previewDashboard.innerHTML += `
+<tr class="border-b border-slate-800">
+<td class="py-4 font-black text-blue-400">${escapeHtml(item.competencia)}</td>
+<td class="uppercase font-black">${escapeHtml(item.loja)}</td>
+<td class="text-center text-slate-300">${dinheiro(item.pecas)}</td>
+<td class="text-center text-cyan-400 font-black">${dinheiro(item.servicos)}</td>
+<td class="text-center text-pink-400 font-black">${dinheiro(item.embelezamento)}</td>
+<td class="text-center text-green-400 font-black">${dinheiro(item.total)}</td>
+<td class="text-center text-yellow-400 font-black">${(numero(item.representatividade) * 100).toFixed(1)}%</td>
+</tr>
+`;
+});
+const mensais = importacoesDashboard.filter(item=>item.tipo === 'mensal').length;
+const canais = importacoesDashboard.filter(item=>item.tipo === 'canal').length;
+salvarDashboardBtn.disabled = importacoesDashboard.length === 0;
+statusDashboardEl.innerText = `${mensais} registro(s) mensais e ${canais} registro(s) por canal prontos para importar.`;
+}
+
 function renderizarPreview(){
 preview.innerHTML = '';
 if(importacoes.length === 0){
@@ -899,6 +1154,7 @@ statusEl.innerText = `Erro ao carregar cadastro: ${error.message}`;
 carregarCadastros().catch((error)=>{
 console.warn('Cadastro de consultores indisponivel.',error);
 });
+renderizarPreviewDashboard();
 
 arquivosInput.addEventListener('change',async()=>{
 const arquivos = [...arquivosInput.files];
@@ -956,6 +1212,25 @@ console.error(error);
 importacoesHgsi = [];
 renderizarPreviewHgsi();
 statusHgsiEl.innerText = `Erro ao ler planilha HGSI: ${error.message}`;
+}
+});
+
+arquivoDashboardInput.addEventListener('change',async()=>{
+const arquivo = arquivoDashboardInput.files[0];
+importacoesDashboard = [];
+if(!arquivo){
+renderizarPreviewDashboard();
+return;
+}
+statusDashboardEl.innerText = 'Lendo base dashboard...';
+try{
+importacoesDashboard = await lerPlanilhaDashboard(arquivo);
+renderizarPreviewDashboard();
+}catch(error){
+console.error(error);
+importacoesDashboard = [];
+renderizarPreviewDashboard();
+statusDashboardEl.innerText = `Erro ao ler base dashboard: ${error.message}`;
 }
 });
 
@@ -1142,6 +1417,34 @@ statusHgsiEl.innerText = `Erro: ${error.message}`;
 alert(`Erro ao importar HGSI: ${error.message}`);
 }finally{
 renderizarPreviewHgsi();
+}
+});
+
+salvarDashboardBtn.addEventListener('click',async()=>{
+if(importacoesDashboard.length === 0){
+alert('Selecione a base dashboard antes de salvar.');
+return;
+}
+salvarDashboardBtn.disabled = true;
+statusDashboardEl.innerText = 'Salvando base dashboard...';
+try{
+for(const item of importacoesDashboard){
+const id = chaveDocumentoDashboard(item);
+await salvarDocumentoColecao('dashboard_base',id,{
+...item,
+id
+});
+}
+const mensais = importacoesDashboard.filter(item=>item.tipo === 'mensal').length;
+const canais = importacoesDashboard.filter(item=>item.tipo === 'canal').length;
+statusDashboardEl.innerText = `Base dashboard importada com sucesso. ${mensais} registro(s) mensais e ${canais} registro(s) por canal.`;
+alert('Base dashboard importada com sucesso.');
+}catch(error){
+console.error(error);
+statusDashboardEl.innerText = `Erro ao importar base dashboard: ${error.message}`;
+alert(`Erro ao importar base dashboard: ${error.message}`);
+}finally{
+renderizarPreviewDashboard();
 }
 });
 </script>
