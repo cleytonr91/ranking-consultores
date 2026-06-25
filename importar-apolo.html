@@ -599,6 +599,16 @@ return dados
 .map(item=>documentoParaObjeto(item.document));
 }
 
+function juntarResultados(...listas){
+const mapa = new Map();
+listas.flat().forEach(item=>{
+if(item?.path){
+mapa.set(item.path,item);
+}
+});
+return [...mapa.values()];
+}
+
 async function salvarNovoResultado(dados){
 const fields = {};
 Object.entries(dados).forEach(([chave,valor])=>{
@@ -1420,13 +1430,13 @@ hgsi_servicos_corretos_primeira_vez:item.servicosCorretosPrimeiraVez,
 ferias:false
 };
 
-let existentes =
-await consultarResultados('codigo_apolo',dadosHgsi.codigo_apolo,competencia);
-
-if(!existentes.length){
-existentes =
-await consultarResultados('name',dadosHgsi.name,competencia);
-}
+const porCodigo = dadosHgsi.codigo_apolo
+? await consultarResultados('codigo_apolo',dadosHgsi.codigo_apolo,competencia)
+: [];
+const porNome = dadosHgsi.name
+? await consultarResultados('name',dadosHgsi.name,competencia)
+: [];
+const existentes = juntarResultados(porCodigo,porNome);
 
 if(!existentes.length){
 await salvarNovoResultado({
