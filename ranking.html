@@ -266,6 +266,10 @@ const semana = Number(resultado.semana || 1);
 return semana >= 1 && semana <= 4 ? semana : 1;
 }
 
+function chaveRanking(valor){
+return String(valor || '').trim().replace(/\s+/g,' ').toUpperCase();
+}
+
 function semanaVazia(){
 return {
 servicos:0,
@@ -280,7 +284,7 @@ function agregarResultadosPorConsultor(resultados){
 const mapa = new Map();
 resultados.forEach((resultado)=>{
 const c = enriquecerResultado(resultado);
-const chave = `${String(c.name || '').toUpperCase()}|${String(c.store || '').toUpperCase()}`;
+const chave = `${chaveRanking(c.name)}|${chaveRanking(c.store)}`;
 if(!mapa.has(chave)){
 mapa.set(chave,{
 ...c,

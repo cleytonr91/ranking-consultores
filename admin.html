@@ -375,6 +375,11 @@ let editandoId = null;
 let editandoCadastroId = null;
 let todosDados = [];
 let cadastrosConsultores = [];
+
+function normalizarTexto(valor){
+return String(valor || '').trim().replace(/\s+/g,' ').toUpperCase();
+}
+
 const campos = {
 name:
 document.getElementById('name'),
@@ -397,16 +402,22 @@ document.getElementById('pesquisas'),
 meta_pesquisas:
 document.getElementById('meta_pesquisas')
 };
+
+function semanaSelecionada(){
+const semana = Number(campos.semana.value || 1);
+return semana >= 1 && semana <= 4 ? semana : 1;
+}
+
 async function salvar(){
 const dados = {
 name:
-campos.name.value.trim(),
+normalizarTexto(campos.name.value),
 store:
-campos.store.value.trim(),
+normalizarTexto(campos.store.value),
 competencia:
 campos.competencia.value,
 semana:
-Number(campos.semana.value || 1),
+semanaSelecionada(),
 rev_und:
 Number(campos.rev_und.value),
 serv_adic:
@@ -419,6 +430,8 @@ pesquisas:
 Number(campos.pesquisas.value),
 meta_pesquisas:
 Number(campos.meta_pesquisas.value),
+competencia_semana:
+`${campos.competencia.value}-S${String(semanaSelecionada()).padStart(2,'0')}`,
 ferias:false
 };
 const cadastroResultado = cadastroDoResultado(dados);
@@ -468,9 +481,13 @@ alert('Resultado salvo.');
 limparCampos();
 }
 function limparCampos(){
+const competenciaAtual = campos.competencia.value || competenciaFiltro.value;
+const semanaAtual = campos.semana.value || '1';
 Object.values(campos).forEach(c=>{
 c.value = '';
 });
+campos.competencia.value = competenciaAtual;
+campos.semana.value = semanaAtual;
 }
 cancelarBtn.addEventListener('click',()=>{
 editandoId = null;
