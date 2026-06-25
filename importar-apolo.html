@@ -559,6 +559,46 @@ const encontrado = dados.find(item=>item.document);
 return encontrado ? documentoParaObjeto(encontrado.document) : null;
 }
 
+async function consultarResultados(campo,valor,competencia){
+const resposta = await fetch(`${firestoreBase}:runQuery`,{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+structuredQuery:{
+from:[{collectionId:'consultores'}],
+where:{
+compositeFilter:{
+op:'AND',
+filters:[
+{
+fieldFilter:{
+field:{fieldPath:campo},
+op:'EQUAL',
+value:campoFirestore(valor)
+}
+},
+{
+fieldFilter:{
+field:{fieldPath:'competencia'},
+op:'EQUAL',
+value:campoFirestore(competencia)
+}
+}
+]
+}
+}
+}
+})
+});
+if(!resposta.ok){
+throw new Error(`Falha ao consultar resultados (${resposta.status})`);
+}
+const dados = await resposta.json();
+return dados
+.filter(item=>item.document)
+.map(item=>documentoParaObjeto(item.document));
+}
+
 async function salvarNovoResultado(dados){
 const fields = {};
 Object.entries(dados).forEach(([chave,valor])=>{
@@ -1380,15 +1420,15 @@ hgsi_servicos_corretos_primeira_vez:item.servicosCorretosPrimeiraVez,
 ferias:false
 };
 
-let existente =
-await consultarResultado('codigo_apolo',dadosHgsi.codigo_apolo,competencia);
+let existentes =
+await consultarResultados('codigo_apolo',dadosHgsi.codigo_apolo,competencia);
 
-if(!existente){
-existente =
-await consultarResultado('name',dadosHgsi.name,competencia);
+if(!existentes.length){
+existentes =
+await consultarResultados('name',dadosHgsi.name,competencia);
 }
 
-if(!existente){
+if(!existentes.length){
 await salvarNovoResultado({
 ...dadosHgsi,
 rev_und:0,
@@ -1396,14 +1436,18 @@ serv_adic:0,
 emb_oficina:0
 });
 }else{
+for(const existente of existentes){
 await atualizarResultado(existente.path,{
 ...dadosHgsi,
 meta_pesquisas:numero(cadastro?.meta_pesquisas || existente.meta_pesquisas || 0),
+semana:numero(existente.semana || 1),
+competencia_semana:existente.competencia_semana || `${competencia}-S${String(numero(existente.semana || 1)).padStart(2,'0')}`,
 rev_und:numero(existente.rev_und || 0),
 serv_adic:numero(existente.serv_adic || 0),
 emb_oficina:numero(existente.emb_oficina || 0),
 ferias:Boolean(existente.ferias)
 });
+}
 }
 }
 
