@@ -68,13 +68,12 @@ RANKING <span class="text-blue-500">CONSULTORES</span>
 <th class="text-left py-4">Pos</th>
 <th class="text-left">Consultor</th>
 <th class="text-left">Loja</th>
-<th class="text-center">REV</th>
-<th class="text-center">Serviços</th>
-<th class="text-center">Embelez.</th>
-<th class="text-center">Total</th>
-<th class="text-center">TKM</th>
-<th class="text-center">HGSI</th>
-<th class="text-center">Pesquisas</th>
+<th class="text-center">Semana 01</th>
+<th class="text-center">Semana 02</th>
+<th class="text-center">Semana 03</th>
+<th class="text-center">Semana 04</th>
+<th class="text-center">Total Acumulado</th>
+<th class="text-center">HGSI / NPS</th>
 </tr>
 </thead>
 <tbody id="ranking-body"></tbody>
@@ -189,6 +188,93 @@ metaPesquisas
 };
 }
 
+function semanaDoResultado(resultado){
+const semana = Number(resultado.semana || 1);
+return semana >= 1 && semana <= 4 ? semana : 1;
+}
+
+function semanaVazia(){
+return {
+servicos:0,
+embelezamento:0,
+total:0,
+revisoes:0,
+tkm:0
+};
+}
+
+function agregarResultadosPorConsultor(resultados){
+const mapa = new Map();
+resultados.forEach((resultado)=>{
+const c = enriquecerResultado(resultado);
+const chave = `${String(c.name || '').toUpperCase()}|${String(c.store || '').toUpperCase()}`;
+if(!mapa.has(chave)){
+mapa.set(chave,{
+...c,
+servicos:0,
+embelezamento:0,
+total:0,
+revisoes:0,
+tkm:0,
+hgsi:0,
+pesquisas:0,
+metaPesquisas:0,
+pesquisasPercent:0,
+hgsiValores:[],
+semanas:{
+1:semanaVazia(),
+2:semanaVazia(),
+3:semanaVazia(),
+4:semanaVazia()
+}
+});
+}
+const agregado = mapa.get(chave);
+const semana = agregado.semanas[semanaDoResultado(c)];
+semana.servicos += c.servicos;
+semana.embelezamento += c.embelezamento;
+semana.total += c.total;
+semana.revisoes += c.revisoes;
+semana.tkm = semana.revisoes > 0 ? Math.ceil(semana.total / semana.revisoes) : 0;
+agregado.servicos += c.servicos;
+agregado.embelezamento += c.embelezamento;
+agregado.total += c.total;
+agregado.revisoes += c.revisoes;
+agregado.pesquisas += numero(c.pesquisas);
+agregado.metaPesquisas += numero(c.metaPesquisas);
+if(numero(c.hgsi) > 0){
+agregado.hgsiValores.push(numero(c.hgsi));
+}
+});
+return [...mapa.values()].map((c)=>{
+c.tkm = c.revisoes > 0 ? Math.ceil(c.total / c.revisoes) : 0;
+c.hgsi = c.hgsiValores.length
+? c.hgsiValores.reduce((acc,valor)=>acc + valor,0) / c.hgsiValores.length
+: 0;
+c.pesquisasPercent = c.metaPesquisas > 0
+? (c.pesquisas / c.metaPesquisas) * 100
+: 0;
+return c;
+});
+}
+
+function renderSemana(semana){
+if(!semana || (!semana.total && !semana.revisoes)){
+return '<span class="text-slate-600">-</span>';
+}
+return `
+<div class="text-left min-w-[150px]">
+<div class="text-center text-blue-300 font-black text-xl mb-2">${dinheiroInteiro(semana.total)}</div>
+<div class="grid grid-cols-[48px_1fr] gap-x-2 text-sm leading-6">
+<span class="text-slate-500 font-black">Serv.</span><span class="text-cyan-300 font-black text-right">${dinheiroInteiro(semana.servicos)}</span>
+<span class="text-slate-500 font-black">Emb.</span><span class="text-pink-300 font-black text-right">${dinheiroInteiro(semana.embelezamento)}</span>
+<span class="text-slate-500 font-black">TKM</span><span class="text-green-300 font-black text-right">${dinheiroInteiro(semana.tkm)}</span>
+<span class="text-slate-500 font-black">REV</span><span class="text-slate-200 font-black text-right">${semana.revisoes || 0}</span>
+</div>
+</div>
+`;
+}
+
 function classeHgsi(valor){
 return valor >= 970
 ? 'text-green-400'
@@ -296,15 +382,16 @@ acompanharCampanha(competencia);
 podioCompetencia.innerText = `Competência ${competencia.replace('-', '/')}`;
 
 const data = todosDados
-.filter(c => c.competencia === competencia && !c.ferias)
-.map(enriquecerResultado)
+.filter(c => c.competencia === competencia && !c.ferias);
+
+const rankingData = agregarResultadosPorConsultor(data)
 .sort((a,b)=>b.tkm - a.tkm);
 
-rankingResumo.innerText = `${data.length} consultores no ranking`;
+rankingResumo.innerText = `${rankingData.length} consultores no ranking`;
 top3.innerHTML = '';
 rankingBody.innerHTML = '';
 
-const podio = data.slice(0,3);
+const podio = rankingData.slice(0,3);
 if(podio.length === 0){
 top3.innerHTML = `
 <div class="xl:col-span-3 rounded-[28px] border border-slate-800 bg-white/5 p-12 text-center text-slate-500 text-2xl">
@@ -315,7 +402,7 @@ Sem dados para a competência selecionada.
 top3.innerHTML = podio.map((c,index)=>renderCardPodio(c,index + 1)).join('');
 }
 
-data.forEach((c,i)=>{
+rankingData.forEach((c,i)=>{
 const nomeCompleto = String(c.name || '').trim();
 rankingBody.innerHTML += `
 <tr class="border-b border-slate-800 hover:bg-slate-800/25 transition-all">
@@ -327,13 +414,22 @@ rankingBody.innerHTML += `
 </div>
 </td>
 <td class="text-slate-400 uppercase text-xl">${escapeHtml(c.store || '')}</td>
-<td class="text-center text-2xl">${c.revisoes || 0}</td>
-<td class="text-center text-cyan-400 font-black text-2xl">${dinheiroInteiro(c.servicos)}</td>
-<td class="text-center text-pink-400 font-black text-2xl">${dinheiroInteiro(c.embelezamento)}</td>
-<td class="text-center text-blue-400 font-black text-2xl">${dinheiroInteiro(c.total)}</td>
-<td class="text-center text-green-400 font-black text-2xl">${dinheiroInteiro(c.tkm)}</td>
-<td class="text-center font-black text-2xl ${classeHgsi(numero(c.hgsi))}">${numero(c.hgsi).toFixed(0)}</td>
-<td class="text-center font-black text-2xl ${classeMeta(c.pesquisasPercent)}">${c.pesquisasPercent.toFixed(0)}%</td>
+<td class="text-center align-top">${renderSemana(c.semanas[1])}</td>
+<td class="text-center align-top">${renderSemana(c.semanas[2])}</td>
+<td class="text-center align-top">${renderSemana(c.semanas[3])}</td>
+<td class="text-center align-top">${renderSemana(c.semanas[4])}</td>
+<td class="text-center align-top">
+<div class="text-blue-300 font-black text-2xl">${dinheiroInteiro(c.total)}</div>
+<div class="mt-2 grid grid-cols-[48px_1fr] gap-x-2 text-sm leading-6 min-w-[150px]">
+<span class="text-slate-500 font-black text-left">Serv.</span><span class="text-cyan-300 font-black text-right">${dinheiroInteiro(c.servicos)}</span>
+<span class="text-slate-500 font-black text-left">Emb.</span><span class="text-pink-300 font-black text-right">${dinheiroInteiro(c.embelezamento)}</span>
+<span class="text-slate-500 font-black text-left">TKM</span><span class="text-green-300 font-black text-right">${dinheiroInteiro(c.tkm)}</span>
+<span class="text-slate-500 font-black text-left">REV</span><span class="text-slate-200 font-black text-right">${c.revisoes || 0}</span>
+</div>
+</td>
+<td class="text-center align-top">
+<div class="font-black text-2xl ${classeHgsi(numero(c.hgsi))}">${numero(c.hgsi).toFixed(0)}</div>
+</td>
 </tr>
 `;
 });
