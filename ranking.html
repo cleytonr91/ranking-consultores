@@ -95,6 +95,40 @@ box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 12px 30px rgba(0,0,0,.24);
 background:linear-gradient(90deg,rgba(250,204,21,.08),rgba(250,204,21,.22),rgba(250,204,21,.08));
 border:1px solid rgba(250,204,21,.28);
 }
+.ranking-table{
+border-collapse:separate;
+border-spacing:0 9px;
+}
+.ranking-table thead th{
+padding:14px 12px;
+white-space:nowrap;
+}
+.ranking-table tbody td{
+background:rgba(15,23,42,.42);
+border-bottom:1px solid rgba(148,163,184,.2);
+border-top:1px solid rgba(148,163,184,.2);
+padding:18px 14px;
+}
+.ranking-table tbody tr:hover td{
+background:rgba(30,41,59,.58);
+border-color:rgba(96,165,250,.38);
+}
+.ranking-table tbody td:first-child{
+border-left:1px solid rgba(148,163,184,.24);
+border-radius:16px 0 0 16px;
+}
+.ranking-table tbody td:last-child{
+border-right:1px solid rgba(148,163,184,.24);
+border-radius:0 16px 16px 0;
+}
+.ranking-divider{
+border-left:2px solid rgba(96,165,250,.34)!important;
+box-shadow:inset 1px 0 0 rgba(255,255,255,.04);
+}
+.ranking-strong-divider{
+border-left:2px solid rgba(250,204,21,.36)!important;
+box-shadow:inset 1px 0 0 rgba(255,255,255,.05);
+}
 @keyframes pulseGlow{
 0%,100%{filter:drop-shadow(0 0 0 rgba(250,204,21,0));}
 50%{filter:drop-shadow(0 0 14px rgba(250,204,21,.5));}
@@ -135,18 +169,29 @@ RANKING <span class="text-blue-500">CONSULTORES</span>
 <div id="rankingResumo" class="text-slate-400 uppercase tracking-widest text-sm"></div>
 </div>
 <div class="overflow-x-auto">
-<table class="w-full min-w-[1320px]">
+<table class="ranking-table w-full min-w-[1580px]">
+<colgroup>
+<col class="w-[78px]">
+<col class="w-[270px]">
+<col class="w-[205px]">
+<col class="w-[150px]">
+<col class="w-[175px]">
+<col class="w-[175px]">
+<col class="w-[175px]">
+<col class="w-[175px]">
+<col class="w-[190px]">
+</colgroup>
 <thead>
-<tr class="border-b border-slate-800 text-slate-400 uppercase text-sm">
+<tr class="text-slate-400 uppercase text-sm">
 <th class="text-left py-4">Pos</th>
 <th class="text-left">Consultor</th>
 <th class="text-left">Loja</th>
 <th class="text-center">HGSI / NPS</th>
 <th class="text-center">Semana 01</th>
-<th class="text-center border-l border-slate-800">Semana 02</th>
-<th class="text-center border-l border-slate-800">Semana 03</th>
-<th class="text-center border-l border-slate-800">Semana 04</th>
-<th class="text-center border-l border-slate-800">Total do Mês</th>
+<th class="text-center ranking-divider">Semana 02</th>
+<th class="text-center ranking-divider">Semana 03</th>
+<th class="text-center ranking-divider">Semana 04</th>
+<th class="text-center ranking-strong-divider">Total do Mês</th>
 </tr>
 </thead>
 <tbody id="ranking-body"></tbody>
@@ -349,13 +394,13 @@ if(!semana || (!semana.total && !semana.revisoes)){
 return '<span class="text-slate-600">-</span>';
 }
 return `
-<div class="text-left min-w-[150px]">
-<div class="text-center text-blue-300 font-black text-xl mb-2">${dinheiroInteiro(semana.total)}</div>
-<div class="grid grid-cols-[48px_1fr] gap-x-2 text-sm leading-6">
-<span class="text-slate-500 font-black">Serv.</span><span class="text-cyan-300 font-black text-right">${dinheiroInteiro(semana.servicos)}</span>
-<span class="text-slate-500 font-black">Emb.</span><span class="text-pink-300 font-black text-right">${dinheiroInteiro(semana.embelezamento)}</span>
-<span class="text-slate-500 font-black">TKM</span><span class="text-green-300 font-black text-right">${dinheiroInteiro(semana.tkm)}</span>
-<span class="text-slate-500 font-black">REV</span><span class="text-slate-200 font-black text-right">${semana.revisoes || 0}</span>
+<div class="text-left min-w-[158px]">
+<div class="text-center text-blue-300 font-black text-xl mb-2 whitespace-nowrap">${dinheiroInteiro(semana.total)}</div>
+<div class="grid grid-cols-[50px_1fr] gap-x-3 text-sm leading-6">
+<span class="text-slate-500 font-black">Serv.</span><span class="text-cyan-300 font-black text-right whitespace-nowrap">${dinheiroInteiro(semana.servicos)}</span>
+<span class="text-slate-500 font-black">Emb.</span><span class="text-pink-300 font-black text-right whitespace-nowrap">${dinheiroInteiro(semana.embelezamento)}</span>
+<span class="text-slate-500 font-black">TKM</span><span class="text-green-300 font-black text-right whitespace-nowrap">${dinheiroInteiro(semana.tkm)}</span>
+<span class="text-slate-500 font-black">REV</span><span class="text-slate-200 font-black text-right whitespace-nowrap">${semana.revisoes || 0}</span>
 </div>
 </div>
 `;
@@ -505,8 +550,8 @@ top3.innerHTML = podio.map((c,index)=>renderCardPodio(c,index + 1)).join('');
 rankingData.forEach((c,i)=>{
 const nomeCompleto = String(c.name || '').trim();
 rankingBody.innerHTML += `
-<tr class="border-b border-slate-800 hover:bg-slate-800/25 transition-all">
-<td class="py-5 text-3xl font-black">${i+1}º</td>
+<tr class="transition-all">
+<td class="text-3xl font-black text-slate-100">${i+1}º</td>
 <td>
 <div class="flex items-center gap-4">
 <div class="w-12 h-12 shrink-0 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center font-black text-blue-200">${escapeHtml(iniciais(nomeCompleto))}</div>
@@ -516,21 +561,21 @@ rankingBody.innerHTML += `
 <td class="text-slate-400 uppercase text-xl whitespace-normal break-words leading-tight max-w-[170px]">${escapeHtml(c.store || '')}</td>
 <td class="text-center align-top">
 <div class="text-[10px] uppercase tracking-[3px] text-slate-500 mb-1">${escapeHtml(c.tipoPesquisa || 'HGSI')}</div>
-<div class="font-black text-2xl ${classeHgsi(numero(c.hgsi))}">${numero(c.hgsi).toFixed(0)}</div>
+<div class="font-black text-2xl ${classeHgsi(numero(c.hgsi))} whitespace-nowrap">${numero(c.hgsi).toFixed(0)}</div>
 <div class="mt-2 font-black text-lg ${classeMeta(c.pesquisasPercent)}">${c.pesquisasPercent.toFixed(0)}%</div>
-<div class="mt-1 text-xs text-slate-500">${numero(c.pesquisas).toFixed(0)} / ${numero(c.metaPesquisas).toFixed(0)}</div>
+<div class="mt-1 text-xs text-slate-500 whitespace-nowrap">${numero(c.pesquisas).toFixed(0)} / ${numero(c.metaPesquisas).toFixed(0)}</div>
 </td>
 <td class="text-center align-top">${renderSemana(c.semanas[1])}</td>
-<td class="text-center align-top border-l border-slate-800">${renderSemana(c.semanas[2])}</td>
-<td class="text-center align-top border-l border-slate-800">${renderSemana(c.semanas[3])}</td>
-<td class="text-center align-top border-l border-slate-800">${renderSemana(c.semanas[4])}</td>
-<td class="text-center align-top border-l border-slate-800">
-<div class="text-blue-300 font-black text-2xl">${dinheiroInteiro(c.total)}</div>
-<div class="mt-2 grid grid-cols-[48px_1fr] gap-x-2 text-sm leading-6 min-w-[150px]">
-<span class="text-slate-500 font-black text-left">Serv.</span><span class="text-cyan-300 font-black text-right">${dinheiroInteiro(c.servicos)}</span>
-<span class="text-slate-500 font-black text-left">Emb.</span><span class="text-pink-300 font-black text-right">${dinheiroInteiro(c.embelezamento)}</span>
-<span class="text-slate-500 font-black text-left">TKM</span><span class="text-green-300 font-black text-right">${dinheiroInteiro(c.tkm)}</span>
-<span class="text-slate-500 font-black text-left">REV</span><span class="text-slate-200 font-black text-right">${c.revisoes || 0}</span>
+<td class="text-center align-top ranking-divider">${renderSemana(c.semanas[2])}</td>
+<td class="text-center align-top ranking-divider">${renderSemana(c.semanas[3])}</td>
+<td class="text-center align-top ranking-divider">${renderSemana(c.semanas[4])}</td>
+<td class="text-center align-top ranking-strong-divider">
+<div class="text-blue-300 font-black text-2xl whitespace-nowrap">${dinheiroInteiro(c.total)}</div>
+<div class="mt-2 grid grid-cols-[50px_1fr] gap-x-3 text-sm leading-6 min-w-[165px]">
+<span class="text-slate-500 font-black text-left">Serv.</span><span class="text-cyan-300 font-black text-right whitespace-nowrap">${dinheiroInteiro(c.servicos)}</span>
+<span class="text-slate-500 font-black text-left">Emb.</span><span class="text-pink-300 font-black text-right whitespace-nowrap">${dinheiroInteiro(c.embelezamento)}</span>
+<span class="text-slate-500 font-black text-left">TKM</span><span class="text-green-300 font-black text-right whitespace-nowrap">${dinheiroInteiro(c.tkm)}</span>
+<span class="text-slate-500 font-black text-left">REV</span><span class="text-slate-200 font-black text-right whitespace-nowrap">${c.revisoes || 0}</span>
 </div>
 </td>
 </tr>
