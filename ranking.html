@@ -47,7 +47,7 @@ RANKING <span class="text-blue-500">CONSULTORES</span>
 </div>
 </header>
 
-<main class="grid grid-cols-1 2xl:grid-cols-[1fr_420px] gap-7 mb-8">
+<main class="grid grid-cols-1 gap-7 mb-8">
 <section class="panel rounded-[30px] p-5 md:p-7">
 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-5">
 <div>
@@ -74,6 +74,7 @@ RANKING <span class="text-blue-500">CONSULTORES</span>
 <th class="text-center">Semana 04</th>
 <th class="text-center">Total Acumulado</th>
 <th class="text-center">HGSI / NPS</th>
+<th class="text-center">Pesquisas</th>
 </tr>
 </thead>
 <tbody id="ranking-body"></tbody>
@@ -87,7 +88,7 @@ RANKING <span class="text-blue-500">CONSULTORES</span>
 <h2 class="text-3xl md:text-4xl font-black">CAMPANHA SEMANAL</h2>
 <div id="campanhaCompetencia" class="text-yellow-300 uppercase tracking-[4px] mt-2 text-xs font-black"></div>
 </div>
-<div id="campanhaSemanas" class="space-y-4"></div>
+<div id="campanhaSemanas" class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-4"></div>
 </aside>
 </main>
 
@@ -429,6 +430,10 @@ rankingBody.innerHTML += `
 </td>
 <td class="text-center align-top">
 <div class="font-black text-2xl ${classeHgsi(numero(c.hgsi))}">${numero(c.hgsi).toFixed(0)}</div>
+</td>
+<td class="text-center align-top">
+<div class="font-black text-2xl ${classeMeta(c.pesquisasPercent)}">${c.pesquisasPercent.toFixed(0)}%</div>
+<div class="mt-2 text-xs text-slate-500">${numero(c.pesquisas).toFixed(0)} / ${numero(c.metaPesquisas).toFixed(0)}</div>
 </td>
 </tr>
 `;
