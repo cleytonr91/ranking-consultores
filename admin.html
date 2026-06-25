@@ -105,6 +105,11 @@ class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none
 class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
 <input id="cadastroMetaPesquisas" type="number" min="0" placeholder="Meta pesquisas"
 class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
+<select id="cadastroTipoPesquisa"
+class="bg-slate-950 border border-slate-700 rounded-2xl p-4 text-xl outline-none">
+<option value="HGSI">HGSI</option>
+<option value="NPS">NPS</option>
+</select>
 </div>
 
 <button id="salvarCadastroBtn"
@@ -124,6 +129,7 @@ CANCELAR EDICAO
 <th class="text-left">Consultor</th>
 <th class="text-left">Loja</th>
 <th class="text-left">CPF HGSI</th>
+<th class="text-center">Tipo</th>
 <th class="text-center">Meta Pesq.</th>
 <th class="text-center">Acoes</th>
 </tr>
@@ -364,6 +370,8 @@ const cadastroCpf =
 document.getElementById('cadastroCpf');
 const cadastroMetaPesquisas =
 document.getElementById('cadastroMetaPesquisas');
+const cadastroTipoPesquisa =
+document.getElementById('cadastroTipoPesquisa');
 const salvarCadastroBtn =
 document.getElementById('salvarCadastroBtn');
 const cancelarCadastroBtn =
@@ -566,6 +574,7 @@ const nome = cadastroNome.value.trim();
 const loja = cadastroLoja.value.trim();
 const cpf = cadastroCpf.value.replace(/\D/g,'');
 const metaPesquisas = Number(cadastroMetaPesquisas.value || 0);
+const tipoPesquisa = String(cadastroTipoPesquisa.value || 'HGSI').toUpperCase();
 
 if(!codigo || !nome || !loja){
 alert('Preencha codigo, nome e loja.');
@@ -579,6 +588,7 @@ codigo,
 name:nome,
 store:loja,
 cpf,
+tipo_pesquisa:tipoPesquisa,
 meta_pesquisas:metaPesquisas
 }
 );
@@ -589,6 +599,7 @@ cadastroNome.value = '';
 cadastroLoja.value = '';
 cadastroCpf.value = '';
 cadastroMetaPesquisas.value = '';
+cadastroTipoPesquisa.value = 'HGSI';
 cadastroCodigo.disabled = false;
 salvarCadastroBtn.innerText = 'SALVAR CONSULTOR';
 cancelarCadastroBtn.classList.add('hidden');
@@ -602,6 +613,7 @@ cadastroNome.value = '';
 cadastroLoja.value = '';
 cadastroCpf.value = '';
 cadastroMetaPesquisas.value = '';
+cadastroTipoPesquisa.value = 'HGSI';
 cadastroCodigo.disabled = false;
 salvarCadastroBtn.innerText = 'SALVAR CONSULTOR';
 cancelarCadastroBtn.classList.add('hidden');
@@ -630,6 +642,7 @@ listaCadastros.innerHTML += `
 <td class="uppercase font-black">${c.name}</td>
 <td class="uppercase text-slate-400">${c.store}</td>
 <td class="text-slate-400">${formatarCpf(c.cpf || '')}</td>
+<td class="text-center font-black text-blue-400">${c.tipo_pesquisa || 'HGSI'}</td>
 <td class="text-center font-black text-yellow-400">${c.meta_pesquisas || 0}</td>
 <td class="text-center">
 <button
@@ -658,6 +671,7 @@ cadastroNome.value = cadastro.name || '';
 cadastroLoja.value = cadastro.store || '';
 cadastroCpf.value = cadastro.cpf || '';
 cadastroMetaPesquisas.value = cadastro.meta_pesquisas || '';
+cadastroTipoPesquisa.value = cadastro.tipo_pesquisa || 'HGSI';
 cadastroCodigo.disabled = true;
 salvarCadastroBtn.innerText = 'ATUALIZAR CONSULTOR';
 cancelarCadastroBtn.classList.remove('hidden');

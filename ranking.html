@@ -228,8 +228,8 @@ cadastrosConsultores.find(c=>String(c.cpf || '').replace(/\D/g,'') === cpf);
 if(porCpf) return porCpf;
 }
 return cadastrosConsultores.find(c=>
-String(c.name || '').toUpperCase() === String(resultado.name || '').toUpperCase() &&
-String(c.store || '').toUpperCase() === String(resultado.store || '').toUpperCase()
+chaveRanking(c.name) === chaveRanking(resultado.name) &&
+chaveRanking(c.store) === chaveRanking(resultado.store)
 );
 }
 
@@ -239,6 +239,11 @@ const metaCadastro = Number(cadastro?.meta_pesquisas || 0);
 return metaCadastro > 0 ? metaCadastro : Number(resultado.meta_pesquisas || 0);
 }
 
+function tipoPesquisaOficial(resultado){
+const cadastro = cadastroDoResultado(resultado);
+return String(cadastro?.tipo_pesquisa || resultado.tipo_pesquisa || 'HGSI').toUpperCase();
+}
+
 function enriquecerResultado(original){
 const servicos = Math.ceil(numero(original.serv_adic));
 const embelezamento = Math.ceil(numero(original.emb_oficina));
@@ -246,6 +251,7 @@ const total = Math.ceil(numero(original.serv_adic) + numero(original.emb_oficina
 const revisoes = numero(original.rev_und);
 const tkm = revisoes > 0 ? Math.ceil(total / revisoes) : 0;
 const metaPesquisas = metaPesquisaOficial(original);
+const tipoPesquisa = tipoPesquisaOficial(original);
 const pesquisasPercent = metaPesquisas > 0
 ? (numero(original.pesquisas) / metaPesquisas) * 100
 : 0;
@@ -257,7 +263,8 @@ total,
 revisoes,
 tkm,
 pesquisasPercent,
-metaPesquisas
+metaPesquisas,
+tipoPesquisa
 };
 }
 
@@ -297,6 +304,7 @@ hgsi:0,
 pesquisas:0,
 metaPesquisas:0,
 pesquisasPercent:0,
+tipoPesquisa:c.tipoPesquisa,
 hgsiValores:[],
 semanas:{
 1:semanaVazia(),
@@ -317,8 +325,9 @@ agregado.servicos += c.servicos;
 agregado.embelezamento += c.embelezamento;
 agregado.total += c.total;
 agregado.revisoes += c.revisoes;
-agregado.pesquisas += numero(c.pesquisas);
-agregado.metaPesquisas += numero(c.metaPesquisas);
+agregado.pesquisas = Math.max(agregado.pesquisas, numero(c.pesquisas));
+agregado.metaPesquisas = Math.max(agregado.metaPesquisas, numero(c.metaPesquisas));
+agregado.tipoPesquisa = c.tipoPesquisa || agregado.tipoPesquisa;
 if(numero(c.hgsi) > 0){
 agregado.hgsiValores.push(numero(c.hgsi));
 }
@@ -506,6 +515,7 @@ rankingBody.innerHTML += `
 </td>
 <td class="text-slate-400 uppercase text-xl whitespace-normal break-words leading-tight max-w-[170px]">${escapeHtml(c.store || '')}</td>
 <td class="text-center align-top">
+<div class="text-[10px] uppercase tracking-[3px] text-slate-500 mb-1">${escapeHtml(c.tipoPesquisa || 'HGSI')}</div>
 <div class="font-black text-2xl ${classeHgsi(numero(c.hgsi))}">${numero(c.hgsi).toFixed(0)}</div>
 <div class="mt-2 font-black text-lg ${classeMeta(c.pesquisasPercent)}">${c.pesquisasPercent.toFixed(0)}%</div>
 <div class="mt-1 text-xs text-slate-500">${numero(c.pesquisas).toFixed(0)} / ${numero(c.metaPesquisas).toFixed(0)}</div>
