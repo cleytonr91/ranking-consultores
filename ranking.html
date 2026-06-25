@@ -68,13 +68,12 @@ RANKING <span class="text-blue-500">CONSULTORES</span>
 <th class="text-left py-4">Pos</th>
 <th class="text-left">Consultor</th>
 <th class="text-left">Loja</th>
-<th class="text-center">Semana 01</th>
-<th class="text-center">Semana 02</th>
-<th class="text-center">Semana 03</th>
-<th class="text-center">Semana 04</th>
-<th class="text-center">Total Acumulado</th>
 <th class="text-center">HGSI / NPS</th>
-<th class="text-center">Pesquisas</th>
+<th class="text-center">Semana 01</th>
+<th class="text-center border-l border-slate-800">Semana 02</th>
+<th class="text-center border-l border-slate-800">Semana 03</th>
+<th class="text-center border-l border-slate-800">Semana 04</th>
+<th class="text-center border-l border-slate-800">Total do Mês</th>
 </tr>
 </thead>
 <tbody id="ranking-body"></tbody>
@@ -410,16 +409,21 @@ rankingBody.innerHTML += `
 <td class="py-5 text-3xl font-black">${i+1}º</td>
 <td>
 <div class="flex items-center gap-4">
-<div class="w-12 h-12 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center font-black text-blue-200">${escapeHtml(iniciais(nomeCompleto))}</div>
-<div class="text-2xl font-black uppercase break-words">${escapeHtml(nomeCompleto)}</div>
+<div class="w-12 h-12 shrink-0 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center font-black text-blue-200">${escapeHtml(iniciais(nomeCompleto))}</div>
+<div class="text-2xl font-black uppercase whitespace-normal break-words leading-tight max-w-[240px]">${escapeHtml(nomeCompleto)}</div>
 </div>
 </td>
-<td class="text-slate-400 uppercase text-xl">${escapeHtml(c.store || '')}</td>
-<td class="text-center align-top">${renderSemana(c.semanas[1])}</td>
-<td class="text-center align-top">${renderSemana(c.semanas[2])}</td>
-<td class="text-center align-top">${renderSemana(c.semanas[3])}</td>
-<td class="text-center align-top">${renderSemana(c.semanas[4])}</td>
+<td class="text-slate-400 uppercase text-xl whitespace-normal break-words leading-tight max-w-[170px]">${escapeHtml(c.store || '')}</td>
 <td class="text-center align-top">
+<div class="font-black text-2xl ${classeHgsi(numero(c.hgsi))}">${numero(c.hgsi).toFixed(0)}</div>
+<div class="mt-2 font-black text-lg ${classeMeta(c.pesquisasPercent)}">${c.pesquisasPercent.toFixed(0)}%</div>
+<div class="mt-1 text-xs text-slate-500">${numero(c.pesquisas).toFixed(0)} / ${numero(c.metaPesquisas).toFixed(0)}</div>
+</td>
+<td class="text-center align-top">${renderSemana(c.semanas[1])}</td>
+<td class="text-center align-top border-l border-slate-800">${renderSemana(c.semanas[2])}</td>
+<td class="text-center align-top border-l border-slate-800">${renderSemana(c.semanas[3])}</td>
+<td class="text-center align-top border-l border-slate-800">${renderSemana(c.semanas[4])}</td>
+<td class="text-center align-top border-l border-slate-800">
 <div class="text-blue-300 font-black text-2xl">${dinheiroInteiro(c.total)}</div>
 <div class="mt-2 grid grid-cols-[48px_1fr] gap-x-2 text-sm leading-6 min-w-[150px]">
 <span class="text-slate-500 font-black text-left">Serv.</span><span class="text-cyan-300 font-black text-right">${dinheiroInteiro(c.servicos)}</span>
@@ -427,13 +431,6 @@ rankingBody.innerHTML += `
 <span class="text-slate-500 font-black text-left">TKM</span><span class="text-green-300 font-black text-right">${dinheiroInteiro(c.tkm)}</span>
 <span class="text-slate-500 font-black text-left">REV</span><span class="text-slate-200 font-black text-right">${c.revisoes || 0}</span>
 </div>
-</td>
-<td class="text-center align-top">
-<div class="font-black text-2xl ${classeHgsi(numero(c.hgsi))}">${numero(c.hgsi).toFixed(0)}</div>
-</td>
-<td class="text-center align-top">
-<div class="font-black text-2xl ${classeMeta(c.pesquisasPercent)}">${c.pesquisasPercent.toFixed(0)}%</div>
-<div class="mt-2 text-xs text-slate-500">${numero(c.pesquisas).toFixed(0)} / ${numero(c.metaPesquisas).toFixed(0)}</div>
 </td>
 </tr>
 `;
