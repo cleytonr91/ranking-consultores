@@ -372,6 +372,7 @@ const listaCadastros =
 document.getElementById('listaCadastros');
 
 let editandoId = null;
+let editandoResultadoOriginal = null;
 let editandoCadastroId = null;
 let todosDados = [];
 let cadastrosConsultores = [];
@@ -446,39 +447,55 @@ if(
 alert('Preencha os campos obrigatórios.');
 return;
 }
-if(editandoId){
-await updateDoc(
-doc(db,"consultores",editandoId),
-dados
-);
-alert('Resultado atualizado.');
-editandoId = null;
-salvarBtn.innerText =
-'SALVAR RESULTADO';
-cancelarBtn.classList.add('hidden');
-}else{
 const consulta = query(
 collection(db,"consultores"),
-where("name","==",dados.name),
 where("competencia","==",dados.competencia)
 );
 const existente =
 await getDocs(consulta);
 const resultadoDaSemana =
-existente.docs.find((docu)=>Number(docu.data().semana || 1) === dados.semana);
-if(resultadoDaSemana){
-alert(
-'Este consultor já possui resultado nesta competência.'
+existente.docs.find((docu)=>{
+const atual = docu.data();
+return (
+normalizarTexto(atual.name) === dados.name &&
+normalizarTexto(atual.store) === dados.store &&
+Number(atual.semana || 1) === dados.semana
 );
-return;
-}
+});
+const editandoMesmaSemana =
+editandoId &&
+editandoResultadoOriginal &&
+editandoResultadoOriginal.id === editandoId &&
+editandoResultadoOriginal.name === dados.name &&
+editandoResultadoOriginal.store === dados.store &&
+editandoResultadoOriginal.competencia === dados.competencia &&
+Number(editandoResultadoOriginal.semana || 1) === dados.semana;
+if(editandoMesmaSemana){
+await updateDoc(
+doc(db,"consultores",editandoId),
+dados
+);
+alert('Resultado atualizado.');
+}else if(resultadoDaSemana){
+await updateDoc(
+resultadoDaSemana.ref,
+dados
+);
+alert('Resultado da semana atualizado.');
+}else{
 await addDoc(
 collection(db,"consultores"),
 dados
 );
-alert('Resultado salvo.');
+alert('Resultado semanal salvo.');
 }
+editandoId = null;
+editandoResultadoOriginal = null;
+salvarBtn.innerText =
+'SALVAR RESULTADO';
+cancelarBtn.classList.add('hidden');
 limparCampos();
+return;
 }
 function limparCampos(){
 const competenciaAtual = campos.competencia.value || competenciaFiltro.value;
@@ -491,6 +508,7 @@ campos.semana.value = semanaAtual;
 }
 cancelarBtn.addEventListener('click',()=>{
 editandoId = null;
+editandoResultadoOriginal = null;
 salvarBtn.innerText =
 'SALVAR RESULTADO';
 cancelarBtn.classList.add('hidden');
@@ -832,6 +850,13 @@ window.editarConsultor = (id)=>{
 const consultor =
 todosDados.find(c=>c.id === id);
 editandoId = id;
+editandoResultadoOriginal = {
+id,
+name:normalizarTexto(consultor.name),
+store:normalizarTexto(consultor.store),
+competencia:consultor.competencia,
+semana:Number(consultor.semana || 1)
+};
 campos.name.value =
 consultor.name;
 campos.store.value =
