@@ -18,13 +18,86 @@ border:1px solid rgba(148,163,184,.16);
 box-shadow:0 24px 80px rgba(0,0,0,.35);
 }
 .podium-gold{
-box-shadow:0 0 0 1px rgba(250,204,21,.55),0 0 48px rgba(250,204,21,.2);
+background:
+radial-gradient(circle at 50% -18%,rgba(250,204,21,.34),transparent 42%),
+linear-gradient(160deg,rgba(113,63,18,.42),rgba(7,18,37,.94) 45%,rgba(8,15,29,.96));
+box-shadow:0 0 0 1px rgba(250,204,21,.72),0 0 70px rgba(250,204,21,.28),0 30px 80px rgba(0,0,0,.45);
 }
 .podium-silver{
-box-shadow:0 0 0 1px rgba(226,232,240,.38),0 0 34px rgba(148,163,184,.18);
+background:
+radial-gradient(circle at 50% -18%,rgba(226,232,240,.2),transparent 42%),
+linear-gradient(160deg,rgba(71,85,105,.26),rgba(7,18,37,.94) 48%,rgba(8,15,29,.96));
+box-shadow:0 0 0 1px rgba(226,232,240,.48),0 0 44px rgba(148,163,184,.22),0 24px 70px rgba(0,0,0,.38);
 }
 .podium-bronze{
-box-shadow:0 0 0 1px rgba(251,146,60,.42),0 0 34px rgba(251,146,60,.14);
+background:
+radial-gradient(circle at 50% -18%,rgba(251,146,60,.2),transparent 42%),
+linear-gradient(160deg,rgba(124,45,18,.25),rgba(7,18,37,.94) 48%,rgba(8,15,29,.96));
+box-shadow:0 0 0 1px rgba(251,146,60,.52),0 0 44px rgba(251,146,60,.18),0 24px 70px rgba(0,0,0,.38);
+}
+.podium-card{
+position:relative;
+overflow:hidden;
+transition:transform .25s ease,box-shadow .25s ease;
+}
+.podium-card::before{
+content:"";
+position:absolute;
+inset:-1px;
+background:linear-gradient(115deg,transparent 0%,rgba(255,255,255,.1) 22%,transparent 42%);
+opacity:.72;
+pointer-events:none;
+}
+.podium-card::after{
+content:"";
+position:absolute;
+left:18px;
+right:18px;
+top:0;
+height:1px;
+background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);
+pointer-events:none;
+}
+.podium-content{
+position:relative;
+z-index:1;
+}
+.podium-rank{
+align-items:center;
+border-radius:999px;
+display:inline-flex;
+height:42px;
+justify-content:center;
+width:42px;
+}
+.podium-champion{
+animation:pulseGlow 2.8s ease-in-out infinite;
+}
+.podium-stage{
+background:
+radial-gradient(circle at 50% 0%,rgba(250,204,21,.18),transparent 34%),
+radial-gradient(circle at 18% 18%,rgba(59,130,246,.16),transparent 28%),
+radial-gradient(circle at 84% 24%,rgba(251,146,60,.12),transparent 30%),
+linear-gradient(180deg,rgba(15,23,42,.5),rgba(2,6,23,.1));
+border:1px solid rgba(148,163,184,.12);
+box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 30px 90px rgba(0,0,0,.24);
+}
+.champion-card{
+transform:translateY(-10px);
+}
+.champion-card .podium-name{
+text-shadow:0 0 28px rgba(250,204,21,.26),0 5px 18px rgba(0,0,0,.5);
+}
+.podium-medal{
+box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 12px 30px rgba(0,0,0,.24);
+}
+.podium-highlight{
+background:linear-gradient(90deg,rgba(250,204,21,.08),rgba(250,204,21,.22),rgba(250,204,21,.08));
+border:1px solid rgba(250,204,21,.28);
+}
+@keyframes pulseGlow{
+0%,100%{filter:drop-shadow(0 0 0 rgba(250,204,21,0));}
+50%{filter:drop-shadow(0 0 14px rgba(250,204,21,.5));}
 }
 </style>
 </head>
@@ -55,7 +128,7 @@ RANKING <span class="text-blue-500">CONSULTORES</span>
 <div id="podioCompetencia" class="text-blue-300 uppercase tracking-[4px] mt-2 text-sm font-black"></div>
 </div>
 </div>
-<div id="top3" class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-end"></div>
+<div id="top3" class="podium-stage grid grid-cols-1 xl:grid-cols-3 gap-7 items-end rounded-[28px] p-5 md:p-6"></div>
 <div class="mt-7 pt-6 border-t border-slate-800">
 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-5">
 <h2 class="text-3xl md:text-4xl font-black">RANKING GERAL</h2>
@@ -298,11 +371,13 @@ const nomeRestante = nomeCompleto.split(/\s+/).slice(1).join(' ');
 const estilo = {
 1:{
 ordem:'xl:order-2',
-altura:'min-h-[340px]',
+altura:'min-h-[370px]',
 card:'podium-gold border-yellow-400/50',
 numero:'bg-yellow-400 text-slate-950',
 titulo:'text-yellow-200',
 avatar:'from-yellow-300 to-yellow-600',
+badge:'CAMPEÃO',
+medalha:'OURO',
 label:'1º LUGAR'
 },
 2:{
@@ -312,6 +387,8 @@ card:'podium-silver border-slate-300/40',
 numero:'bg-slate-200 text-slate-950',
 titulo:'text-slate-100',
 avatar:'from-slate-200 to-slate-500',
+badge:'DESTAQUE',
+medalha:'PRATA',
 label:'2º LUGAR'
 },
 3:{
@@ -321,26 +398,35 @@ card:'podium-bronze border-orange-400/40',
 numero:'bg-orange-400 text-slate-950',
 titulo:'text-orange-200',
 avatar:'from-orange-300 to-orange-700',
+badge:'TOP 3',
+medalha:'BRONZE',
 label:'3º LUGAR'
 }
 }[posicao];
 
 return `
-<article class="${estilo.ordem} ${estilo.card} ${estilo.altura} rounded-[24px] border bg-[#071225]/90 p-4 flex flex-col justify-between">
+<article class="podium-card ${posicao === 1 ? 'champion-card' : ''} ${estilo.ordem} ${estilo.card} ${estilo.altura} rounded-[24px] border p-5 flex flex-col justify-between">
+<div class="podium-content flex flex-col justify-between h-full">
 <div class="flex justify-between items-start">
 <div>
 <div class="${estilo.titulo} text-xl font-black tracking-wide">${estilo.label}</div>
 <div class="text-slate-500 uppercase tracking-[3px] text-[10px] mt-1">Ranking mensal</div>
 </div>
+<div class="podium-rank ${estilo.numero} ${posicao === 1 ? 'podium-champion' : ''} text-xl font-black">${posicao}</div>
 </div>
 
 <div class="text-center my-3">
-<div class="mx-auto w-20 h-20 rounded-full bg-gradient-to-br ${estilo.avatar} p-[3px]">
-<div class="w-full h-full rounded-full bg-[#06101f] flex items-center justify-center text-2xl font-black">
+${posicao === 1 ? `<div class="podium-highlight mx-auto mb-4 rounded-full px-5 py-2 text-xs font-black uppercase tracking-[4px] text-yellow-100">Consultor do mês</div>` : ''}
+<div class="mx-auto w-24 h-24 rounded-full bg-gradient-to-br ${estilo.avatar} p-[4px] ${posicao === 1 ? 'podium-champion' : ''}">
+<div class="w-full h-full rounded-full bg-[#06101f] flex items-center justify-center text-3xl font-black">
 ${escapeHtml(iniciais(c.name))}
 </div>
 </div>
-<div class="mt-3 text-3xl font-black uppercase leading-none break-words">${escapeHtml(primeiroNome)}</div>
+<div class="mt-3 flex justify-center gap-2">
+<div class="podium-medal inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1 text-[10px] font-black uppercase tracking-[3px] ${estilo.titulo}">${estilo.medalha}</div>
+<div class="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1 text-[10px] font-black uppercase tracking-[3px] ${estilo.titulo}">${estilo.badge}</div>
+</div>
+<div class="podium-name mt-3 text-4xl font-black uppercase leading-none break-words">${escapeHtml(primeiroNome)}</div>
 <div class="mt-1 text-xl font-black uppercase leading-tight text-slate-200 break-words">${escapeHtml(nomeRestante)}</div>
 <div class="mt-2 text-xs uppercase tracking-widest text-slate-400 break-words">${escapeHtml(c.store || '')}</div>
 </div>
@@ -362,6 +448,7 @@ ${escapeHtml(iniciais(c.name))}
 <div class="rounded-2xl bg-white/5 border border-white/10 p-3 text-center">
 <div class="text-slate-500 uppercase text-[10px]">Meta</div>
 <div class="text-2xl font-black mt-1 ${classeMeta(c.pesquisasPercent)}">${c.pesquisasPercent.toFixed(0)}%</div>
+</div>
 </div>
 </div>
 </div>
